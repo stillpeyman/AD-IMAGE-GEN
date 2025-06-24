@@ -12,6 +12,12 @@ api_key = os.getenv("OPENAI_API_KEY")
 client = OpenAI(api_key=api_key)
 
 
+# Path to test image
+image_path = os.path.join(os.path.dirname(__file__), "..", "test_images", "nike-unsplash.jpg")
+# Convert to absolute path
+image_path = os.path.abspath(image_path)
+
+
 # Define structured output schema
 class ImageAnalysis(BaseModel):
     main_subject: str
@@ -69,39 +75,39 @@ def analyze_image_structured(image_path: str) -> ImageAnalysis:
     return response.output_parsed
 
 
-# TEST
-if __name__ == "__main__":
-    try:
-        # Path to test image
-        image_path = os.path.join(os.path.dirname(__file__), "..", "test_images", "nike-unsplash.jpg")
-        # Convert to absolute path
-        image_path = os.path.abspath(image_path)
+# # TEST
+# if __name__ == "__main__":
+#     try:
+#         # Path to test image
+#         image_path = os.path.join(os.path.dirname(__file__), "..", "test_images", "nike-unsplash.jpg")
+#         # Convert to absolute path
+#         image_path = os.path.abspath(image_path)
 
-        print("Analyzing image with structured output...")
+#         print("Analyzing image with structured output...")
 
-        try:
-            analysis = analyze_image_structured(image_path)
+#         try:
+#             analysis = analyze_image_structured(image_path)
 
-            print("\n=== STRUCTURED ANALYSIS RESULTS ===")
-            print(f"Main subject: {analysis.main_subject}")
-            print(f"Colors: {', '.join(analysis.dominant_colors)}")
-            print(f"Style: {analysis.style_description}")
-            print(f"Composition: {analysis.composition_details}")
-            print(f"Mood: {analysis.mood_atmosphere}")
-            print(f"Keywords: {', '.join(analysis.suggested_keywords)}")
+#             print("\n=== STRUCTURED ANALYSIS RESULTS ===")
+#             print(f"Main subject: {analysis.main_subject}")
+#             print(f"Colors: {', '.join(analysis.dominant_colors)}")
+#             print(f"Style: {analysis.style_description}")
+#             print(f"Composition: {analysis.composition_details}")
+#             print(f"Mood: {analysis.mood_atmosphere}")
+#             print(f"Keywords: {', '.join(analysis.suggested_keywords)}")
 
-            # Save structured results to a JSON file
-            with open("image_analysis_structured.json", "w") as f:
-                f.write(analysis.model_dump_json(indent=2))
+#             # Save structured results to a JSON file
+#             with open("image_analysis_structured.json", "w") as handle:
+#                 handle.write(analysis.model_dump_json(indent=2))
             
-            print("\nStructured results saved to image_analysis_structured.json")
+#             print("\nStructured results saved to image_analysis_structured.json")
         
-        except Exception as e:
-            print(f"Structured output failed: {e}")
+#         except Exception as e:
+#             print(f"Structured output failed: {e}")
     
-    except FileNotFoundError:
-        print(f"Error: Image file not found at {image_path}")
+#     except FileNotFoundError:
+#         print(f"Error: Image file not found at {image_path}")
     
-    except Exception as e:
-        print(f"Error analyzing image: {e}")
+#     except Exception as e:
+#         print(f"Error analyzing image: {e}")
 

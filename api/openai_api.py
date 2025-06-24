@@ -98,8 +98,8 @@ response = client.responses.parse(
 )
 
 # Save the full raw response to a JSON file
-with open("raw_response.json", "w") as f:
-    f.write(response.model_dump_json(indent=2))
+with open("raw_response.json", "w") as handle:
+    handle.write(response.model_dump_json(indent=2))
 
 result = response.output_parsed
 
