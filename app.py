@@ -15,6 +15,8 @@ def login():
     return jsonify({'message': 'Login endpoint (stub)'}), 200
 
 
+# get current user info from session/token (Think about token- or session-based athentication later!)
+# return info for currently logged-in user
 @app.route('/users/me', methods=['GET'])
 def get_user_info():
     return jsonify({'message': 'User info endpoint (stub)'}), 200
