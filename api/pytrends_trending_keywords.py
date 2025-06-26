@@ -116,6 +116,8 @@ def analyze_keyword_trend(records, keyword, treshold, trend_weight, volume_weigh
     # Normalize volume to range 0–1 by dividing by 100 (Google Trends scale goes from 0 to 100)
     volume_score = avg_volume / 100
 
+    # Principle: Weighted Linear Combination (weighted average)
+    # Score closer to 1 = strong upward trend and/or high search volume
     priority_score = round(
         trend_weight * trend_score + volume_weight * volume_score, 3
         )
