@@ -8,9 +8,11 @@
       {
         "keyword": "Nike",
         "trend": "stable",
-        "early_avg": 82.84,
-        "recent_avg": 75.68,
-        "change_ratio": 0.91
+        "early_avg": 83.29,
+        "recent_avg": 76.35,
+        "change_ratio": 0.92,
+        "avg_volume": 79.49,
+        "priority_score": 0.618
       }
     ]
   },
@@ -24,16 +26,20 @@
       {
         "keyword": "running shoes",
         "trend": "stable",
-        "early_avg": 80.16,
-        "recent_avg": 77.81,
-        "change_ratio": 0.97
+        "early_avg": 78.74,
+        "recent_avg": 78.1,
+        "change_ratio": 0.99,
+        "avg_volume": 79.58,
+        "priority_score": 0.618
       },
       {
         "keyword": "athletic wear",
         "trend": "stable",
-        "early_avg": 2.16,
-        "recent_avg": 2.23,
-        "change_ratio": 1.03
+        "early_avg": 2.1,
+        "recent_avg": 2.19,
+        "change_ratio": 1.05,
+        "avg_volume": 2.16,
+        "priority_score": 0.309
       }
     ]
   },
@@ -46,9 +52,11 @@
       {
         "keyword": "fitness",
         "trend": "stable",
-        "early_avg": 77.94,
-        "recent_avg": 82.0,
-        "change_ratio": 1.05
+        "early_avg": 75.84,
+        "recent_avg": 80.35,
+        "change_ratio": 1.06,
+        "avg_volume": 77.63,
+        "priority_score": 0.611
       },
       {
         "keyword": "active lifestyle",
@@ -66,16 +74,20 @@
       {
         "keyword": "fashion",
         "trend": "stable",
-        "early_avg": 87.23,
-        "recent_avg": 83.13,
-        "change_ratio": 0.95
+        "early_avg": 78.39,
+        "recent_avg": 74.71,
+        "change_ratio": 0.95,
+        "avg_volume": 77.62,
+        "priority_score": 0.61
       },
       {
         "keyword": "sporty",
         "trend": "stable",
-        "early_avg": 8.35,
-        "recent_avg": 7.81,
-        "change_ratio": 0.93
+        "early_avg": 7.42,
+        "recent_avg": 6.97,
+        "change_ratio": 0.94,
+        "avg_volume": 7.35,
+        "priority_score": 0.329
       }
     ]
   }

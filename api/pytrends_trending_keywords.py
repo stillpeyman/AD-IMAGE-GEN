@@ -55,16 +55,19 @@ def fetch_trends_per_cat(keywords_list, timeframe):
     return records
 
 
-def analyze_keyword_trend(records, keyword, treshold):
+def analyze_keyword_trend(records, keyword, treshold, trend_weight, volume_weight):
     """
-    Analyze if a keyword is trending up, down, or stable based on records data.
+    Analyze if a keyword is trending up, down, or stable, and compute a priority score.
     
     Args:
-        records (list): List of trend records (dicts with date and keyword values)
+        records (list): Trend records (from fetch_trends_per_cat)
         keyword (str): The keyword to analyze
-        
+        threshold (float): Sensitivity for trend detection (e.g. 0.15 = 15% change)
+        trend_weight (float): Weight for trend direction in priority score
+        volume_weight (float): Weight for volume in priority score
+
     Returns:
-        dict: Analysis result with trend direction and metrics
+        dict: Analysis with trend, volume, and priority score
     """
     # Extract values for this keyword from records
     values = [record[keyword] for record in records if keyword in record]
@@ -93,21 +96,38 @@ def analyze_keyword_trend(records, keyword, treshold):
     
     # Calculate change ratio
     change_ratio = recent_avg / early_avg
+    # Calculate average search interest score
+    avg_volume = sum(values) / len(values)
 
     # Determine trend with chosen threshold
     if change_ratio > 1 + treshold:
         trend = "increasing"
+        trend_score = 1
+
     elif change_ratio < 1 - treshold:
         trend = "decreasing"
+        trend_score = 0
+
     else:
         trend = "stable"
+        trend_score = 0.5
+    
+    # Priority = weighted combo of trend direction and average volume
+    # Normalize volume to range 0–1 by dividing by 100 (Google Trends scale goes from 0 to 100)
+    volume_score = avg_volume / 100
+
+    priority_score = round(
+        trend_weight * trend_score + volume_weight * volume_score, 3
+        )
     
     return {
         "keyword": keyword,
         "trend": trend,
         "early_avg": round(early_avg, 2),
         "recent_avg": round(recent_avg, 2),
-        "change_ratio": round(change_ratio, 2)
+        "change_ratio": round(change_ratio, 2),
+        "avg_volume": round(avg_volume, 2),
+        "priority_score": priority_score
     }
 
 
@@ -167,19 +187,39 @@ def main():
         category_analysis = []
 
         for keyword in keywords:
-            analysis = analyze_keyword_trend(records, keyword, treshold=0.15)
+            analysis = analyze_keyword_trend(records, keyword, treshold=0.15, trend_weight=0.6, volume_weight=0.4)
             category_analysis.append(analysis)
+
+            # Sort keywords by priority descending
+            category_analysis.sort(key=lambda item: item.get("priority_score", 0), reverse=True)
 
             # Print analysis for each keyword
             trend = analysis["trend"]
             if trend == "increasing":
-                print(f"{keyword}: {trend} ({analysis.get("change_ratio", "N/A")}x)")
+                print(f"""
+{keyword}: {trend} 
+| ratio: {analysis.get('change_ratio')}x 
+| vol: {analysis.get('avg_volume')} 
+| priority: {analysis.get('priority_score')}
+""")
                 increasing_keywords.append(keyword)
+
             elif trend == "decreasing":
-                print(f"{keyword}: {trend} ({analysis.get("change_ratio", "N/A")}x)")
+                print(f"""
+{keyword}: {trend} 
+| ratio: {analysis.get('change_ratio')}x 
+| vol: {analysis.get('avg_volume')} 
+| priority: {analysis.get('priority_score')}
+""")
             elif trend == "stable":
-                print(f"{keyword}: {trend} ({analysis.get("change_ratio", "N/A")}x)")
+                print(f"""
+{keyword}: {trend} 
+| ratio: {analysis.get('change_ratio')}x 
+| vol: {analysis.get('avg_volume')} 
+| priority: {analysis.get('priority_score')}
+""")
                 stable_keywords.append(keyword)
+
             else:
                 print(f"{keyword}: {trend}")
         
