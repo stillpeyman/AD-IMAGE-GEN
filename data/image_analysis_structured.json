@@ -1,0 +1,129 @@
+{
+  "id": "resp_685c015f06fc8199a31f36bb1502d518036e521bfbd836b3",
+  "created_at": 1750860128.0,
+  "error": null,
+  "incomplete_details": null,
+  "instructions": null,
+  "metadata": {},
+  "model": "gpt-4o-mini-2024-07-18",
+  "object": "response",
+  "output": [
+    {
+      "id": "msg_685c0162f6a88199969531a33583d3ae036e521bfbd836b3",
+      "content": [
+        {
+          "annotations": [],
+          "text": "{\"main_subject\":\"Nike running shoe\",\"dominant_colors\":[\"deep red\",\"bright white\",\"black\",\"light gray\",\"dark gray\"],\"style_description\":\"modern and vibrant\",\"composition_details\":\"dynamic angle, slightly off-center\",\"mood_atmosphere\":\"energetic and bold\",\"suggested_keywords\":[\"Nike\",\"running shoes\",\"athletic wear\",\"fitness\",\"active lifestyle\",\"fashion\",\"sporty\"]}",
+          "type": "output_text",
+          "parsed": {
+            "main_subject": "Nike running shoe",
+            "dominant_colors": [
+              "deep red",
+              "bright white",
+              "black",
+              "light gray",
+              "dark gray"
+            ],
+            "style_description": "modern and vibrant",
+            "composition_details": "dynamic angle, slightly off-center",
+            "mood_atmosphere": "energetic and bold",
+            "suggested_keywords": [
+              "Nike",
+              "running shoes",
+              "athletic wear",
+              "fitness",
+              "active lifestyle",
+              "fashion",
+              "sporty"
+            ]
+          }
+        }
+      ],
+      "role": "assistant",
+      "status": "completed",
+      "type": "message"
+    }
+  ],
+  "parallel_tool_calls": true,
+  "temperature": 1.0,
+  "tool_choice": "auto",
+  "tools": [],
+  "top_p": 1.0,
+  "background": false,
+  "max_output_tokens": null,
+  "previous_response_id": null,
+  "reasoning": {
+    "effort": null,
+    "generate_summary": null,
+    "summary": null
+  },
+  "service_tier": "default",
+  "status": "completed",
+  "text": {
+    "format": {
+      "name": "ImageAnalysis",
+      "schema_": {
+        "properties": {
+          "main_subject": {
+            "title": "Main Subject",
+            "type": "string"
+          },
+          "dominant_colors": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Dominant Colors",
+            "type": "array"
+          },
+          "style_description": {
+            "title": "Style Description",
+            "type": "string"
+          },
+          "composition_details": {
+            "title": "Composition Details",
+            "type": "string"
+          },
+          "mood_atmosphere": {
+            "title": "Mood Atmosphere",
+            "type": "string"
+          },
+          "suggested_keywords": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Suggested Keywords",
+            "type": "array"
+          }
+        },
+        "required": [
+          "main_subject",
+          "dominant_colors",
+          "style_description",
+          "composition_details",
+          "mood_atmosphere",
+          "suggested_keywords"
+        ],
+        "title": "ImageAnalysis",
+        "type": "object",
+        "additionalProperties": false
+      },
+      "type": "json_schema",
+      "description": null,
+      "strict": true
+    }
+  },
+  "truncation": "disabled",
+  "usage": {
+    "input_tokens": 37092,
+    "input_tokens_details": {
+      "cached_tokens": 0
+    },
+    "output_tokens": 81,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 37173
+  },
+  "user": null,
+  "store": true
+}

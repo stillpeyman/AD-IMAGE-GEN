@@ -1,0 +1,1777 @@
+{
+  "brand_terms": [
+    {
+      "date": "2025-03-26",
+      "Nike": 81
+    },
+    {
+      "date": "2025-03-27",
+      "Nike": 82
+    },
+    {
+      "date": "2025-03-28",
+      "Nike": 78
+    },
+    {
+      "date": "2025-03-29",
+      "Nike": 95
+    },
+    {
+      "date": "2025-03-30",
+      "Nike": 97
+    },
+    {
+      "date": "2025-03-31",
+      "Nike": 84
+    },
+    {
+      "date": "2025-04-01",
+      "Nike": 83
+    },
+    {
+      "date": "2025-04-02",
+      "Nike": 79
+    },
+    {
+      "date": "2025-04-03",
+      "Nike": 84
+    },
+    {
+      "date": "2025-04-04",
+      "Nike": 81
+    },
+    {
+      "date": "2025-04-05",
+      "Nike": 98
+    },
+    {
+      "date": "2025-04-06",
+      "Nike": 100
+    },
+    {
+      "date": "2025-04-07",
+      "Nike": 82
+    },
+    {
+      "date": "2025-04-08",
+      "Nike": 77
+    },
+    {
+      "date": "2025-04-09",
+      "Nike": 78
+    },
+    {
+      "date": "2025-04-10",
+      "Nike": 78
+    },
+    {
+      "date": "2025-04-11",
+      "Nike": 76
+    },
+    {
+      "date": "2025-04-12",
+      "Nike": 91
+    },
+    {
+      "date": "2025-04-13",
+      "Nike": 95
+    },
+    {
+      "date": "2025-04-14",
+      "Nike": 83
+    },
+    {
+      "date": "2025-04-15",
+      "Nike": 74
+    },
+    {
+      "date": "2025-04-16",
+      "Nike": 78
+    },
+    {
+      "date": "2025-04-17",
+      "Nike": 76
+    },
+    {
+      "date": "2025-04-18",
+      "Nike": 81
+    },
+    {
+      "date": "2025-04-19",
+      "Nike": 86
+    },
+    {
+      "date": "2025-04-20",
+      "Nike": 89
+    },
+    {
+      "date": "2025-04-21",
+      "Nike": 79
+    },
+    {
+      "date": "2025-04-22",
+      "Nike": 74
+    },
+    {
+      "date": "2025-04-23",
+      "Nike": 78
+    },
+    {
+      "date": "2025-04-24",
+      "Nike": 76
+    },
+    {
+      "date": "2025-04-25",
+      "Nike": 75
+    },
+    {
+      "date": "2025-04-26",
+      "Nike": 85
+    },
+    {
+      "date": "2025-04-27",
+      "Nike": 88
+    },
+    {
+      "date": "2025-04-28",
+      "Nike": 74
+    },
+    {
+      "date": "2025-04-29",
+      "Nike": 75
+    },
+    {
+      "date": "2025-04-30",
+      "Nike": 75
+    },
+    {
+      "date": "2025-05-01",
+      "Nike": 81
+    },
+    {
+      "date": "2025-05-02",
+      "Nike": 78
+    },
+    {
+      "date": "2025-05-03",
+      "Nike": 89
+    },
+    {
+      "date": "2025-05-04",
+      "Nike": 90
+    },
+    {
+      "date": "2025-05-05",
+      "Nike": 80
+    },
+    {
+      "date": "2025-05-06",
+      "Nike": 75
+    },
+    {
+      "date": "2025-05-07",
+      "Nike": 73
+    },
+    {
+      "date": "2025-05-08",
+      "Nike": 76
+    },
+    {
+      "date": "2025-05-09",
+      "Nike": 74
+    },
+    {
+      "date": "2025-05-10",
+      "Nike": 87
+    },
+    {
+      "date": "2025-05-11",
+      "Nike": 88
+    },
+    {
+      "date": "2025-05-12",
+      "Nike": 77
+    },
+    {
+      "date": "2025-05-13",
+      "Nike": 74
+    },
+    {
+      "date": "2025-05-14",
+      "Nike": 74
+    },
+    {
+      "date": "2025-05-15",
+      "Nike": 72
+    },
+    {
+      "date": "2025-05-16",
+      "Nike": 75
+    },
+    {
+      "date": "2025-05-17",
+      "Nike": 86
+    },
+    {
+      "date": "2025-05-18",
+      "Nike": 84
+    },
+    {
+      "date": "2025-05-19",
+      "Nike": 72
+    },
+    {
+      "date": "2025-05-20",
+      "Nike": 73
+    },
+    {
+      "date": "2025-05-21",
+      "Nike": 70
+    },
+    {
+      "date": "2025-05-22",
+      "Nike": 71
+    },
+    {
+      "date": "2025-05-23",
+      "Nike": 72
+    },
+    {
+      "date": "2025-05-24",
+      "Nike": 84
+    },
+    {
+      "date": "2025-05-25",
+      "Nike": 86
+    },
+    {
+      "date": "2025-05-26",
+      "Nike": 76
+    },
+    {
+      "date": "2025-05-27",
+      "Nike": 71
+    },
+    {
+      "date": "2025-05-28",
+      "Nike": 75
+    },
+    {
+      "date": "2025-05-29",
+      "Nike": 80
+    },
+    {
+      "date": "2025-05-30",
+      "Nike": 77
+    },
+    {
+      "date": "2025-05-31",
+      "Nike": 88
+    },
+    {
+      "date": "2025-06-01",
+      "Nike": 89
+    },
+    {
+      "date": "2025-06-02",
+      "Nike": 80
+    },
+    {
+      "date": "2025-06-03",
+      "Nike": 80
+    },
+    {
+      "date": "2025-06-04",
+      "Nike": 74
+    },
+    {
+      "date": "2025-06-05",
+      "Nike": 74
+    },
+    {
+      "date": "2025-06-06",
+      "Nike": 75
+    },
+    {
+      "date": "2025-06-07",
+      "Nike": 86
+    },
+    {
+      "date": "2025-06-08",
+      "Nike": 90
+    },
+    {
+      "date": "2025-06-09",
+      "Nike": 76
+    },
+    {
+      "date": "2025-06-10",
+      "Nike": 72
+    },
+    {
+      "date": "2025-06-11",
+      "Nike": 72
+    },
+    {
+      "date": "2025-06-12",
+      "Nike": 73
+    },
+    {
+      "date": "2025-06-13",
+      "Nike": 75
+    },
+    {
+      "date": "2025-06-14",
+      "Nike": 83
+    },
+    {
+      "date": "2025-06-15",
+      "Nike": 86
+    },
+    {
+      "date": "2025-06-16",
+      "Nike": 73
+    },
+    {
+      "date": "2025-06-17",
+      "Nike": 66
+    },
+    {
+      "date": "2025-06-18",
+      "Nike": 68
+    },
+    {
+      "date": "2025-06-19",
+      "Nike": 71
+    },
+    {
+      "date": "2025-06-20",
+      "Nike": 68
+    },
+    {
+      "date": "2025-06-21",
+      "Nike": 76
+    },
+    {
+      "date": "2025-06-22",
+      "Nike": 78
+    },
+    {
+      "date": "2025-06-23",
+      "Nike": 66
+    },
+    {
+      "date": "2025-06-24",
+      "Nike": 68
+    },
+    {
+      "date": "2025-06-25",
+      "Nike": 68
+    },
+    {
+      "date": "2025-06-26",
+      "Nike": 68
+    }
+  ],
+  "product_terms": [
+    {
+      "date": "2025-03-26",
+      "running shoes": 77,
+      "athletic wear": 3
+    },
+    {
+      "date": "2025-03-27",
+      "running shoes": 79,
+      "athletic wear": 2
+    },
+    {
+      "date": "2025-03-28",
+      "running shoes": 73,
+      "athletic wear": 2
+    },
+    {
+      "date": "2025-03-29",
+      "running shoes": 94,
+      "athletic wear": 2
+    },
+    {
+      "date": "2025-03-30",
+      "running shoes": 96,
+      "athletic wear": 3
+    },
+    {
+      "date": "2025-03-31",
+      "running shoes": 81,
+      "athletic wear": 2
+    },
+    {
+      "date": "2025-04-01",
+      "running shoes": 73,
+      "athletic wear": 2
+    },
+    {
+      "date": "2025-04-02",
+      "running shoes": 74,
+      "athletic wear": 2
+    },
+    {
+      "date": "2025-04-03",
+      "running shoes": 85,
+      "athletic wear": 2
+    },
+    {
+      "date": "2025-04-04",
+      "running shoes": 71,
+      "athletic wear": 2
+    },
+    {
+      "date": "2025-04-05",
+      "running shoes": 93,
+      "athletic wear": 3
+    },
+    {
+      "date": "2025-04-06",
+      "running shoes": 93,
+      "athletic wear": 2
+    },
+    {
+      "date": "2025-04-07",
+      "running shoes": 71,
+      "athletic wear": 2
+    },
+    {
+      "date": "2025-04-08",
+      "running shoes": 77,
+      "athletic wear": 2
+    },
+    {
+      "date": "2025-04-09",
+      "running shoes": 75,
+      "athletic wear": 2
+    },
+    {
+      "date": "2025-04-10",
+      "running shoes": 71,
+      "athletic wear": 3
+    },
+    {
+      "date": "2025-04-11",
+      "running shoes": 75,
+      "athletic wear": 2
+    },
+    {
+      "date": "2025-04-12",
+      "running shoes": 91,
+      "athletic wear": 2
+    },
+    {
+      "date": "2025-04-13",
+      "running shoes": 89,
+      "athletic wear": 2
+    },
+    {
+      "date": "2025-04-14",
+      "running shoes": 77,
+      "athletic wear": 2
+    },
+    {
+      "date": "2025-04-15",
+      "running shoes": 72,
+      "athletic wear": 2
+    },
+    {
+      "date": "2025-04-16",
+      "running shoes": 75,
+      "athletic wear": 2
+    },
+    {
+      "date": "2025-04-17",
+      "running shoes": 71,
+      "athletic wear": 2
+    },
+    {
+      "date": "2025-04-18",
+      "running shoes": 79,
+      "athletic wear": 2
+    },
+    {
+      "date": "2025-04-19",
+      "running shoes": 88,
+      "athletic wear": 2
+    },
+    {
+      "date": "2025-04-20",
+      "running shoes": 98,
+      "athletic wear": 2
+    },
+    {
+      "date": "2025-04-21",
+      "running shoes": 83,
+      "athletic wear": 3
+    },
+    {
+      "date": "2025-04-22",
+      "running shoes": 76,
+      "athletic wear": 2
+    },
+    {
+      "date": "2025-04-23",
+      "running shoes": 72,
+      "athletic wear": 2
+    },
+    {
+      "date": "2025-04-24",
+      "running shoes": 81,
+      "athletic wear": 2
+    },
+    {
+      "date": "2025-04-25",
+      "running shoes": 75,
+      "athletic wear": 2
+    },
+    {
+      "date": "2025-04-26",
+      "running shoes": 86,
+      "athletic wear": 2
+    },
+    {
+      "date": "2025-04-27",
+      "running shoes": 98,
+      "athletic wear": 3
+    },
+    {
+      "date": "2025-04-28",
+      "running shoes": 84,
+      "athletic wear": 2
+    },
+    {
+      "date": "2025-04-29",
+      "running shoes": 85,
+      "athletic wear": 2
+    },
+    {
+      "date": "2025-04-30",
+      "running shoes": 78,
+      "athletic wear": 2
+    },
+    {
+      "date": "2025-05-01",
+      "running shoes": 87,
+      "athletic wear": 3
+    },
+    {
+      "date": "2025-05-02",
+      "running shoes": 77,
+      "athletic wear": 2
+    },
+    {
+      "date": "2025-05-03",
+      "running shoes": 94,
+      "athletic wear": 3
+    },
+    {
+      "date": "2025-05-04",
+      "running shoes": 100,
+      "athletic wear": 3
+    },
+    {
+      "date": "2025-05-05",
+      "running shoes": 90,
+      "athletic wear": 2
+    },
+    {
+      "date": "2025-05-06",
+      "running shoes": 77,
+      "athletic wear": 2
+    },
+    {
+      "date": "2025-05-07",
+      "running shoes": 77,
+      "athletic wear": 2
+    },
+    {
+      "date": "2025-05-08",
+      "running shoes": 73,
+      "athletic wear": 2
+    },
+    {
+      "date": "2025-05-09",
+      "running shoes": 76,
+      "athletic wear": 3
+    },
+    {
+      "date": "2025-05-10",
+      "running shoes": 95,
+      "athletic wear": 3
+    },
+    {
+      "date": "2025-05-11",
+      "running shoes": 92,
+      "athletic wear": 2
+    },
+    {
+      "date": "2025-05-12",
+      "running shoes": 83,
+      "athletic wear": 3
+    },
+    {
+      "date": "2025-05-13",
+      "running shoes": 77,
+      "athletic wear": 2
+    },
+    {
+      "date": "2025-05-14",
+      "running shoes": 70,
+      "athletic wear": 2
+    },
+    {
+      "date": "2025-05-15",
+      "running shoes": 72,
+      "athletic wear": 2
+    },
+    {
+      "date": "2025-05-16",
+      "running shoes": 71,
+      "athletic wear": 2
+    },
+    {
+      "date": "2025-05-17",
+      "running shoes": 85,
+      "athletic wear": 3
+    },
+    {
+      "date": "2025-05-18",
+      "running shoes": 84,
+      "athletic wear": 2
+    },
+    {
+      "date": "2025-05-19",
+      "running shoes": 77,
+      "athletic wear": 2
+    },
+    {
+      "date": "2025-05-20",
+      "running shoes": 77,
+      "athletic wear": 2
+    },
+    {
+      "date": "2025-05-21",
+      "running shoes": 69,
+      "athletic wear": 2
+    },
+    {
+      "date": "2025-05-22",
+      "running shoes": 72,
+      "athletic wear": 2
+    },
+    {
+      "date": "2025-05-23",
+      "running shoes": 75,
+      "athletic wear": 2
+    },
+    {
+      "date": "2025-05-24",
+      "running shoes": 86,
+      "athletic wear": 2
+    },
+    {
+      "date": "2025-05-25",
+      "running shoes": 95,
+      "athletic wear": 2
+    },
+    {
+      "date": "2025-05-26",
+      "running shoes": 74,
+      "athletic wear": 2
+    },
+    {
+      "date": "2025-05-27",
+      "running shoes": 74,
+      "athletic wear": 2
+    },
+    {
+      "date": "2025-05-28",
+      "running shoes": 73,
+      "athletic wear": 2
+    },
+    {
+      "date": "2025-05-29",
+      "running shoes": 74,
+      "athletic wear": 3
+    },
+    {
+      "date": "2025-05-30",
+      "running shoes": 73,
+      "athletic wear": 2
+    },
+    {
+      "date": "2025-05-31",
+      "running shoes": 89,
+      "athletic wear": 3
+    },
+    {
+      "date": "2025-06-01",
+      "running shoes": 90,
+      "athletic wear": 3
+    },
+    {
+      "date": "2025-06-02",
+      "running shoes": 77,
+      "athletic wear": 2
+    },
+    {
+      "date": "2025-06-03",
+      "running shoes": 73,
+      "athletic wear": 2
+    },
+    {
+      "date": "2025-06-04",
+      "running shoes": 72,
+      "athletic wear": 2
+    },
+    {
+      "date": "2025-06-05",
+      "running shoes": 73,
+      "athletic wear": 2
+    },
+    {
+      "date": "2025-06-06",
+      "running shoes": 80,
+      "athletic wear": 3
+    },
+    {
+      "date": "2025-06-07",
+      "running shoes": 89,
+      "athletic wear": 3
+    },
+    {
+      "date": "2025-06-08",
+      "running shoes": 92,
+      "athletic wear": 3
+    },
+    {
+      "date": "2025-06-09",
+      "running shoes": 80,
+      "athletic wear": 2
+    },
+    {
+      "date": "2025-06-10",
+      "running shoes": 69,
+      "athletic wear": 2
+    },
+    {
+      "date": "2025-06-11",
+      "running shoes": 76,
+      "athletic wear": 2
+    },
+    {
+      "date": "2025-06-12",
+      "running shoes": 77,
+      "athletic wear": 2
+    },
+    {
+      "date": "2025-06-13",
+      "running shoes": 74,
+      "athletic wear": 2
+    },
+    {
+      "date": "2025-06-14",
+      "running shoes": 85,
+      "athletic wear": 2
+    },
+    {
+      "date": "2025-06-15",
+      "running shoes": 91,
+      "athletic wear": 2
+    },
+    {
+      "date": "2025-06-16",
+      "running shoes": 79,
+      "athletic wear": 2
+    },
+    {
+      "date": "2025-06-17",
+      "running shoes": 75,
+      "athletic wear": 2
+    },
+    {
+      "date": "2025-06-18",
+      "running shoes": 73,
+      "athletic wear": 2
+    },
+    {
+      "date": "2025-06-19",
+      "running shoes": 78,
+      "athletic wear": 2
+    },
+    {
+      "date": "2025-06-20",
+      "running shoes": 74,
+      "athletic wear": 2
+    },
+    {
+      "date": "2025-06-21",
+      "running shoes": 84,
+      "athletic wear": 3
+    },
+    {
+      "date": "2025-06-22",
+      "running shoes": 82,
+      "athletic wear": 2
+    },
+    {
+      "date": "2025-06-23",
+      "running shoes": 74,
+      "athletic wear": 2
+    },
+    {
+      "date": "2025-06-24",
+      "running shoes": 73,
+      "athletic wear": 2
+    },
+    {
+      "date": "2025-06-25",
+      "running shoes": 70,
+      "athletic wear": 2
+    },
+    {
+      "date": "2025-06-26",
+      "running shoes": 69,
+      "athletic wear": 2
+    }
+  ],
+  "lifestyle_terms": [
+    {
+      "date": "2025-03-26",
+      "fitness": 79,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-03-27",
+      "fitness": 76,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-03-28",
+      "fitness": 72,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-03-29",
+      "fitness": 77,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-03-30",
+      "fitness": 81,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-03-31",
+      "fitness": 84,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-04-01",
+      "fitness": 82,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-04-02",
+      "fitness": 81,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-04-03",
+      "fitness": 78,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-04-04",
+      "fitness": 73,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-04-05",
+      "fitness": 79,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-04-06",
+      "fitness": 82,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-04-07",
+      "fitness": 83,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-04-08",
+      "fitness": 78,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-04-09",
+      "fitness": 75,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-04-10",
+      "fitness": 71,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-04-11",
+      "fitness": 73,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-04-12",
+      "fitness": 72,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-04-13",
+      "fitness": 75,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-04-14",
+      "fitness": 76,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-04-15",
+      "fitness": 75,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-04-16",
+      "fitness": 74,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-04-17",
+      "fitness": 77,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-04-18",
+      "fitness": 83,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-04-19",
+      "fitness": 80,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-04-20",
+      "fitness": 90,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-04-21",
+      "fitness": 85,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-04-22",
+      "fitness": 81,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-04-23",
+      "fitness": 77,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-04-24",
+      "fitness": 75,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-04-25",
+      "fitness": 72,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-04-26",
+      "fitness": 73,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-04-27",
+      "fitness": 75,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-04-28",
+      "fitness": 82,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-04-29",
+      "fitness": 79,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-04-30",
+      "fitness": 79,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-05-01",
+      "fitness": 84,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-05-02",
+      "fitness": 76,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-05-03",
+      "fitness": 73,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-05-04",
+      "fitness": 79,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-05-05",
+      "fitness": 85,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-05-06",
+      "fitness": 79,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-05-07",
+      "fitness": 74,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-05-08",
+      "fitness": 72,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-05-09",
+      "fitness": 72,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-05-10",
+      "fitness": 74,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-05-11",
+      "fitness": 74,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-05-12",
+      "fitness": 81,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-05-13",
+      "fitness": 75,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-05-14",
+      "fitness": 78,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-05-15",
+      "fitness": 75,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-05-16",
+      "fitness": 74,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-05-17",
+      "fitness": 75,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-05-18",
+      "fitness": 76,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-05-19",
+      "fitness": 88,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-05-20",
+      "fitness": 82,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-05-21",
+      "fitness": 82,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-05-22",
+      "fitness": 75,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-05-23",
+      "fitness": 79,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-05-24",
+      "fitness": 79,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-05-25",
+      "fitness": 81,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-05-26",
+      "fitness": 100,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-05-27",
+      "fitness": 81,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-05-28",
+      "fitness": 80,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-05-29",
+      "fitness": 79,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-05-30",
+      "fitness": 76,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-05-31",
+      "fitness": 86,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-06-01",
+      "fitness": 96,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-06-02",
+      "fitness": 97,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-06-03",
+      "fitness": 91,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-06-04",
+      "fitness": 90,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-06-05",
+      "fitness": 84,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-06-06",
+      "fitness": 79,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-06-07",
+      "fitness": 83,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-06-08",
+      "fitness": 81,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-06-09",
+      "fitness": 89,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-06-10",
+      "fitness": 83,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-06-11",
+      "fitness": 84,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-06-12",
+      "fitness": 78,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-06-13",
+      "fitness": 74,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-06-14",
+      "fitness": 77,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-06-15",
+      "fitness": 77,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-06-16",
+      "fitness": 85,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-06-17",
+      "fitness": 83,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-06-18",
+      "fitness": 82,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-06-19",
+      "fitness": 79,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-06-20",
+      "fitness": 79,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-06-21",
+      "fitness": 77,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-06-22",
+      "fitness": 77,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-06-23",
+      "fitness": 84,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-06-24",
+      "fitness": 81,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-06-25",
+      "fitness": 81,
+      "active lifestyle": 0
+    },
+    {
+      "date": "2025-06-26",
+      "fitness": 69,
+      "active lifestyle": 0
+    }
+  ],
+  "style_terms": [
+    {
+      "date": "2025-03-26",
+      "fashion": 88,
+      "sporty": 7
+    },
+    {
+      "date": "2025-03-27",
+      "fashion": 87,
+      "sporty": 7
+    },
+    {
+      "date": "2025-03-28",
+      "fashion": 87,
+      "sporty": 8
+    },
+    {
+      "date": "2025-03-29",
+      "fashion": 92,
+      "sporty": 10
+    },
+    {
+      "date": "2025-03-30",
+      "fashion": 88,
+      "sporty": 9
+    },
+    {
+      "date": "2025-03-31",
+      "fashion": 84,
+      "sporty": 7
+    },
+    {
+      "date": "2025-04-01",
+      "fashion": 92,
+      "sporty": 9
+    },
+    {
+      "date": "2025-04-02",
+      "fashion": 84,
+      "sporty": 8
+    },
+    {
+      "date": "2025-04-03",
+      "fashion": 87,
+      "sporty": 7
+    },
+    {
+      "date": "2025-04-04",
+      "fashion": 86,
+      "sporty": 8
+    },
+    {
+      "date": "2025-04-05",
+      "fashion": 95,
+      "sporty": 11
+    },
+    {
+      "date": "2025-04-06",
+      "fashion": 94,
+      "sporty": 9
+    },
+    {
+      "date": "2025-04-07",
+      "fashion": 85,
+      "sporty": 7
+    },
+    {
+      "date": "2025-04-08",
+      "fashion": 83,
+      "sporty": 9
+    },
+    {
+      "date": "2025-04-09",
+      "fashion": 86,
+      "sporty": 7
+    },
+    {
+      "date": "2025-04-10",
+      "fashion": 83,
+      "sporty": 8
+    },
+    {
+      "date": "2025-04-11",
+      "fashion": 86,
+      "sporty": 7
+    },
+    {
+      "date": "2025-04-12",
+      "fashion": 89,
+      "sporty": 11
+    },
+    {
+      "date": "2025-04-13",
+      "fashion": 93,
+      "sporty": 10
+    },
+    {
+      "date": "2025-04-14",
+      "fashion": 84,
+      "sporty": 7
+    },
+    {
+      "date": "2025-04-15",
+      "fashion": 89,
+      "sporty": 8
+    },
+    {
+      "date": "2025-04-16",
+      "fashion": 87,
+      "sporty": 9
+    },
+    {
+      "date": "2025-04-17",
+      "fashion": 86,
+      "sporty": 8
+    },
+    {
+      "date": "2025-04-18",
+      "fashion": 85,
+      "sporty": 8
+    },
+    {
+      "date": "2025-04-19",
+      "fashion": 83,
+      "sporty": 11
+    },
+    {
+      "date": "2025-04-20",
+      "fashion": 86,
+      "sporty": 9
+    },
+    {
+      "date": "2025-04-21",
+      "fashion": 87,
+      "sporty": 8
+    },
+    {
+      "date": "2025-04-22",
+      "fashion": 87,
+      "sporty": 9
+    },
+    {
+      "date": "2025-04-23",
+      "fashion": 89,
+      "sporty": 8
+    },
+    {
+      "date": "2025-04-24",
+      "fashion": 87,
+      "sporty": 7
+    },
+    {
+      "date": "2025-04-25",
+      "fashion": 85,
+      "sporty": 8
+    },
+    {
+      "date": "2025-04-26",
+      "fashion": 87,
+      "sporty": 12
+    },
+    {
+      "date": "2025-04-27",
+      "fashion": 87,
+      "sporty": 10
+    },
+    {
+      "date": "2025-04-28",
+      "fashion": 89,
+      "sporty": 7
+    },
+    {
+      "date": "2025-04-29",
+      "fashion": 91,
+      "sporty": 7
+    },
+    {
+      "date": "2025-04-30",
+      "fashion": 85,
+      "sporty": 7
+    },
+    {
+      "date": "2025-05-01",
+      "fashion": 87,
+      "sporty": 8
+    },
+    {
+      "date": "2025-05-02",
+      "fashion": 90,
+      "sporty": 8
+    },
+    {
+      "date": "2025-05-03",
+      "fashion": 95,
+      "sporty": 11
+    },
+    {
+      "date": "2025-05-04",
+      "fashion": 93,
+      "sporty": 10
+    },
+    {
+      "date": "2025-05-05",
+      "fashion": 96,
+      "sporty": 8
+    },
+    {
+      "date": "2025-05-06",
+      "fashion": 100,
+      "sporty": 9
+    },
+    {
+      "date": "2025-05-07",
+      "fashion": 98,
+      "sporty": 8
+    },
+    {
+      "date": "2025-05-08",
+      "fashion": 90,
+      "sporty": 8
+    },
+    {
+      "date": "2025-05-09",
+      "fashion": 86,
+      "sporty": 8
+    },
+    {
+      "date": "2025-05-10",
+      "fashion": 88,
+      "sporty": 11
+    },
+    {
+      "date": "2025-05-11",
+      "fashion": 88,
+      "sporty": 11
+    },
+    {
+      "date": "2025-05-12",
+      "fashion": 90,
+      "sporty": 7
+    },
+    {
+      "date": "2025-05-13",
+      "fashion": 86,
+      "sporty": 7
+    },
+    {
+      "date": "2025-05-14",
+      "fashion": 95,
+      "sporty": 7
+    },
+    {
+      "date": "2025-05-15",
+      "fashion": 84,
+      "sporty": 8
+    },
+    {
+      "date": "2025-05-16",
+      "fashion": 91,
+      "sporty": 8
+    },
+    {
+      "date": "2025-05-17",
+      "fashion": 86,
+      "sporty": 10
+    },
+    {
+      "date": "2025-05-18",
+      "fashion": 90,
+      "sporty": 10
+    },
+    {
+      "date": "2025-05-19",
+      "fashion": 91,
+      "sporty": 7
+    },
+    {
+      "date": "2025-05-20",
+      "fashion": 85,
+      "sporty": 7
+    },
+    {
+      "date": "2025-05-21",
+      "fashion": 84,
+      "sporty": 7
+    },
+    {
+      "date": "2025-05-22",
+      "fashion": 88,
+      "sporty": 7
+    },
+    {
+      "date": "2025-05-23",
+      "fashion": 87,
+      "sporty": 8
+    },
+    {
+      "date": "2025-05-24",
+      "fashion": 85,
+      "sporty": 10
+    },
+    {
+      "date": "2025-05-25",
+      "fashion": 85,
+      "sporty": 10
+    },
+    {
+      "date": "2025-05-26",
+      "fashion": 86,
+      "sporty": 7
+    },
+    {
+      "date": "2025-05-27",
+      "fashion": 84,
+      "sporty": 7
+    },
+    {
+      "date": "2025-05-28",
+      "fashion": 83,
+      "sporty": 8
+    },
+    {
+      "date": "2025-05-29",
+      "fashion": 81,
+      "sporty": 7
+    },
+    {
+      "date": "2025-05-30",
+      "fashion": 82,
+      "sporty": 8
+    },
+    {
+      "date": "2025-05-31",
+      "fashion": 84,
+      "sporty": 9
+    },
+    {
+      "date": "2025-06-01",
+      "fashion": 87,
+      "sporty": 8
+    },
+    {
+      "date": "2025-06-02",
+      "fashion": 83,
+      "sporty": 7
+    },
+    {
+      "date": "2025-06-03",
+      "fashion": 87,
+      "sporty": 7
+    },
+    {
+      "date": "2025-06-04",
+      "fashion": 83,
+      "sporty": 8
+    },
+    {
+      "date": "2025-06-05",
+      "fashion": 83,
+      "sporty": 8
+    },
+    {
+      "date": "2025-06-06",
+      "fashion": 86,
+      "sporty": 8
+    },
+    {
+      "date": "2025-06-07",
+      "fashion": 87,
+      "sporty": 8
+    },
+    {
+      "date": "2025-06-08",
+      "fashion": 82,
+      "sporty": 9
+    },
+    {
+      "date": "2025-06-09",
+      "fashion": 84,
+      "sporty": 7
+    },
+    {
+      "date": "2025-06-10",
+      "fashion": 81,
+      "sporty": 8
+    },
+    {
+      "date": "2025-06-11",
+      "fashion": 84,
+      "sporty": 7
+    },
+    {
+      "date": "2025-06-12",
+      "fashion": 80,
+      "sporty": 7
+    },
+    {
+      "date": "2025-06-13",
+      "fashion": 81,
+      "sporty": 7
+    },
+    {
+      "date": "2025-06-14",
+      "fashion": 82,
+      "sporty": 8
+    },
+    {
+      "date": "2025-06-15",
+      "fashion": 79,
+      "sporty": 10
+    },
+    {
+      "date": "2025-06-16",
+      "fashion": 81,
+      "sporty": 8
+    },
+    {
+      "date": "2025-06-17",
+      "fashion": 85,
+      "sporty": 8
+    },
+    {
+      "date": "2025-06-18",
+      "fashion": 79,
+      "sporty": 8
+    },
+    {
+      "date": "2025-06-19",
+      "fashion": 84,
+      "sporty": 8
+    },
+    {
+      "date": "2025-06-20",
+      "fashion": 87,
+      "sporty": 8
+    },
+    {
+      "date": "2025-06-21",
+      "fashion": 80,
+      "sporty": 8
+    },
+    {
+      "date": "2025-06-22",
+      "fashion": 85,
+      "sporty": 9
+    },
+    {
+      "date": "2025-06-23",
+      "fashion": 78,
+      "sporty": 8
+    },
+    {
+      "date": "2025-06-24",
+      "fashion": 83,
+      "sporty": 7
+    },
+    {
+      "date": "2025-06-25",
+      "fashion": 86,
+      "sporty": 7
+    },
+    {
+      "date": "2025-06-26",
+      "fashion": 86,
+      "sporty": 7
+    }
+  ]
+}

@@ -40,7 +40,7 @@ client = OpenAI(api_key=api_key)
 #     )
     
 #     # Save the full raw response to a JSON file
-#     with open("openai_response.json", "w") as handle:
+#     with open("data/openai_response.json", "w") as handle:
 #         json.dump(response.model_dump(), handle, indent=2)
 
 #     return response.choices[0].message.content
@@ -98,7 +98,7 @@ response = client.responses.parse(
 )
 
 # Save the full raw response to a JSON file
-with open("raw_response.json", "w") as handle:
+with open("data/raw_response.json", "w") as handle:
     handle.write(response.model_dump_json(indent=2))
 
 result = response.output_parsed

@@ -1,8 +1,8 @@
 from openai import OpenAI
 from dotenv import load_dotenv
 import os
-from api.gpt_4o_mini_image_analysis import analyze_image_structured
-from api.trending_hashtags import fetch_trending_hashtags
+from gpt_4o_mini_image_analysis import analyze_image_structured
+from rapid_api_trending_hashtags import fetch_trending_hashtags
 
 
 load_dotenv()

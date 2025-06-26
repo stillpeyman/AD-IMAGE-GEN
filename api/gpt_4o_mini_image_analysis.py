@@ -27,6 +27,13 @@ class ImageAnalysis(BaseModel):
     mood_atmosphere: str
     suggested_keywords: list[str]
 
+class KeywordCategorization(BaseModel):
+    brand_terms: list[str]
+    product_terms: list[str]
+    lifestyle_terms: list[str]
+    style_terms: list[str]
+    uncategorized_terms: list[str]
+
 
 # Function to encode the image
 def encode_image(image_path):
@@ -71,11 +78,65 @@ def analyze_image_structured(image_path: str) -> ImageAnalysis:
         text_format=ImageAnalysis,
     )
     
+    # Save structured results to a JSON file
+    with open("data/image_analysis_structured.json", "w") as handle:
+        handle.write(response.model_dump_json(indent=2))
+
     # Access parsed response
     return response.output_parsed
 
 
-# # TEST
+def categorize_keywords(keywords: list[str]) -> KeywordCategorization:
+
+    response = client.responses.parse(
+        model="gpt-4o-mini",
+        input=[
+            {
+                "role": "system",
+                "content": "You are an expert at categorizing marketing keywords for social media trend analysis."
+            },
+            {
+                "role": "user",
+                "content": f"""
+                Categorize these keywords from a product image analysis: {keywords}
+
+Categories:
+- brand_terms: Specific brand names, company names
+- product_terms: Actual products, items, categories
+- lifestyle_terms: Activities, behaviors, lifestyle concepts
+- style_terms: Fashion, aesthetics, visual style descriptors
+- uncategorized_terms: Anything that doesn't fit above
+
+Explain your reasoning for each keyword placement, then provide the structured categorization.
+"""
+            }
+        ],
+        text_format=KeywordCategorization
+    )
+
+    # Save structured results to a JSON file
+    with open("data/keywords_categorization_structured.json", "w") as handle:
+        handle.write(response.model_dump_json(indent=2))
+
+    # Access parsed response
+    return response.output_parsed
+
+
+analysis = analyze_image_structured(image_path)
+with open("data/image_analysis.json", "w") as handle:
+    handle.write(analysis.model_dump_json(indent=2))
+# print(analysis)
+
+
+print()
+
+kw_categorization = categorize_keywords(analysis.suggested_keywords)
+with open("data/keywords_categorization.json", "w") as handle:
+    handle.write(kw_categorization.model_dump_json(indent=2))
+# print(kw_categorization)
+
+
+# TEST
 # if __name__ == "__main__":
 #     try:
 #         # Path to test image
@@ -97,7 +158,7 @@ def analyze_image_structured(image_path: str) -> ImageAnalysis:
 #             print(f"Keywords: {', '.join(analysis.suggested_keywords)}")
 
 #             # Save structured results to a JSON file
-#             with open("image_analysis_structured.json", "w") as handle:
+#             with open("data/image_analysis_structured.json", "w") as handle:
 #                 handle.write(analysis.model_dump_json(indent=2))
             
 #             print("\nStructured results saved to image_analysis_structured.json")

@@ -1,0 +1,129 @@
+{
+  "id": "resp_685c016524308198b66688060a9e35910059f0039a28e27a",
+  "created_at": 1750860133.0,
+  "error": null,
+  "incomplete_details": null,
+  "instructions": null,
+  "metadata": {},
+  "model": "gpt-4o-mini-2024-07-18",
+  "object": "response",
+  "output": [
+    {
+      "id": "msg_685c0165d1b8819890a5422181f25c740059f0039a28e27a",
+      "content": [
+        {
+          "annotations": [],
+          "text": "{\"brand_terms\":[\"Nike\"],\"product_terms\":[\"running shoes\",\"athletic wear\"],\"lifestyle_terms\":[\"fitness\",\"active lifestyle\"],\"style_terms\":[\"fashion\",\"sporty\"],\"uncategorized_terms\":[]}",
+          "type": "output_text",
+          "parsed": {
+            "brand_terms": [
+              "Nike"
+            ],
+            "product_terms": [
+              "running shoes",
+              "athletic wear"
+            ],
+            "lifestyle_terms": [
+              "fitness",
+              "active lifestyle"
+            ],
+            "style_terms": [
+              "fashion",
+              "sporty"
+            ],
+            "uncategorized_terms": []
+          }
+        }
+      ],
+      "role": "assistant",
+      "status": "completed",
+      "type": "message"
+    }
+  ],
+  "parallel_tool_calls": true,
+  "temperature": 1.0,
+  "tool_choice": "auto",
+  "tools": [],
+  "top_p": 1.0,
+  "background": false,
+  "max_output_tokens": null,
+  "previous_response_id": null,
+  "reasoning": {
+    "effort": null,
+    "generate_summary": null,
+    "summary": null
+  },
+  "service_tier": "default",
+  "status": "completed",
+  "text": {
+    "format": {
+      "name": "KeywordCategorization",
+      "schema_": {
+        "properties": {
+          "brand_terms": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Brand Terms",
+            "type": "array"
+          },
+          "product_terms": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Product Terms",
+            "type": "array"
+          },
+          "lifestyle_terms": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Lifestyle Terms",
+            "type": "array"
+          },
+          "style_terms": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Style Terms",
+            "type": "array"
+          },
+          "uncategorized_terms": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Uncategorized Terms",
+            "type": "array"
+          }
+        },
+        "required": [
+          "brand_terms",
+          "product_terms",
+          "lifestyle_terms",
+          "style_terms",
+          "uncategorized_terms"
+        ],
+        "title": "KeywordCategorization",
+        "type": "object",
+        "additionalProperties": false
+      },
+      "type": "json_schema",
+      "description": null,
+      "strict": true
+    }
+  },
+  "truncation": "disabled",
+  "usage": {
+    "input_tokens": 265,
+    "input_tokens_details": {
+      "cached_tokens": 0
+    },
+    "output_tokens": 44,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 309
+  },
+  "user": null,
+  "store": true
+}

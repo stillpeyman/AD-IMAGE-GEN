@@ -1,0 +1,82 @@
+{
+  "brand_terms": {
+    "increasing_keywords": [],
+    "stable_keywords": [
+      "Nike"
+    ],
+    "full_analysis": [
+      {
+        "keyword": "Nike",
+        "trend": "stable",
+        "early_avg": 82.84,
+        "recent_avg": 75.68,
+        "change_ratio": 0.91
+      }
+    ]
+  },
+  "product_terms": {
+    "increasing_keywords": [],
+    "stable_keywords": [
+      "running shoes",
+      "athletic wear"
+    ],
+    "full_analysis": [
+      {
+        "keyword": "running shoes",
+        "trend": "stable",
+        "early_avg": 80.16,
+        "recent_avg": 77.81,
+        "change_ratio": 0.97
+      },
+      {
+        "keyword": "athletic wear",
+        "trend": "stable",
+        "early_avg": 2.16,
+        "recent_avg": 2.23,
+        "change_ratio": 1.03
+      }
+    ]
+  },
+  "lifestyle_terms": {
+    "increasing_keywords": [],
+    "stable_keywords": [
+      "fitness"
+    ],
+    "full_analysis": [
+      {
+        "keyword": "fitness",
+        "trend": "stable",
+        "early_avg": 77.94,
+        "recent_avg": 82.0,
+        "change_ratio": 1.05
+      },
+      {
+        "keyword": "active lifestyle",
+        "trend": "no_early_data"
+      }
+    ]
+  },
+  "style_terms": {
+    "increasing_keywords": [],
+    "stable_keywords": [
+      "fashion",
+      "sporty"
+    ],
+    "full_analysis": [
+      {
+        "keyword": "fashion",
+        "trend": "stable",
+        "early_avg": 87.23,
+        "recent_avg": 83.13,
+        "change_ratio": 0.95
+      },
+      {
+        "keyword": "sporty",
+        "trend": "stable",
+        "early_avg": 8.35,
+        "recent_avg": 7.81,
+        "change_ratio": 0.93
+      }
+    ]
+  }
+}

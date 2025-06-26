@@ -23,7 +23,7 @@ def fetch_trending_hashtags(period, countryCode):
 
 hashtags = fetch_trending_hashtags("7", "WORLD")
 
-with open("trending_hashtags.json", "w", encoding="utf-8") as handle:
+with open("data/trending_hashtags.json", "w", encoding="utf-8") as handle:
     # ensure_ascii=False allows non-ASCII characters (e.g. emojis, ü, 漢字) to appear normally instead of being escaped
     json.dump(hashtags, handle, indent=2, ensure_ascii=False)
 
