@@ -47,7 +47,7 @@ def fetch_top_hashtags_per_kw(keywords_list):
 
         params = {
             "query": keyword,
-            "max_results": 1,
+            "max_results": 10,
             "tweet.fields": "entities"
         }
 
