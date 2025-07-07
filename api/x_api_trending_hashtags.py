@@ -45,7 +45,7 @@ def collect_trending_keywords(data):
     return keywords_list
 
 
-def fetch_top_hashtags_per_kw(keywords_list: list[str] -> dict):
+def fetch_top_hashtags_per_kw(keywords_list: list[str]) -> dict:
     """
     For each keyword, send a request to the Twitter API, extract hashtags from recent tweets, count their frequency, and return the top 5 hashtags per keyword.
 
@@ -85,6 +85,14 @@ def fetch_top_hashtags_per_kw(keywords_list: list[str] -> dict):
         headers = {"Authorization": f"Bearer {bearer_token}"}
 
         response = requests.get(url, headers=headers, params=params)
+
+        # Check for response status and potential error
+        if response.status_code != 200:
+            print(f"Error: {response.status_code} - {response.text}")
+            keyword_to_hashtags[keyword] = []
+            # Move to next keyword
+            continue
+
         data = response.json()
 
         # Save X data to JSON
