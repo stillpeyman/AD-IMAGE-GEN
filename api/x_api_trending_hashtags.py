@@ -133,10 +133,10 @@ def main():
     data = load_trending_keywords(trend_kw_file)
     keywords = collect_trending_keywords(data)
 
-    # for now using 1 kw in order to preserve limited API requests on Xs Free tier
-    test_keyword = [keywords[0]]
+    # for now creating list with 1 kw only to preserve limited API requests (free tier)
+    test_keywords = [keywords[0]]
 
-    kw_to_hashtags = fetch_top_hashtags_per_kw(test_keyword)
+    kw_to_hashtags = fetch_top_hashtags_per_kw(test_keywords)
 
     # Save final keyword-hashtag mapping
     with open("data/keyword_to_hashtags.json", "w", encoding="utf-8") as handle:

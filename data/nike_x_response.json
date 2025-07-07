@@ -1,0 +1,520 @@
+{
+  "data": [
+    {
+      "text": "RT @amilcarrock: Mientras el hijo de Maduro tiene Nike de 1500$.\n\nEstás son las botas de los militares que marcharon ayer 5 de julio.\n\nNo t…",
+      "entities": {
+        "annotations": [
+          {
+            "start": 37,
+            "end": 42,
+            "probability": 0.9721,
+            "type": "Person",
+            "normalized_text": "Maduro"
+          },
+          {
+            "start": 50,
+            "end": 53,
+            "probability": 0.9671,
+            "type": "Organization",
+            "normalized_text": "Nike"
+          }
+        ],
+        "mentions": [
+          {
+            "start": 3,
+            "end": 15,
+            "username": "amilcarrock",
+            "id": "247065905"
+          }
+        ]
+      },
+      "id": "1942303592775315461",
+      "edit_history_tweet_ids": [
+        "1942303592775315461"
+      ]
+    },
+    {
+      "text": "RT @RaulOrvananos: 🚨 OFICIAL: Nike ha anunciado el regreso de la línea de Total 90. \n\nY para anunciar el regreso Ronaldinho fue el elegido…",
+      "entities": {
+        "annotations": [
+          {
+            "start": 30,
+            "end": 33,
+            "probability": 0.9825,
+            "type": "Organization",
+            "normalized_text": "Nike"
+          },
+          {
+            "start": 113,
+            "end": 122,
+            "probability": 0.9438,
+            "type": "Person",
+            "normalized_text": "Ronaldinho"
+          }
+        ],
+        "mentions": [
+          {
+            "start": 3,
+            "end": 17,
+            "username": "RaulOrvananos",
+            "id": "142459534"
+          }
+        ]
+      },
+      "id": "1942303584969973784",
+      "edit_history_tweet_ids": [
+        "1942303584969973784"
+      ]
+    },
+    {
+      "entities": {
+        "urls": [
+          {
+            "start": 26,
+            "end": 49,
+            "url": "https://t.co/uTvHndpMcg",
+            "expanded_url": "https://search.app/?link=https://essentialhomme.fr/nike-air-foamposite-pro-triple-black-retour-2026/&utm_source=dsdf,sh/x/discover/m1/4",
+            "display_url": "search.app/?link=https://…",
+            "status": 200,
+            "title": "search.app",
+            "description": "You’re here because you typed or clicked a link to “search.app,” the Google app’s URL shortcut. Search.app is a Google domain. When you click on a search.app shortlink, you’ll be directed to open it in the Google",
+            "unwound_url": "https://search.app/?link=https://essentialhomme.fr/nike-air-foamposite-pro-triple-black-retour-2026/&utm_source=dsdf,sh/x/discover/m1/4"
+          }
+        ]
+      },
+      "text": "Source : Essential Homme\n https://t.co/uTvHndpMcg",
+      "id": "1942303573716381954",
+      "edit_history_tweet_ids": [
+        "1942303573716381954"
+      ]
+    },
+    {
+      "entities": {
+        "urls": [
+          {
+            "start": 107,
+            "end": 130,
+            "url": "https://t.co/CorloqrxXA",
+            "expanded_url": "http://sovrn.co/1gkan2b",
+            "display_url": "sovrn.co/1gkan2b",
+            "images": [
+              {
+                "url": "https://pbs.twimg.com/news_img/1942303503868911616/1BqEnvtx?format=jpg&name=orig",
+                "width": 700,
+                "height": 560
+              },
+              {
+                "url": "https://pbs.twimg.com/news_img/1942303503868911616/1BqEnvtx?format=jpg&name=150x150",
+                "width": 150,
+                "height": 150
+              }
+            ],
+            "status": 200,
+            "title": "Nike Women's Nike Zoom Vomero 5 IB4368 480 - Shiekh",
+            "description": "Carve a new lane for yourself in the Zoom Vomero 5—your go-to for complexity, depth and easy styling. The richly layered design includes textiles, leather and plastic accents that come together to make one of the coolest sneakers of the season.Real and synthetic leather on upper adds durability.Mesh panels and ventilation ports on heel keep it light and breathable.Snappy and responsive, Zoom Air cushioning helps provide a quick-off-the-ground sensation.Plastic caging on side adds support.Rubber outsole gives you durable traction.More Details Reflective details Not intended for use as Personal Protective Equipment (PPE)",
+            "unwound_url": "https://www.shiekh.com/nike-women-s-nike-zoom-vomero-5-game-royal-pale-ivory-coconut-milk-ib4368-480.html"
+          }
+        ],
+        "annotations": [
+          {
+            "start": 50,
+            "end": 53,
+            "probability": 0.4796,
+            "type": "Organization",
+            "normalized_text": "Nike"
+          },
+          {
+            "start": 55,
+            "end": 58,
+            "probability": 0.578,
+            "type": "Other",
+            "normalized_text": "Zoom"
+          }
+        ],
+        "mentions": [
+          {
+            "start": 3,
+            "end": 14,
+            "username": "snkr_twitr",
+            "id": "574186881"
+          }
+        ]
+      },
+      "text": "RT @snkr_twitr: AD: STEAL at $63.99 in cart \nWMNS Nike Zoom Vomero 5 'Game Royal/Coconut Milk'\n\nShop -&gt; https://t.co/CorloqrxXA\n\nTry in-sto…",
+      "id": "1942303566309515734",
+      "edit_history_tweet_ids": [
+        "1942303566309515734"
+      ]
+    },
+    {
+      "entities": {
+        "urls": [
+          {
+            "start": 65,
+            "end": 88,
+            "url": "https://t.co/MnwnohGyWS",
+            "expanded_url": "https://mavely.app.link/e/ZV9Boo1lOUb",
+            "display_url": "mavely.app.link/e/ZV9Boo1lOUb",
+            "status": 200,
+            "title": "Kohl's",
+            "description": "Kohl’s is a leading retailer with a commitment to inspiring & empowering families to lead fulfilled lives.",
+            "unwound_url": "https://mavely.app.link/e/ZV9Boo1lOUb"
+          },
+          {
+            "start": 89,
+            "end": 112,
+            "url": "https://t.co/UMjR1SgPvt",
+            "expanded_url": "https://x.com/sneakerhuddle/status/1942234234585780301/photo/1",
+            "display_url": "pic.x.com/UMjR1SgPvt",
+            "media_key": "3_1942234169578336256"
+          },
+          {
+            "start": 89,
+            "end": 112,
+            "url": "https://t.co/UMjR1SgPvt",
+            "expanded_url": "https://x.com/sneakerhuddle/status/1942234234585780301/photo/1",
+            "display_url": "pic.x.com/UMjR1SgPvt",
+            "media_key": "3_1942234223156379648"
+          }
+        ],
+        "annotations": [
+          {
+            "start": 31,
+            "end": 38,
+            "probability": 0.5115,
+            "type": "Other",
+            "normalized_text": "Nike Dri"
+          }
+        ],
+        "mentions": [
+          {
+            "start": 3,
+            "end": 17,
+            "username": "sneakerhuddle",
+            "id": "373165951"
+          }
+        ]
+      },
+      "text": "RT @sneakerhuddle: Ad: 50% off Nike Dri-FIT Form Hooded Jackets\n\nhttps://t.co/MnwnohGyWS https://t.co/UMjR1SgPvt",
+      "id": "1942303562517864564",
+      "edit_history_tweet_ids": [
+        "1942303562517864564"
+      ]
+    },
+    {
+      "text": "@T_Deeney is so right, I grew up with R9, forget Messi, forget Cristiano, Ronaldo is the best player I have ever seen, no one comes close imo!!!! Plus that Brazil Nike advert in the airport is the best advert to",
+      "entities": {
+        "annotations": [
+          {
+            "start": 49,
+            "end": 53,
+            "probability": 0.985,
+            "type": "Person",
+            "normalized_text": "Messi"
+          },
+          {
+            "start": 63,
+            "end": 71,
+            "probability": 0.9765,
+            "type": "Person",
+            "normalized_text": "Cristiano"
+          },
+          {
+            "start": 74,
+            "end": 80,
+            "probability": 0.9756,
+            "type": "Person",
+            "normalized_text": "Ronaldo"
+          },
+          {
+            "start": 156,
+            "end": 161,
+            "probability": 0.539,
+            "type": "Place",
+            "normalized_text": "Brazil"
+          },
+          {
+            "start": 163,
+            "end": 166,
+            "probability": 0.9711,
+            "type": "Organization",
+            "normalized_text": "Nike"
+          }
+        ],
+        "mentions": [
+          {
+            "start": 0,
+            "end": 9,
+            "username": "T_Deeney",
+            "id": "264240035"
+          }
+        ]
+      },
+      "id": "1942303557694189680",
+      "edit_history_tweet_ids": [
+        "1942303557694189680"
+      ]
+    },
+    {
+      "text": "@bcfc_toby @Bentson87 Although the Polo &amp; a Nike KRO T-shirt on the way told my self I’m not paying £45 for a polo but couldn’t resist in the end 😂😂",
+      "entities": {
+        "annotations": [
+          {
+            "start": 35,
+            "end": 38,
+            "probability": 0.569,
+            "type": "Organization",
+            "normalized_text": "Polo"
+          },
+          {
+            "start": 48,
+            "end": 51,
+            "probability": 0.9091,
+            "type": "Organization",
+            "normalized_text": "Nike"
+          }
+        ],
+        "mentions": [
+          {
+            "start": 0,
+            "end": 10,
+            "username": "bcfc_toby",
+            "id": "1502070846051037185"
+          },
+          {
+            "start": 11,
+            "end": 21,
+            "username": "Bentson87",
+            "id": "1029073357621395457"
+          }
+        ]
+      },
+      "id": "1942303556985323655",
+      "edit_history_tweet_ids": [
+        "1942303556985323655"
+      ]
+    },
+    {
+      "text": "@gregisenberg @samsheffer @tom_sachs @Nike oh shit me too!!!",
+      "entities": {
+        "mentions": [
+          {
+            "start": 0,
+            "end": 13,
+            "username": "gregisenberg",
+            "id": "14642331"
+          },
+          {
+            "start": 14,
+            "end": 25,
+            "username": "samsheffer",
+            "id": "25246881"
+          },
+          {
+            "start": 26,
+            "end": 36,
+            "username": "tom_sachs",
+            "id": "309387724"
+          },
+          {
+            "start": 37,
+            "end": 42,
+            "username": "Nike",
+            "id": "415859364"
+          }
+        ]
+      },
+      "id": "1942303540296167606",
+      "edit_history_tweet_ids": [
+        "1942303540296167606"
+      ]
+    },
+    {
+      "entities": {
+        "urls": [
+          {
+            "start": 267,
+            "end": 290,
+            "url": "https://t.co/7QoEIPPWKC",
+            "expanded_url": "https://twitter.com/kicksfinder/status/1942230919550541994",
+            "display_url": "x.com/kicksfinder/st…"
+          }
+        ],
+        "hashtags": [
+          {
+            "start": 154,
+            "end": 159,
+            "tag": "NIKE"
+          },
+          {
+            "start": 160,
+            "end": 175,
+            "tag": "AIRJORDAN1HIGH"
+          },
+          {
+            "start": 176,
+            "end": 191,
+            "tag": "SELFEXPRESSION"
+          },
+          {
+            "start": 192,
+            "end": 204,
+            "tag": "BLACKMUSLIN"
+          }
+        ],
+        "annotations": [
+          {
+            "start": 51,
+            "end": 62,
+            "probability": 0.737,
+            "type": "Other",
+            "normalized_text": "BLACK MUSLIN"
+          },
+          {
+            "start": 112,
+            "end": 123,
+            "probability": 0.5106,
+            "type": "Other",
+            "normalized_text": "BLACK MUSLIN"
+          },
+          {
+            "start": 137,
+            "end": 141,
+            "probability": 0.5159,
+            "type": "Other",
+            "normalized_text": "BLACK"
+          },
+          {
+            "start": 145,
+            "end": 150,
+            "probability": 0.5416,
+            "type": "Other",
+            "normalized_text": "MUSLIN"
+          },
+          {
+            "start": 161,
+            "end": 174,
+            "probability": 0.7625,
+            "type": "Other",
+            "normalized_text": "AIRJORDAN1HIGH"
+          }
+        ],
+        "mentions": [
+          {
+            "start": 206,
+            "end": 211,
+            "username": "Nike",
+            "id": "415859364"
+          },
+          {
+            "start": 212,
+            "end": 219,
+            "username": "nikesb",
+            "id": "407904917"
+          },
+          {
+            "start": 220,
+            "end": 228,
+            "username": "NikeNYC",
+            "id": "444913649"
+          },
+          {
+            "start": 229,
+            "end": 239,
+            "username": "nikejapan",
+            "id": "449621681"
+          },
+          {
+            "start": 240,
+            "end": 250,
+            "username": "nikestore",
+            "id": "17351972"
+          },
+          {
+            "start": 251,
+            "end": 266,
+            "username": "nikebasketball",
+            "id": "5885732"
+          }
+        ]
+      },
+      "text": "NIKE AIR JORDAN 1 HIGH RETRO OG (SELF EXPRESSION) \"BLACK MUSLIN\"\n\nAIR JORDAN 1 HIGH RETRO OG (SELF EXPRESSION) \"BLACK MUSLIN\"\n\nCOLORWAY\n\"BLACK / MUSLIN\"\n\n#NIKE\n#AIRJORDAN1HIGH\n#SELFEXPRESSION\n#BLACKMUSLIN\n\n@Nike\n@nikesb\n@NikeNYC\n@nikejapan\n@nikestore\n@nikebasketball https://t.co/7QoEIPPWKC",
+      "id": "1942303529420689472",
+      "edit_history_tweet_ids": [
+        "1942303529420689472"
+      ]
+    },
+    {
+      "entities": {
+        "urls": [
+          {
+            "start": 56,
+            "end": 79,
+            "url": "https://t.co/q87fpTZkEo",
+            "expanded_url": "https://x.com/nicekicks/status/1942196513041715543/photo/1",
+            "display_url": "pic.x.com/q87fpTZkEo",
+            "media_key": "3_1942196346339176448"
+          },
+          {
+            "start": 56,
+            "end": 79,
+            "url": "https://t.co/q87fpTZkEo",
+            "expanded_url": "https://x.com/nicekicks/status/1942196513041715543/photo/1",
+            "display_url": "pic.x.com/q87fpTZkEo",
+            "media_key": "3_1942196369596506112"
+          },
+          {
+            "start": 56,
+            "end": 79,
+            "url": "https://t.co/q87fpTZkEo",
+            "expanded_url": "https://x.com/nicekicks/status/1942196513041715543/photo/1",
+            "display_url": "pic.x.com/q87fpTZkEo",
+            "media_key": "3_1942196381373898752"
+          }
+        ],
+        "annotations": [
+          {
+            "start": 34,
+            "end": 37,
+            "probability": 0.8509,
+            "type": "Organization",
+            "normalized_text": "Nike"
+          },
+          {
+            "start": 46,
+            "end": 48,
+            "probability": 0.4821,
+            "type": "Other",
+            "normalized_text": "All"
+          },
+          {
+            "start": 50,
+            "end": 53,
+            "probability": 0.466,
+            "type": "Other",
+            "normalized_text": "Star"
+          }
+        ],
+        "mentions": [
+          {
+            "start": 3,
+            "end": 13,
+            "username": "nicekicks",
+            "id": "15097566"
+          }
+        ]
+      },
+      "text": "RT @nicekicks: OFFICIAL IMAGES 👀\n\nNike A'One \"All-Star\" https://t.co/q87fpTZkEo",
+      "id": "1942303516858499456",
+      "edit_history_tweet_ids": [
+        "1942303516858499456"
+      ]
+    }
+  ],
+  "meta": {
+    "newest_id": "1942303592775315461",
+    "oldest_id": "1942303516858499456",
+    "result_count": 10,
+    "next_token": "b26v89c19zqg8o3fsc86hu0ata7gfcjzr1e2lx6qqc1vh"
+  }
+}
