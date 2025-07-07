@@ -225,25 +225,32 @@ def main():
             else:
                 print(f"{keyword}: {trend}")
         
+        # Create trending_keywords dict, each category is a key
         trending_keywords[category] = {
             "increasing_keywords": increasing_keywords,
             "stable_keywords": stable_keywords,
             "full_analysis": category_analysis
         }
 
-    # Summary
+    # Summary to print in terminal
     print("\n" + "=" * 50)
     print("TRENDING KEYWORDS SUMMARY")
     print("=" * 50)
 
     for category, data in trending_keywords.items():
         increasing = data["increasing_keywords"]
+        stable = data["stable_keywords"]
+
         if increasing:
             print(f"{category}: {", ".join(increasing)}")
+        
+        elif stable:
+            print(f"{category}: {", ".join(stable)}")
+
         else:
-            print(f"{category}: No increasing keywords found.")
+            print(f"{category}: No increasing or stable keywords found.")
     
-    # Save trending keywords to JSON
+    # Save trending_keywords to JSON 
     with open("data/trending_keywords.json", "w", encoding="utf-8") as handle:
         json.dump(trending_keywords, handle, indent=2)
     print("\nFiltered trending keywords saved to data/trending_keywords.json")

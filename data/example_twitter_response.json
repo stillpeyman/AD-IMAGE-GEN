@@ -1,0 +1,37 @@
+{
+  "data": [
+    {
+      "id": "1",
+      "text": "Crushing it today! 💪 #fitness #workout #healthyliving",
+      "entities": {
+        "hashtags": [
+          { "tag": "fitness" },
+          { "tag": "workout" },
+          { "tag": "healthyliving" }
+        ]
+      }
+    },
+    {
+      "id": "2",
+      "text": "Back to the grind. #gym #fitspo #motivation",
+      "entities": {
+        "hashtags": [
+          { "tag": "gym" },
+          { "tag": "fitspo" },
+          { "tag": "motivation" }
+        ]
+      }
+    },
+    {
+      "id": "3",
+      "text": "Morning run complete 🏃‍♂️ #fitness #cardio #health",
+      "entities": {
+        "hashtags": [
+          { "tag": "fitness" },
+          { "tag": "cardio" },
+          { "tag": "health" }
+        ]
+      }
+    }
+  ]
+}
