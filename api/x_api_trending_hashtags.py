@@ -15,10 +15,10 @@ def load_trending_keywords(file_path):
     Load and parse the trending keywords JSON file.
     
     Args:
-        file_path(str): Path to the keyword categorization JSON file
+        file_path(str): Path to the trending keyword JSON file.
     
     Returns:
-        dict: Parsed JSON data with cetegorized keywords
+        dict: Parsed JSON data containing categorized trending keywords.
     """
     with open(file_path, "r", encoding="utf-8") as handle:
         data = json.load(handle)
@@ -27,7 +27,13 @@ def load_trending_keywords(file_path):
 
 def collect_trending_keywords(data):
     """
-    Collect all stable and increasing keywords into one list.
+    Collect all stable and increasing keywords from the parsed data into a single list.
+
+    Args:
+        data (dict): Dictionary of categorized keywords loaded from JSON.
+
+    Returns:
+        list[str]: Flattened list of all stable and increasing keywords.
     """
     keywords_list = []
 
@@ -39,7 +45,32 @@ def collect_trending_keywords(data):
     return keywords_list
 
 
-def fetch_top_hashtags_per_kw(keywords_list):
+def fetch_top_hashtags_per_kw(keywords_list: list[str] -> dict):
+    """
+    For each keyword, send a request to the Twitter API, extract hashtags from recent tweets, count their frequency, and return the top 5 hashtags per keyword.
+
+    If a response is received, it is also saved locally as a JSON file for offline reuse.
+
+    Args:
+        keywords_list (list[str]): List of keywords to query on Twitter.
+            If a single string is passed, it will be auto-wrapped into a list.
+
+    Returns:
+        dict: Mapping of each keyword to a list of its top 5 hashtags (e.g., {"Nike": ["#nike", "#justdoit", ...]}).
+
+    Raises:
+        ValueError: If any item in the list is not a string.
+    """
+    # Auto-wrap string in a list
+    # And prevent looping through a string when sedning API requests (limited)
+    if isinstance(keywords_list, str):
+        print("You passed a string instead of a list! Converting to list...")
+        keywords_list = [keywords_list]
+
+    # Extra check: list must contain strings
+    if not all(isinstance(keyword, str) for keyword in keywords_list):
+        raise ValueError("All items in keywords_list must be strings.")
+
     keyword_to_hashtags = {}
 
     for keyword in keywords_list:
@@ -83,7 +114,13 @@ def fetch_top_hashtags_per_kw(keywords_list):
 
 
 def main():
-    # File path to keywords_categorization.json
+    """
+    Main execution pipeline:
+    - Loads trending keywords from file
+    - Collects stable and increasing keywords
+    - Fetches or saves top hashtags for each keyword
+    - Writes the keyword-to-hashtag mapping to JSON
+    """
     trend_kw_file = os.path.join(os.path.dirname(__file__), "..", "data", "trending_keywords.json")
     data = load_trending_keywords(trend_kw_file)
     keywords = collect_trending_keywords(data)
