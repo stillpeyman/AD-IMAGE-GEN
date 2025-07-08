@@ -1,0 +1,715 @@
+{
+  "data": [
+    {
+      "entities": {
+        "urls": [
+          {
+            "start": 222,
+            "end": 245,
+            "url": "https://t.co/YuafZDupXw",
+            "expanded_url": "https://x.com/SOLELINKS/status/1942536709331378194/photo/1",
+            "display_url": "pic.x.com/YuafZDupXw"
+          },
+          {
+            "start": 91,
+            "end": 114,
+            "url": "https://t.co/Z2l6wHu8Ko",
+            "expanded_url": "http://bit.ly/3TvEEvE",
+            "display_url": "bit.ly/3TvEEvE",
+            "images": [
+              {
+                "url": "https://pbs.twimg.com/news_img/1942536550816026624/HMmwAdql?format=jpg&name=orig",
+                "width": 387,
+                "height": 580
+              },
+              {
+                "url": "https://pbs.twimg.com/news_img/1942536550816026624/HMmwAdql?format=jpg&name=150x150",
+                "width": 150,
+                "height": 150
+              }
+            ],
+            "status": 200,
+            "title": "Nike Pegasus Premium Sneaker in Barely Green, Bright Crimson, Mint Foam, & Metallic Silver | FWRD",
+            "description": "Shop for Nike Pegasus Premium Sneaker in Barely Green, Bright Crimson, Mint Foam, & Metallic Silver at FWRD. Free 2 day shipping and returns.",
+            "unwound_url": "https://www.fwrd.com/product-nike-pegasus-premium-sneaker-in-barely-green-bright-crimson-mint-foam-metallic-silver/NIKR-MZ1129/?cjdata=MXxOfDB8WXww&d=Mens&AID=12150991&PID=100314412&utm_medium=affiliate&utm_source=cj&source=cj&utm_campaign=glob_p_4676362&cjevent=220aa3ad5be911f083db00e60a82b82d"
+          },
+          {
+            "start": 170,
+            "end": 193,
+            "url": "https://t.co/hWqREImw5h",
+            "expanded_url": "http://bit.ly/44HlTeY",
+            "display_url": "bit.ly/44HlTeY",
+            "images": [
+              {
+                "url": "https://pbs.twimg.com/news_img/1938724318944301056/jJ2SWOXQ?format=jpg&name=orig",
+                "width": 2835,
+                "height": 1593
+              },
+              {
+                "url": "https://pbs.twimg.com/news_img/1938724318944301056/jJ2SWOXQ?format=jpg&name=150x150",
+                "width": 150,
+                "height": 150
+              }
+            ],
+            "status": 200,
+            "title": "Grinmore - Sneakers, Fashion, & Lifestyle",
+            "description": "GRINMORE is an Oklahoma based boutique offering the most sought after fashion, sneakers, and streetwear.",
+            "unwound_url": "https://www.grinmorestore.com/?ref=solelinks"
+          },
+          {
+            "start": 137,
+            "end": 160,
+            "url": "https://t.co/OINpgv0qYz",
+            "expanded_url": "http://bit.ly/40DUw31",
+            "display_url": "bit.ly/40DUw31",
+            "images": [
+              {
+                "url": "https://pbs.twimg.com/news_img/1940778119625146368/edPuyhhF?format=png&name=orig",
+                "width": 320,
+                "height": 400
+              },
+              {
+                "url": "https://pbs.twimg.com/news_img/1940778119625146368/edPuyhhF?format=png&name=150x150",
+                "width": 150,
+                "height": 150
+              }
+            ],
+            "status": 200,
+            "title": "Nike Pegasus Premium Men's Road Running Shoes",
+            "description": "Find the Nike Pegasus Premium Men's Road Running Shoes at Nike.com. Free delivery and returns.",
+            "unwound_url": "https://www.nike.com/t/pegasus-premium-mens-road-running-shoes-BzBKsdA5/HQ2592-301?_android_redirect=https%3A%2F%2Fwww.nike.com%2Ft%2Fpegasus-premium-mens-road-running-shoes-BzBKsdA5%2FHQ2592-301&_fallback_redirect=https%3A%2F%2Fwww.nike.com%2Ft%2Fpegasus-premium-mens-road-running-shoes-BzBKsdA5%2FHQ2592-301&_ios_redirect=https%3A%2F%2Fwww.nike.com%2Ft%2Fpegasus-premium-mens-road-running-shoes-BzBKsdA5%2FHQ2592-301&cid=4942550&cjevent=0df22c75581911f08080009a0a82b838&cl=0df22c75581911f08080009a0a82b838&cp=usns_aff_nike_content_PID_100314412_SOLELINKS+MARKETING+INC&pcn=cj_mobile_inactivity-0d&pcrid=17049705&pcrn=CJ&psid=100314412&psn=SOLELINKS+MARKETING+INC&referrer=singular_click_id%3D185db050-3d2c-46e9-9449-ae74e5ec6941&sl_id=jjo0"
+          },
+          {
+            "start": 198,
+            "end": 221,
+            "url": "https://t.co/nK50ms10Eb",
+            "expanded_url": "http://bit.ly/40zA3fG",
+            "display_url": "bit.ly/40zA3fG",
+            "images": [
+              {
+                "url": "https://pbs.twimg.com/news_img/1940778080400035844/qLCoCUpI?format=jpg&name=orig",
+                "width": 200,
+                "height": 96
+              },
+              {
+                "url": "https://pbs.twimg.com/news_img/1940778080400035844/qLCoCUpI?format=jpg&name=150x150",
+                "width": 96,
+                "height": 96
+              }
+            ],
+            "status": 200,
+            "title": "Nike Men's Pegasus Premium Running Shoes",
+            "description": "Shop a wide selection of Nike Men's Pegasus Premium Running Shoes at DICK’S Sporting Goods and order online for the finest quality products from the top brands you trust.",
+            "unwound_url": "https://www.dickssportinggoods.com/p/nike-mens-pegasus-premium-running-shoes-24nikmpgssprmmblkrnn/24nikmpgssprmmblkrnn?cjdata=MXxOfDB8WXww&color=Barely%20Green%2FCrimson%20Mint&camp=AFF:mediapartner:TEXT_link::4676362:SOLELINKS+MARKETING+INC&cjevent=f253a820581811f082b100860a82b824"
+          },
+          {
+            "start": 62,
+            "end": 85,
+            "url": "https://t.co/hzfDGnGdFF",
+            "expanded_url": "http://bit.ly/4lE6NMX",
+            "display_url": "bit.ly/4lE6NMX",
+            "images": [
+              {
+                "url": "https://pbs.twimg.com/news_img/1942536546328133632/Afia4gYA?format=jpg&name=orig",
+                "width": 505,
+                "height": 864
+              },
+              {
+                "url": "https://pbs.twimg.com/news_img/1942536546328133632/Afia4gYA?format=jpg&name=150x150",
+                "width": 150,
+                "height": 150
+              }
+            ],
+            "status": 200,
+            "title": "Pegasus Premium Sneaker in Barely Green, Bright Crimson, Mint Foam, & Metallic Silver",
+            "description": "Shop for Nike Pegasus Premium Sneaker in Barely Green, Bright Crimson, Mint Foam, & Metallic Silver at REVOLVE. Free 2-3 day shipping and returns, 30 day price match guarantee.",
+            "unwound_url": "https://www.revolve.com/nike-pegasus-premium-sneaker-in-barely-green-bright-crimson-mint-foam-metallic-silver/dp/NIKR-MZ1129/?cjdata=MXxOfDB8WXww&d=Womens&AID=12527506&PID=100314412&utm_medium=affiliate&utm_source=cj&source=cj&utm_campaign=glob_p_4676362&cjevent=32099e5f5be911f083e100d40a82b824"
+          },
+          {
+            "start": 222,
+            "end": 245,
+            "url": "https://t.co/YuafZDupXw",
+            "expanded_url": "https://x.com/SOLELINKS/status/1942536709331378194/photo/1",
+            "display_url": "pic.x.com/YuafZDupXw",
+            "media_key": "3_1942536479735267328"
+          }
+        ],
+        "annotations": [
+          {
+            "start": 4,
+            "end": 7,
+            "probability": 0.4394,
+            "type": "Organization",
+            "normalized_text": "Nike"
+          },
+          {
+            "start": 9,
+            "end": 23,
+            "probability": 0.6151,
+            "type": "Other",
+            "normalized_text": "Pegasus Premium"
+          },
+          {
+            "start": 132,
+            "end": 135,
+            "probability": 0.8324,
+            "type": "Organization",
+            "normalized_text": "Nike"
+          },
+          {
+            "start": 161,
+            "end": 168,
+            "probability": 0.4365,
+            "type": "Other",
+            "normalized_text": "Grinmore"
+          }
+        ]
+      },
+      "edit_history_tweet_ids": [
+        "1942536543236940124",
+        "1942536709331378194"
+      ],
+      "id": "1942536709331378194",
+      "text": "Ad: Nike Pegasus Premium 'Barely Green' dropped here\n\nRevolve:https://t.co/hzfDGnGdFF\nFWRD:https://t.co/Z2l6wHu8Ko\n\nLast sizes here\nNike:https://t.co/OINpgv0qYz\nGrinmore:https://t.co/hWqREImw5h\nDSG:https://t.co/nK50ms10Eb https://t.co/YuafZDupXw"
+    },
+    {
+      "entities": {
+        "urls": [
+          {
+            "start": 77,
+            "end": 100,
+            "url": "https://t.co/hzfDGnGdFF",
+            "expanded_url": "http://bit.ly/4lE6NMX",
+            "display_url": "bit.ly/4lE6NMX",
+            "images": [
+              {
+                "url": "https://pbs.twimg.com/news_img/1942536546328133632/Afia4gYA?format=jpg&name=orig",
+                "width": 505,
+                "height": 864
+              },
+              {
+                "url": "https://pbs.twimg.com/news_img/1942536546328133632/Afia4gYA?format=jpg&name=150x150",
+                "width": 150,
+                "height": 150
+              }
+            ],
+            "status": 200,
+            "title": "Pegasus Premium Sneaker in Barely Green, Bright Crimson, Mint Foam, & Metallic Silver",
+            "description": "Shop for Nike Pegasus Premium Sneaker in Barely Green, Bright Crimson, Mint Foam, & Metallic Silver at REVOLVE. Free 2-3 day shipping and returns, 30 day price match guarantee.",
+            "unwound_url": "https://www.revolve.com/nike-pegasus-premium-sneaker-in-barely-green-bright-crimson-mint-foam-metallic-silver/dp/NIKR-MZ1129/?cjdata=MXxOfDB8WXww&d=Womens&AID=12527506&PID=100314412&utm_medium=affiliate&utm_source=cj&source=cj&utm_campaign=glob_p_4676362&cjevent=32099e5f5be911f083e100d40a82b824"
+          },
+          {
+            "start": 106,
+            "end": 129,
+            "url": "https://t.co/Z2l6wHu8Ko",
+            "expanded_url": "http://bit.ly/3TvEEvE",
+            "display_url": "bit.ly/3TvEEvE",
+            "images": [
+              {
+                "url": "https://pbs.twimg.com/news_img/1942536550816026624/HMmwAdql?format=jpg&name=orig",
+                "width": 387,
+                "height": 580
+              },
+              {
+                "url": "https://pbs.twimg.com/news_img/1942536550816026624/HMmwAdql?format=jpg&name=150x150",
+                "width": 150,
+                "height": 150
+              }
+            ],
+            "status": 200,
+            "title": "Nike Pegasus Premium Sneaker in Barely Green, Bright Crimson, Mint Foam, & Metallic Silver | FWRD",
+            "description": "Shop for Nike Pegasus Premium Sneaker in Barely Green, Bright Crimson, Mint Foam, & Metallic Silver at FWRD. Free 2 day shipping and returns.",
+            "unwound_url": "https://www.fwrd.com/product-nike-pegasus-premium-sneaker-in-barely-green-bright-crimson-mint-foam-metallic-silver/NIKR-MZ1129/?cjdata=MXxOfDB8WXww&d=Mens&AID=12150991&PID=100314412&utm_medium=affiliate&utm_source=cj&source=cj&utm_campaign=glob_p_4676362&cjevent=220aa3ad5be911f083db00e60a82b82d"
+          }
+        ],
+        "annotations": [
+          {
+            "start": 19,
+            "end": 22,
+            "probability": 0.4445,
+            "type": "Organization",
+            "normalized_text": "Nike"
+          },
+          {
+            "start": 24,
+            "end": 38,
+            "probability": 0.6226,
+            "type": "Other",
+            "normalized_text": "Pegasus Premium"
+          },
+          {
+            "start": 41,
+            "end": 52,
+            "probability": 0.5272,
+            "type": "Other",
+            "normalized_text": "Barely Green"
+          }
+        ],
+        "mentions": [
+          {
+            "start": 3,
+            "end": 13,
+            "username": "SOLELINKS",
+            "id": "2698270332"
+          }
+        ]
+      },
+      "edit_history_tweet_ids": [
+        "1942536578821415184"
+      ],
+      "id": "1942536578821415184",
+      "text": "RT @SOLELINKS: Ad: Nike Pegasus Premium 'Barely Green' dropped here\n\nRevolve:https://t.co/hzfDGnGdFF\nFWRD:https://t.co/Z2l6wHu8Ko\n\nLast siz…"
+    },
+    {
+      "entities": {
+        "urls": [
+          {
+            "start": 165,
+            "end": 188,
+            "url": "https://t.co/nK50ms10Eb",
+            "expanded_url": "http://bit.ly/40zA3fG",
+            "display_url": "bit.ly/40zA3fG",
+            "images": [
+              {
+                "url": "https://pbs.twimg.com/news_img/1940778080400035844/qLCoCUpI?format=jpg&name=orig",
+                "width": 200,
+                "height": 96
+              },
+              {
+                "url": "https://pbs.twimg.com/news_img/1940778080400035844/qLCoCUpI?format=jpg&name=150x150",
+                "width": 96,
+                "height": 96
+              }
+            ],
+            "status": 200,
+            "title": "Nike Men's Pegasus Premium Running Shoes",
+            "description": "Shop a wide selection of Nike Men's Pegasus Premium Running Shoes at DICK’S Sporting Goods and order online for the finest quality products from the top brands you trust.",
+            "unwound_url": "https://www.dickssportinggoods.com/p/nike-mens-pegasus-premium-running-shoes-24nikmpgssprmmblkrnn/24nikmpgssprmmblkrnn?cjdata=MXxOfDB8WXww&color=Barely%20Green%2FCrimson%20Mint&camp=AFF:mediapartner:TEXT_link::4676362:SOLELINKS+MARKETING+INC&cjevent=f253a820581811f082b100860a82b824"
+          },
+          {
+            "start": 91,
+            "end": 114,
+            "url": "https://t.co/Z2l6wHu8Ko",
+            "expanded_url": "http://bit.ly/3TvEEvE",
+            "display_url": "bit.ly/3TvEEvE",
+            "images": [
+              {
+                "url": "https://pbs.twimg.com/news_img/1942536550816026624/HMmwAdql?format=jpg&name=orig",
+                "width": 387,
+                "height": 580
+              },
+              {
+                "url": "https://pbs.twimg.com/news_img/1942536550816026624/HMmwAdql?format=jpg&name=150x150",
+                "width": 150,
+                "height": 150
+              }
+            ],
+            "status": 200,
+            "title": "Nike Pegasus Premium Sneaker in Barely Green, Bright Crimson, Mint Foam, & Metallic Silver | FWRD",
+            "description": "Shop for Nike Pegasus Premium Sneaker in Barely Green, Bright Crimson, Mint Foam, & Metallic Silver at FWRD. Free 2 day shipping and returns.",
+            "unwound_url": "https://www.fwrd.com/product-nike-pegasus-premium-sneaker-in-barely-green-bright-crimson-mint-foam-metallic-silver/NIKR-MZ1129/?cjdata=MXxOfDB8WXww&d=Mens&AID=12150991&PID=100314412&utm_medium=affiliate&utm_source=cj&source=cj&utm_campaign=glob_p_4676362&cjevent=220aa3ad5be911f083db00e60a82b82d"
+          },
+          {
+            "start": 137,
+            "end": 160,
+            "url": "https://t.co/OINpgv0qYz",
+            "expanded_url": "http://bit.ly/40DUw31",
+            "display_url": "bit.ly/40DUw31",
+            "images": [
+              {
+                "url": "https://pbs.twimg.com/news_img/1940778119625146368/edPuyhhF?format=png&name=orig",
+                "width": 320,
+                "height": 400
+              },
+              {
+                "url": "https://pbs.twimg.com/news_img/1940778119625146368/edPuyhhF?format=png&name=150x150",
+                "width": 150,
+                "height": 150
+              }
+            ],
+            "status": 200,
+            "title": "Nike Pegasus Premium Men's Road Running Shoes",
+            "description": "Find the Nike Pegasus Premium Men's Road Running Shoes at Nike.com. Free delivery and returns.",
+            "unwound_url": "https://www.nike.com/t/pegasus-premium-mens-road-running-shoes-BzBKsdA5/HQ2592-301?_android_redirect=https%3A%2F%2Fwww.nike.com%2Ft%2Fpegasus-premium-mens-road-running-shoes-BzBKsdA5%2FHQ2592-301&_fallback_redirect=https%3A%2F%2Fwww.nike.com%2Ft%2Fpegasus-premium-mens-road-running-shoes-BzBKsdA5%2FHQ2592-301&_ios_redirect=https%3A%2F%2Fwww.nike.com%2Ft%2Fpegasus-premium-mens-road-running-shoes-BzBKsdA5%2FHQ2592-301&cid=4942550&cjevent=0df22c75581911f08080009a0a82b838&cl=0df22c75581911f08080009a0a82b838&cp=usns_aff_nike_content_PID_100314412_SOLELINKS+MARKETING+INC&pcn=cj_mobile_inactivity-0d&pcrid=17049705&pcrn=CJ&psid=100314412&psn=SOLELINKS+MARKETING+INC&referrer=singular_click_id%3D185db050-3d2c-46e9-9449-ae74e5ec6941&sl_id=jjo0"
+          },
+          {
+            "start": 189,
+            "end": 212,
+            "url": "https://t.co/xca1NuD2aa",
+            "expanded_url": "https://x.com/SOLELINKS/status/1942536543236940124/photo/1",
+            "display_url": "pic.x.com/xca1NuD2aa"
+          },
+          {
+            "start": 62,
+            "end": 85,
+            "url": "https://t.co/hzfDGnGdFF",
+            "expanded_url": "http://bit.ly/4lE6NMX",
+            "display_url": "bit.ly/4lE6NMX",
+            "images": [
+              {
+                "url": "https://pbs.twimg.com/news_img/1942536546328133632/Afia4gYA?format=jpg&name=orig",
+                "width": 505,
+                "height": 864
+              },
+              {
+                "url": "https://pbs.twimg.com/news_img/1942536546328133632/Afia4gYA?format=jpg&name=150x150",
+                "width": 150,
+                "height": 150
+              }
+            ],
+            "status": 200,
+            "title": "Pegasus Premium Sneaker in Barely Green, Bright Crimson, Mint Foam, & Metallic Silver",
+            "description": "Shop for Nike Pegasus Premium Sneaker in Barely Green, Bright Crimson, Mint Foam, & Metallic Silver at REVOLVE. Free 2-3 day shipping and returns, 30 day price match guarantee.",
+            "unwound_url": "https://www.revolve.com/nike-pegasus-premium-sneaker-in-barely-green-bright-crimson-mint-foam-metallic-silver/dp/NIKR-MZ1129/?cjdata=MXxOfDB8WXww&d=Womens&AID=12527506&PID=100314412&utm_medium=affiliate&utm_source=cj&source=cj&utm_campaign=glob_p_4676362&cjevent=32099e5f5be911f083e100d40a82b824"
+          },
+          {
+            "start": 189,
+            "end": 212,
+            "url": "https://t.co/xca1NuD2aa",
+            "expanded_url": "https://x.com/SOLELINKS/status/1942536543236940124/photo/1",
+            "display_url": "pic.x.com/xca1NuD2aa",
+            "media_key": "3_1942536479735267328"
+          }
+        ]
+      },
+      "edit_history_tweet_ids": [
+        "1942536543236940124",
+        "1942536709331378194"
+      ],
+      "id": "1942536543236940124",
+      "text": "Ad: Nike Pegasus Premium 'Barely Green' dropped here\n\nRevolve:https://t.co/hzfDGnGdFF\nFWRD:https://t.co/Z2l6wHu8Ko\n\nLast sizes here\nNike:https://t.co/OINpgv0qYz\nDSG:https://t.co/nK50ms10Eb https://t.co/xca1NuD2aa"
+    },
+    {
+      "entities": {
+        "annotations": [
+          {
+            "start": 28,
+            "end": 31,
+            "probability": 0.5899,
+            "type": "Person",
+            "normalized_text": "Adam"
+          },
+          {
+            "start": 74,
+            "end": 85,
+            "probability": 0.8588,
+            "type": "Place",
+            "normalized_text": "Martin Grove"
+          },
+          {
+            "start": 96,
+            "end": 107,
+            "probability": 0.6209,
+            "type": "Person",
+            "normalized_text": "John Garland"
+          }
+        ],
+        "mentions": [
+          {
+            "start": 3,
+            "end": 17,
+            "username": "TPSOperations",
+            "id": "463933187"
+          },
+          {
+            "start": 119,
+            "end": 128,
+            "username": "TPS23Div",
+            "id": "3279872942"
+          }
+        ]
+      },
+      "edit_history_tweet_ids": [
+        "1942535583579963668"
+      ],
+      "id": "1942535583579963668",
+      "text": "RT @TPSOperations: MISSING:\nAdam, 31\n-last seen on July 2 at 5 pm, in the Martin Grove Rd &amp; John Garland Blvd area @TPS23DIV\n-5'9\", 225 lbs…"
+    },
+    {
+      "entities": {
+        "annotations": [
+          {
+            "start": 59,
+            "end": 65,
+            "probability": 0.4711,
+            "type": "Other",
+            "normalized_text": "ohmkrit"
+          },
+          {
+            "start": 68,
+            "end": 71,
+            "probability": 0.4491,
+            "type": "Other",
+            "normalized_text": "kkim"
+          },
+          {
+            "start": 123,
+            "end": 124,
+            "probability": 0.5467,
+            "type": "Other",
+            "normalized_text": "JJ"
+          },
+          {
+            "start": 136,
+            "end": 138,
+            "probability": 0.5624,
+            "type": "Other",
+            "normalized_text": "Liv"
+          }
+        ],
+        "hashtags": [
+          {
+            "start": 32,
+            "end": 48,
+            "tag": "SupersportsxDMD"
+          },
+          {
+            "start": 50,
+            "end": 57,
+            "tag": "jj_rcp"
+          },
+          {
+            "start": 58,
+            "end": 66,
+            "tag": "ohmkrit"
+          },
+          {
+            "start": 67,
+            "end": 76,
+            "tag": "kkim_pst"
+          }
+        ],
+        "mentions": [
+          {
+            "start": 3,
+            "end": 17,
+            "username": "chaipopadkhai",
+            "id": "1115658738428338177"
+          }
+        ]
+      },
+      "edit_history_tweet_ids": [
+        "1942534778479337955"
+      ],
+      "id": "1942534778479337955",
+      "text": "RT @chaipopadkhai: (Trans)(1/x) #SupersportsxDMD \n#jj_rcp #ohmkrit #kkim_pst \n\nQ: Which one do you want to take back home?\nJJ: I want a Liv…"
+    },
+    {
+      "entities": {
+        "annotations": [
+          {
+            "start": 59,
+            "end": 65,
+            "probability": 0.4711,
+            "type": "Other",
+            "normalized_text": "ohmkrit"
+          },
+          {
+            "start": 68,
+            "end": 71,
+            "probability": 0.4491,
+            "type": "Other",
+            "normalized_text": "kkim"
+          },
+          {
+            "start": 123,
+            "end": 124,
+            "probability": 0.5467,
+            "type": "Other",
+            "normalized_text": "JJ"
+          },
+          {
+            "start": 136,
+            "end": 138,
+            "probability": 0.5624,
+            "type": "Other",
+            "normalized_text": "Liv"
+          }
+        ],
+        "hashtags": [
+          {
+            "start": 32,
+            "end": 48,
+            "tag": "SupersportsxDMD"
+          },
+          {
+            "start": 50,
+            "end": 57,
+            "tag": "jj_rcp"
+          },
+          {
+            "start": 58,
+            "end": 66,
+            "tag": "ohmkrit"
+          },
+          {
+            "start": 67,
+            "end": 76,
+            "tag": "kkim_pst"
+          }
+        ],
+        "mentions": [
+          {
+            "start": 3,
+            "end": 17,
+            "username": "chaipopadkhai",
+            "id": "1115658738428338177"
+          }
+        ]
+      },
+      "edit_history_tweet_ids": [
+        "1942534751954345984"
+      ],
+      "id": "1942534751954345984",
+      "text": "RT @chaipopadkhai: (Trans)(1/x) #SupersportsxDMD \n#jj_rcp #ohmkrit #kkim_pst \n\nQ: Which one do you want to take back home?\nJJ: I want a Liv…"
+    },
+    {
+      "entities": {
+        "urls": [
+          {
+            "start": 69,
+            "end": 92,
+            "url": "https://t.co/J4Vjl1cSX9",
+            "expanded_url": "https://twitter.com/mensgrinding/status/1942280511575281774",
+            "display_url": "x.com/mensgrinding/s…"
+          }
+        ],
+        "annotations": [
+          {
+            "start": 33,
+            "end": 36,
+            "probability": 0.6247,
+            "type": "Other",
+            "normalized_text": "Mara"
+          }
+        ]
+      },
+      "edit_history_tweet_ids": [
+        "1942534254245863896"
+      ],
+      "id": "1942534254245863896",
+      "text": "E ka tshwanela Tshepo outfit ee. Mara he’s gonna wear running shoes. https://t.co/J4Vjl1cSX9"
+    },
+    {
+      "entities": {
+        "annotations": [
+          {
+            "start": 28,
+            "end": 31,
+            "probability": 0.5899,
+            "type": "Person",
+            "normalized_text": "Adam"
+          },
+          {
+            "start": 74,
+            "end": 85,
+            "probability": 0.8588,
+            "type": "Place",
+            "normalized_text": "Martin Grove"
+          },
+          {
+            "start": 96,
+            "end": 107,
+            "probability": 0.6209,
+            "type": "Person",
+            "normalized_text": "John Garland"
+          }
+        ],
+        "mentions": [
+          {
+            "start": 3,
+            "end": 17,
+            "username": "TPSOperations",
+            "id": "463933187"
+          },
+          {
+            "start": 119,
+            "end": 128,
+            "username": "TPS23Div",
+            "id": "3279872942"
+          }
+        ]
+      },
+      "edit_history_tweet_ids": [
+        "1942533396548526129"
+      ],
+      "id": "1942533396548526129",
+      "text": "RT @TPSOperations: MISSING:\nAdam, 31\n-last seen on July 2 at 5 pm, in the Martin Grove Rd &amp; John Garland Blvd area @TPS23DIV\n-5'9\", 225 lbs…"
+    },
+    {
+      "entities": {
+        "urls": [
+          {
+            "start": 85,
+            "end": 108,
+            "url": "https://t.co/hc1rSPIJDY",
+            "expanded_url": "https://x.com/quan68946/status/1942532683235557614/video/1",
+            "display_url": "pic.x.com/hc1rSPIJDY",
+            "media_key": "7_1942532053364531202"
+          }
+        ],
+        "annotations": [
+          {
+            "start": 0,
+            "end": 8,
+            "probability": 0.3848,
+            "type": "Organization",
+            "normalized_text": "tom sachs"
+          },
+          {
+            "start": 12,
+            "end": 25,
+            "probability": 0.6159,
+            "type": "Organization",
+            "normalized_text": "Nike Mars Yard"
+          }
+        ]
+      },
+      "edit_history_tweet_ids": [
+        "1942532683235557614"
+      ],
+      "id": "1942532683235557614",
+      "text": "tom sachs x Nike Mars Yard joint non-slip low-top casual city commuter running shoes https://t.co/hc1rSPIJDY"
+    },
+    {
+      "entities": {
+        "urls": [
+          {
+            "start": 39,
+            "end": 62,
+            "url": "https://t.co/a00DV4I9Os",
+            "expanded_url": "http://dlvr.it/TLnxGR",
+            "display_url": "dlvr.it/TLnxGR",
+            "images": [
+              {
+                "url": "https://pbs.twimg.com/news_img/1942532507808980992/dpxgpTb4?format=jpg&name=orig",
+                "width": 400,
+                "height": 265
+              },
+              {
+                "url": "https://pbs.twimg.com/news_img/1942532507808980992/dpxgpTb4?format=jpg&name=150x150",
+                "width": 150,
+                "height": 150
+              }
+            ],
+            "status": 200,
+            "title": "Getting the Right Fit on Running Shoes",
+            "description": "Wearing the right running shoes can help prevent pain and injury by supporting your feet where needed. A proper fit of running shoes starts with choosing a pair that matches your foot shape, length, a...",
+            "unwound_url": "https://www.mycfas.com/blogs/item/316-getting-the-right-fit-on-running-shoes?utm_source=dlvr.it&utm_medium=twitter"
+          }
+        ]
+      },
+      "edit_history_tweet_ids": [
+        "1942532501664325908"
+      ],
+      "id": "1942532501664325908",
+      "text": "Getting the Right Fit on Running Shoes https://t.co/a00DV4I9Os"
+    }
+  ],
+  "meta": {
+    "newest_id": "1942536709331378194",
+    "oldest_id": "1942532501664325908",
+    "result_count": 10,
+    "next_token": "b26v89c19zqg8o3fsc86hyanfpmon1g0p9etryjadw8l9"
+  }
+}

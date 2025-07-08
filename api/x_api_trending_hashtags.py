@@ -25,6 +25,22 @@ def load_trending_keywords(file_path):
     return data
 
 
+def load_existing_keyword_mapping(filepath: str) -> dict:
+    """
+    Load existing keyword-to-hashtag mappings if file exists.
+
+    Args:
+        filepath (str): Path to the JSON file.
+
+    Returns:
+        dict: Existing mappings, or empty dict if file doesn't exist.
+    """
+    if os.path.exists(filepath):
+        with open(filepath, "r", encoding="utf-8") as handle:
+            return json.load(handle)
+    return {}
+
+
 def collect_trending_keywords(data):
     """
     Collect all stable and increasing keywords from the parsed data into a single list.
@@ -45,18 +61,24 @@ def collect_trending_keywords(data):
     return keywords_list
 
 
-def fetch_top_hashtags_per_kw(keywords_list: list[str]) -> dict:
+def fetch_top_hashtags_per_kw(keywords_list: list[str], existing_mapping: dict = None, skip_existing: bool = True) -> dict:
     """
     For each keyword, send a request to the Twitter API, extract hashtags from recent tweets, count their frequency, and return the top 5 hashtags per keyword.
 
     If a response is received, it is also saved locally as a JSON file for offline reuse.
 
     Args:
-        keywords_list (list[str]): List of keywords to query on Twitter.
-            If a single string is passed, it will be auto-wrapped into a list.
+        keywords_list (list[str]): 
+            List of keywords to query on Twitter. If a single string is passed, it will be auto-wrapped into a list.
+
+        existing_mapping (dict, optional): 
+            An optional dictionary mapping previously processed keywords to their hashtags. If provided, keywords already in the mapping are skipped. This prevents duplicate requests and allows merging new hashtags into existing entries. If not provided (or set to None), an empty mapping will be used by default.
+
+        skip_existing (bool, optional): 
+            If True (default), keywords already in the existing mapping will be skipped to avoid duplicate API requests. If False, all keywords will be re-fetched and any new hashtags will be merged into the existing list.
 
     Returns:
-        dict: Mapping of each keyword to a list of its top 5 hashtags (e.g., {"Nike": ["#nike", "#justdoit", ...]}).
+        dict: Updated mapping of each keyword to a list of hashtags (e.g., {"Nike": ["#nike", "#justdoit", ...]}).
 
     Raises:
         ValueError: If any item in the list is not a string.
@@ -71,13 +93,22 @@ def fetch_top_hashtags_per_kw(keywords_list: list[str]) -> dict:
     if not all(isinstance(keyword, str) for keyword in keywords_list):
         raise ValueError("All items in keywords_list must be strings.")
 
-    keyword_to_hashtags = {}
+    # If existing_mapping is None, replace it with empty dict
+    existing_mapping = existing_mapping or {}
+    keyword_to_hashtags = existing_mapping.copy()
 
     for keyword in keywords_list:
+        if skip_existing and keyword in keyword_to_hashtags:
+            print(f"Skipping '{keyword}' - already fetched.")
+            continue
+
         url = "https://api.twitter.com/2/tweets/search/recent"
 
+        # Safe query string for exact match (treat 2-word-keyword as 1)
+        query = f'"{keyword}"' if " " in keyword else keyword
+
         params = {
-            "query": keyword,
+            "query": query,
             "max_results": 10,
             "tweet.fields": "entities"
         }
@@ -116,7 +147,16 @@ def fetch_top_hashtags_per_kw(keywords_list: list[str]) -> dict:
         # Collect top hashtags (top 5 for now)
         top_hashtags = [f"#{tag}" for tag, count in hashtag_counts.most_common(5)]
 
-        keyword_to_hashtags[keyword] = top_hashtags
+        # Add new hashtags to existing ones (if any), avoiding dublicates
+        if keyword in keyword_to_hashtags:
+            # Wrapping hashtags list in set() removes dublicates
+            existing_tags = set(keyword_to_hashtags[keyword])
+            # .union() merges both sets and removes dublicates
+            combined = list(existing_tags.union(top_hashtags))
+            keyword_to_hashtags[keyword] = combined
+
+        else:
+            keyword_to_hashtags[keyword] = top_hashtags
     
     return keyword_to_hashtags               
 
@@ -130,21 +170,34 @@ def main():
     - Writes the keyword-to-hashtag mapping to JSON
     """
     trend_kw_file = os.path.join(os.path.dirname(__file__), "..", "data", "trending_keywords.json")
+
+    # File where final (updated) mappings are stored
+    mapping_file = os.path.join("data", "keyword_to_hashtags.json")
+
+    # Load data
     data = load_trending_keywords(trend_kw_file)
     keywords = collect_trending_keywords(data)
+    # print(keywords)
 
-    # for now creating list with 1 kw only to preserve limited API requests (free tier)
-    test_keywords = [keywords[0]]
+    # Use only one keyword for now to avoid hitting rate limits
+    test_keywords = [keywords[1]]
 
-    kw_to_hashtags = fetch_top_hashtags_per_kw(test_keywords)
+    # Load existing mapping if present
+    existing_mapping = load_existing_keyword_mapping(mapping_file)
 
-    # Save final keyword-hashtag mapping
-    with open("data/keyword_to_hashtags.json", "w", encoding="utf-8") as handle:
-        json.dump(kw_to_hashtags, handle, ensure_ascii=False, indent=2)
+    # Fetch and merge hashtags
+    updated_mapping = fetch_top_hashtags_per_kw(test_keywords, existing_mapping=existing_mapping)
+
+    # Save mapping result
+    with open(mapping_file, "w", encoding="utf-8") as handle:
+        json.dump(updated_mapping, handle, ensure_ascii=False, indent=2)
 
 
 if __name__ == "__main__":
     main()
+
+
+
 
 
 
@@ -168,4 +221,4 @@ if __name__ == "__main__":
 # # Print top hashtags
 # print("\nTop hashtags from mock data:")
 # for tag, count in hashtag_counts.most_common(5):
-#     print(f"#{tag} — {count} times")
+    print(f"#{tag} — {count} times")
