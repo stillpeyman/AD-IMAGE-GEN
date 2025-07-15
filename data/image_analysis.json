@@ -1,22 +1,19 @@
 {
-  "main_subject": "Nike running shoe",
+  "main_subject": "White sneakers by Puma",
   "dominant_colors": [
-    "deep red",
-    "bright white",
-    "black",
-    "light gray",
-    "dark gray"
+    "pure white",
+    "black (background)"
   ],
-  "style_description": "modern and vibrant",
-  "composition_details": "dynamic angle, slightly off-center",
-  "mood_atmosphere": "energetic and bold",
+  "style_description": "minimalist",
+  "composition_details": "symmetrical, centered",
+  "mood_atmosphere": "clean and modern",
   "suggested_keywords": [
-    "Nike",
-    "running shoes",
-    "athletic wear",
-    "fitness",
-    "active lifestyle",
+    "Puma",
+    "sneakers",
+    "minimalist",
+    "urban style",
     "fashion",
-    "sporty"
+    "athleisure",
+    "footwear"
   ]
 }

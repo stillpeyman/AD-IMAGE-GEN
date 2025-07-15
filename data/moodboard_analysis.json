@@ -1,0 +1,77 @@
+[
+  {
+    "image_path": "/Users/peymanfarahani/VisualStudioProjects/AI_ENGINEERING_PROJECT/ad_image_gen/test_images/moodboard/skater2-unsplash.jpg",
+    "analysis": {
+      "scene_description": "A young man is performing a skateboard trick, jumping off a wall adorned with graffiti art. The scene captures the dynamic energy of skateboarding in an urban environment.",
+      "visual_style": "Vibrant and edgy, characterized by bold graffiti art and an athletic subject, conveying a youthful urban culture.",
+      "mood_atmosphere": "Energetic and rebellious, reflecting the adrenaline of skateboarding and the creativity of street art.",
+      "color_theme": [
+        "Bright blue",
+        "Vivid red",
+        "Black",
+        "White",
+        "Earthy tones"
+      ],
+      "composition_patterns": "Diagonal lines created by the skateboarder's motion, complemented by the vertical and horizontal lines of the graffiti-covered wall and the urban backdrop.",
+      "suggested_keywords": [
+        "Skateboarding",
+        "Urban culture",
+        "Graffiti art",
+        "Action sports",
+        "Youth lifestyle",
+        "Adrenaline",
+        "Streetwear"
+      ]
+    }
+  },
+  {
+    "image_path": "/Users/peymanfarahani/VisualStudioProjects/AI_ENGINEERING_PROJECT/ad_image_gen/test_images/moodboard/skater3-unsplash.jpg",
+    "analysis": {
+      "scene_description": "The image depicts a vibrant skateboarding scene under a concrete overpass, where several skaters are actively engaged in skating tricks and casually hanging out. The surroundings are adorned with colorful graffiti, suggesting a youthful and urban culture.",
+      "visual_style": "The visual style is gritty and urban, characterized by a mix of dynamic action and static urban elements. The presence of graffiti and concrete structures reflects a raw, contemporary street style.",
+      "mood_atmosphere": "The overall mood is energetic and lively, fostering a sense of community among skateboarders. It captures the thrill of skateboarding culture, combined with a somewhat rebellious yet fun urban vibe.",
+      "color_theme": [
+        "Grey",
+        "Black",
+        "Bright Blue",
+        "Vibrant Yellow",
+        "Muted Pink"
+      ],
+      "composition_patterns": "The composition showcases a balanced mix of motion and stillness, with skaters positioned throughout the scene, creating a sense of depth. The use of leading lines formed by the concrete structure guides the viewer\u2019s eye through the image.",
+      "suggested_keywords": [
+        "Skateboarding",
+        "Urban Culture",
+        "Graffiti",
+        "Youthful Energy",
+        "Concrete Jungle",
+        "Street Style",
+        "Dynamic Movement"
+      ]
+    }
+  },
+  {
+    "image_path": "/Users/peymanfarahani/VisualStudioProjects/AI_ENGINEERING_PROJECT/ad_image_gen/test_images/moodboard/skater1-unsplash.jpg",
+    "analysis": {
+      "scene_description": "A young boy walks through a skate park, holding a skateboard in one hand, as he approaches various graffiti-covered ramps and walls.",
+      "visual_style": "Casual and urban, with a focus on street culture and skateboarding aesthetics.",
+      "mood_atmosphere": "Energetic and youthful, evoking a sense of freedom and adventure.",
+      "color_theme": [
+        "Blue",
+        "Orange",
+        "Gray",
+        "Green",
+        "Black"
+      ],
+      "composition_patterns": "The subject is positioned in the foreground, creating a clear focal point against a backdrop of vibrant graffiti, leading the viewer's eye throughout the scene.",
+      "suggested_keywords": [
+        "Skateboarding",
+        "Youth Culture",
+        "Urban",
+        "Graffiti",
+        "Action",
+        "Adventure",
+        "Casual"
+      ]
+    }
+  }
+]

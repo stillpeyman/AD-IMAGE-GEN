@@ -1,6 +1,6 @@
 {
-  "id": "resp_685c016524308198b66688060a9e35910059f0039a28e27a",
-  "created_at": 1750860133.0,
+  "id": "resp_68751193061c8198a2999bf8b5d9dda101ff85c4f1410b66",
+  "created_at": 1752502675.0,
   "error": null,
   "incomplete_details": null,
   "instructions": null,
@@ -9,30 +9,49 @@
   "object": "response",
   "output": [
     {
-      "id": "msg_685c0165d1b8819890a5422181f25c740059f0039a28e27a",
+      "id": "msg_687511939a38819880ef894054dd317a01ff85c4f1410b66",
       "content": [
         {
           "annotations": [],
-          "text": "{\"brand_terms\":[\"Nike\"],\"product_terms\":[\"running shoes\",\"athletic wear\"],\"lifestyle_terms\":[\"fitness\",\"active lifestyle\"],\"style_terms\":[\"fashion\",\"sporty\"],\"uncategorized_terms\":[]}",
+          "text": "{\"brand_terms\":[\"Puma\"],\"product_terms\":[\"footwear\",\"sneakers\",\"Streetwear\",\"athleisure\"],\"lifestyle_terms\":[\"Action\",\"Action sports\",\"Skateboarding\",\"Youth Culture\",\"Urban Culture\",\"Adventure\",\"Youthful Energy\",\"Dynamic Movement\",\"Adrenaline\",\"Urban lifestyle\"],\"style_terms\":[\"Casual\",\"Graffiti art\",\"Graffiti\",\"Urban\",\"Urban culture\",\"minimalist\",\"Concrete Jungle\",\"urban style\",\"Street Style\",\"fashion\"],\"uncategorized_terms\":[]}",
           "type": "output_text",
           "parsed": {
             "brand_terms": [
-              "Nike"
+              "Puma"
             ],
             "product_terms": [
-              "running shoes",
-              "athletic wear"
+              "footwear",
+              "sneakers",
+              "Streetwear",
+              "athleisure"
             ],
             "lifestyle_terms": [
-              "fitness",
-              "active lifestyle"
+              "Action",
+              "Action sports",
+              "Skateboarding",
+              "Youth Culture",
+              "Urban Culture",
+              "Adventure",
+              "Youthful Energy",
+              "Dynamic Movement",
+              "Adrenaline",
+              "Urban lifestyle"
             ],
             "style_terms": [
-              "fashion",
-              "sporty"
+              "Casual",
+              "Graffiti art",
+              "Graffiti",
+              "Urban",
+              "Urban culture",
+              "minimalist",
+              "Concrete Jungle",
+              "urban style",
+              "Street Style",
+              "fashion"
             ],
             "uncategorized_terms": []
-          }
+          },
+          "logprobs": []
         }
       ],
       "role": "assistant",
@@ -114,16 +133,18 @@
   },
   "truncation": "disabled",
   "usage": {
-    "input_tokens": 265,
+    "input_tokens": 329,
     "input_tokens_details": {
       "cached_tokens": 0
     },
-    "output_tokens": 44,
+    "output_tokens": 102,
     "output_tokens_details": {
       "reasoning_tokens": 0
     },
-    "total_tokens": 309
+    "total_tokens": 431
   },
   "user": null,
-  "store": true
+  "max_tool_calls": null,
+  "store": true,
+  "top_logprobs": 0
 }

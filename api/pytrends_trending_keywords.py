@@ -2,6 +2,9 @@ from pytrends.request import TrendReq
 import json
 import os
 import pandas as pd
+import time
+import random
+import requests
 
 
 def load_kw_categorization(file_path):
@@ -19,40 +22,80 @@ def load_kw_categorization(file_path):
     return data
 
 
-def fetch_trends_per_cat(keywords_list, timeframe):
+def clean_keywords(keywords):
+    cleaned = []
+    for kw in keywords:
+        kw = kw.strip()
+        kw = kw.lower()
+        kw = kw.replace("´", "'")
+        kw = kw.replace("—", "-")
+        kw = kw.replace("  ", " ")
+        if kw:
+            cleaned.append(kw)
+    return cleaned
+
+
+def fetch_trends_per_cat(keyword_list, timeframe):
     """
-    Fetch Google Trends data for a list of keywords
+    Fetch Google Trends data for a list of keywords in batches of 5 (Google Trends limit)
 
     Args:
         keyword_list (list): List of keywords to analyze
         timeframe (str): Time period for trends analysis
     
     Returns:
-        list: List of dictionaries with trend data records
+        list: Combined list of dictionaries with trend data records
     """
-    pytrends = TrendReq()
-    pytrends.build_payload(keywords_list, timeframe=timeframe)
+    all_records = []
 
-    # Get trend data, Pytrend using interest_over_time returns Pandas DataFrame
-    df = pytrends.interest_over_time()
+    keyword_list = clean_keywords(keyword_list)
 
-    # Remove the "isPartial" column if it exists
-    if "isPartial" in df.columns:
-        df = df.drop(columns=["isPartial"])
-    
-    # Pytrend uses "date" as index, reset_index() turns "date" into a column
-    df = df.reset_index()
+    for i in range(0, len(keyword_list), 5):
+        batch = keyword_list[i:i+5]
+        print(f"\nFetching batch: {batch}\n")
 
-    # Use "assign type" to convert timestamp to str for JSON serialization
-    # df["date"] accesses a Panda Series (e.g. column of data) in DataFrame
-    df["date"] = df["date"].astype(str)
+        # Retry logic (max 3 attempts)
+        attempts = 0
+        while attempts < 3:
+            try:
+                pytrends = TrendReq()
+                pytrends.build_payload(batch, timeframe=timeframe)
 
-    # Convert Pandas DataFrame (df) into list of dicts (records)
-    # How? <orient="records"> => each row is a dict: {"column_name": value}
-    # Best format for JSON, and for iterating row-by-row
-    records = df.to_dict(orient="records")
+                # Get trend data, Pytrend using interest_over_time returns Pandas DataFrame
+                df = pytrends.interest_over_time()
 
-    return records
+                # Remove the "isPartial" column if it exists
+                if "isPartial" in df.columns:
+                    df = df.drop(columns=["isPartial"])
+                
+                # Pytrend uses "date" as index, reset_index() turns "date" into a column
+                df = df.reset_index()
+
+                # Use "assign type" to convert timestamp to str for JSON serialization
+                # df["date"] accesses a Panda Series (e.g. column of data) in DataFrame
+                df["date"] = df["date"].astype(str)
+
+                # Convert Pandas DataFrame (df) into list of dicts (records)
+                # How? <orient="records"> => each row is a dict: {"column_name": value}
+                # Best format for JSON, and for iterating row-by-row
+                batch_records = df.to_dict(orient="records")
+                if batch_records:
+                    # print(batch_records)
+                    all_records.extend(batch_records)
+                    break                    
+            
+            except Exception as e:
+                print(
+                    f"Error fetching batch {batch} (Attempt {attempts + 1}/3): {e}"
+                      )
+                attempts += 1
+                # Wait between requests
+                time.sleep(5 + attempts * 2)
+        
+        # Wait before next batch regardless of retry outcome
+        time.sleep(random.uniform(3, 7))
+
+    return all_records
 
 
 def analyze_keyword_trend(records, keyword, treshold, trend_weight, volume_weight):
@@ -180,12 +223,22 @@ def main():
 
         print(f"\nAanalyzing category: {category}")
         
-        # Get the keywords of the category, keys in every record are identical
-        # Thus, grab the keys from the first one to get keywords
-        keywords = [k for k in records[0].keys() if k != "date"]
+        # Extract all unique keywords from records (excluding "date")
+        # Each record is a row with keyword names as keys
+        # Use set to collect all keywords across all rows (batches)
+        # Finally use sorted() to turn set into a sorted list
+        keywords = sorted(
+            {
+                k for record in records 
+                for k in record.keys() 
+                if k != "date"
+            }
+        )
 
         increasing_keywords = []
+        decreasing_keywords = []
         stable_keywords = []
+        missing_keywords = []
         category_analysis = []
 
         for keyword in keywords:
@@ -213,6 +266,8 @@ def main():
 | vol: {analysis.get('avg_volume')} 
 | priority: {analysis.get('priority_score')}
 """)
+                decreasing_keywords.append(keyword)
+
             elif trend == "stable":
                 print(f"""
 {keyword}: {trend} 
@@ -224,11 +279,14 @@ def main():
 
             else:
                 print(f"{keyword}: {trend}")
+                missing_keywords.append(keyword)
         
         # Create trending_keywords dict, each category is a key
         trending_keywords[category] = {
             "increasing_keywords": increasing_keywords,
+            "decreasing_keywords": decreasing_keywords,
             "stable_keywords": stable_keywords,
+            "missing_or_skipped": missing_keywords,
             "full_analysis": category_analysis
         }
 
@@ -239,16 +297,26 @@ def main():
 
     for category, data in trending_keywords.items():
         increasing = data["increasing_keywords"]
+        decreasing = data["decreasing_keywords"]
         stable = data["stable_keywords"]
+        missing = data["missing_or_skipped"]
+
+        print(f"\n{category}:")
 
         if increasing:
-            print(f"{category}: {", ".join(increasing)}")
-        
-        elif stable:
-            print(f"{category}: {", ".join(stable)}")
+            print(f"increasing: {", ".join(increasing)}")
 
-        else:
-            print(f"{category}: No increasing or stable keywords found.")
+        if decreasing:
+            print(f"decreasing: {", ".join(decreasing)}")
+        
+        if stable:
+            print(f"stable: {", ".join(stable)}")
+        
+        if missing:
+            print(f"missing: {", ".join(missing)}")
+
+        if not (increasing or decreasing or stable or missing):
+            print("No keywords found.")
     
     # Save trending_keywords to JSON 
     with open("data/trending_keywords.json", "w", encoding="utf-8") as handle:

@@ -12,10 +12,21 @@ api_key = os.getenv("OPENAI_API_KEY")
 client = OpenAI(api_key=api_key)
 
 
-# Path to test image
-image_path = os.path.join(os.path.dirname(__file__), "..", "test_images", "nike-unsplash.jpg")
+# Path to product image
+product_img_path = os.path.join(os.path.dirname(__file__), "..", "test_images", "puma-sneakers-unsplash.jpg")
 # Convert to absolute path
-image_path = os.path.abspath(image_path)
+product_img_path = os.path.abspath(product_img_path)
+
+# Path to moodboard folder
+moodboard_paths = os.path.join(os.path.dirname(__file__), "..", "test_images", "moodboard")
+# Convert to absolute path
+moodboard_paths = os.path.abspath(moodboard_paths)
+# Path to each moonboard image
+moodboard_img_paths = [
+    os.path.join(moodboard_paths, file) 
+    for file in os.listdir(moodboard_paths) 
+    if file.endswith((".jpg", ".jpeg", ".png"))
+    ]
 
 
 # Define structured output schema
@@ -25,6 +36,14 @@ class ImageAnalysis(BaseModel):
     style_description: str
     composition_details: str
     mood_atmosphere: str
+    suggested_keywords: list[str]
+
+class MoodboardAnalysis(BaseModel):
+    scene_description: str
+    visual_style: str
+    mood_atmosphere: str
+    color_theme: list[str]
+    composition_patterns: str
     suggested_keywords: list[str]
 
 class KeywordCategorization(BaseModel):
@@ -79,11 +98,51 @@ def analyze_image_structured(image_path: str) -> ImageAnalysis:
     )
     
     # Save structured results to a JSON file
-    with open("data/image_analysis_structured.json", "w") as handle:
+    with open("data/image_analysis_structured.json", "w", encoding="utf-8") as handle:
         handle.write(response.model_dump_json(indent=2))
 
     # Access parsed response
     return response.output_parsed
+
+
+def analyze_moodboard_images(image_paths: list[str]) -> list[MoodboardAnalysis]:
+    results = []
+    for image_path in image_paths:
+        base64_image = encode_image(image_path)
+
+        response = client.responses.parse(
+        model="gpt-4o-mini",
+        input=[
+            {
+                "role": "system",
+                "content": "You are an expert visual analyst for advertising and social media."
+            },
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "input_text",
+                        "text": """Analyze this moodboard image and provide:
+                        1. Brief scene description (what's happening in the image)
+                        2. Visual style
+                        3. Mood/atmosphere
+                        4. Color theme (3-5 key tones)
+                        5. Composition patterns
+                        6. 5-7 relevant keywords that describe the visual aesthetics"""
+                    },
+                    {
+                        "type": "input_image",
+                        "image_url": f"data:image/jpeg;base64,{base64_image}",
+                    }
+                ]
+            }
+        ],
+        text_format=MoodboardAnalysis,
+    )
+    
+        results.append(response.output_parsed)
+
+    return results
 
 
 def categorize_keywords(keywords: list[str]) -> KeywordCategorization:
@@ -115,60 +174,34 @@ Explain your reasoning for each keyword placement, then provide the structured c
     )
 
     # Save structured results to a JSON file
-    with open("data/keywords_categorization_structured.json", "w") as handle:
+    with open("data/keywords_categorization_structured.json", "w", encoding="utf-8") as handle:
         handle.write(response.model_dump_json(indent=2))
 
     # Access parsed response
     return response.output_parsed
 
 
-analysis = analyze_image_structured(image_path)
-with open("data/image_analysis.json", "w") as handle:
-    handle.write(analysis.model_dump_json(indent=2))
-# print(analysis)
+image_analysis = analyze_image_structured(product_img_path)
+with open("data/image_analysis.json", "w", encoding="utf-8") as handle:
+    handle.write(image_analysis.model_dump_json(indent=2))
 
+moodboard_analysis = analyze_moodboard_images(moodboard_img_paths)
+with open("data/moodboard_analysis.json", "w", encoding="utf-8") as handle:
+    json_data = [
+        {
+            "image_path": img_path,
+            "analysis": result.model_dump()
+        }
+        # zip() pairs up elements from two lists position by position
+        for img_path, result in zip(moodboard_img_paths, moodboard_analysis)
+    ]
+    json.dump(json_data, handle, indent=2)
 
-print()
-
-kw_categorization = categorize_keywords(analysis.suggested_keywords)
-with open("data/keywords_categorization.json", "w") as handle:
+all_keywords = image_analysis.suggested_keywords + [
+    kw for result in moodboard_analysis for kw in result.suggested_keywords
+]
+kw_categorization = categorize_keywords(all_keywords)
+with open("data/keywords_categorization.json", "w", encoding="utf-8") as handle:
     handle.write(kw_categorization.model_dump_json(indent=2))
-# print(kw_categorization)
 
-
-# TEST
-# if __name__ == "__main__":
-#     try:
-#         # Path to test image
-#         image_path = os.path.join(os.path.dirname(__file__), "..", "test_images", "nike-unsplash.jpg")
-#         # Convert to absolute path
-#         image_path = os.path.abspath(image_path)
-
-#         print("Analyzing image with structured output...")
-
-#         try:
-#             analysis = analyze_image_structured(image_path)
-
-#             print("\n=== STRUCTURED ANALYSIS RESULTS ===")
-#             print(f"Main subject: {analysis.main_subject}")
-#             print(f"Colors: {', '.join(analysis.dominant_colors)}")
-#             print(f"Style: {analysis.style_description}")
-#             print(f"Composition: {analysis.composition_details}")
-#             print(f"Mood: {analysis.mood_atmosphere}")
-#             print(f"Keywords: {', '.join(analysis.suggested_keywords)}")
-
-#             # Save structured results to a JSON file
-#             with open("data/image_analysis_structured.json", "w") as handle:
-#                 handle.write(analysis.model_dump_json(indent=2))
-            
-#             print("\nStructured results saved to image_analysis_structured.json")
-        
-#         except Exception as e:
-#             print(f"Structured output failed: {e}")
-    
-#     except FileNotFoundError:
-#         print(f"Error: Image file not found at {image_path}")
-    
-#     except Exception as e:
-#         print(f"Error analyzing image: {e}")
 
