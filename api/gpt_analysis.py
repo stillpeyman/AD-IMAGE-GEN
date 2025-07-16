@@ -28,6 +28,12 @@ moodboard_img_paths = [
     if file.endswith((".jpg", ".jpeg", ".png"))
     ]
 
+# User text examples for testing
+user_text1 = "young teenage girl skating, location similar to Venice Beach skatepark, blue hour"
+
+user_text2 = "professional woman in business attire, urban coffee shop, morning golden hour, confident and relaxed"
+
+user_text3 = "group of friends laughing, cozy living room, warm evening light, casual weekend vibe"
 
 # Define structured output schema
 class ImageAnalysis(BaseModel):
@@ -46,12 +52,20 @@ class MoodboardAnalysis(BaseModel):
     composition_patterns: str
     suggested_keywords: list[str]
 
-class KeywordCategorization(BaseModel):
-    brand_terms: list[str]
-    product_terms: list[str]
-    lifestyle_terms: list[str]
-    style_terms: list[str]
-    uncategorized_terms: list[str]
+class UserVision(BaseModel):
+    subjects: str
+    action: str
+    setting: str
+    lighting: str
+    mood_descriptors: list[str]
+    additional_details: list[str]
+
+# class KeywordCategorization(BaseModel):
+#     brand_terms: list[str]
+#     product_terms: list[str]
+#     lifestyle_terms: list[str]
+#     style_terms: list[str]
+#     uncategorized_terms: list[str]
 
 
 # Function to encode the image
@@ -61,7 +75,7 @@ def encode_image(image_path):
         return base64.b64encode(image_file.read()).decode("utf-8")
 
 
-def analyze_image_structured(image_path: str) -> ImageAnalysis:
+def analyze_product_image(image_path: str) -> ImageAnalysis:
     """Anaylize image with structured output."""
 
     # Get Base64 string
@@ -97,15 +111,15 @@ def analyze_image_structured(image_path: str) -> ImageAnalysis:
         text_format=ImageAnalysis,
     )
     
-    # Save structured results to a JSON file
-    with open("data/image_analysis_structured.json", "w", encoding="utf-8") as handle:
+    # Save raw response to a JSON file
+    with open("data/image_analysis_response.json", "w", encoding="utf-8") as handle:
         handle.write(response.model_dump_json(indent=2))
 
     # Access parsed response
     return response.output_parsed
 
 
-def analyze_moodboard_images(image_paths: list[str]) -> list[MoodboardAnalysis]:
+def analyze_moodboard(image_paths: list[str]) -> list[MoodboardAnalysis]:
     results = []
     for image_path in image_paths:
         base64_image = encode_image(image_path)
@@ -145,7 +159,52 @@ def analyze_moodboard_images(image_paths: list[str]) -> list[MoodboardAnalysis]:
     return results
 
 
-def categorize_keywords(keywords: list[str]) -> KeywordCategorization:
+def parse_user_vision(user_text):
+    response = client.responses.parse(
+        model="gpt-4o-mini",
+        input=[
+            {
+                "role": "system",
+                "content": "You are an expert at extracting structured information from user description for advertising content creation."
+            },
+            {
+                "role": "user",
+                "content": f""" Extract structured information from this user description: '{user_text}'
+
+                Please identify and extract:
+                1. Who: People/subjects described (age, gender, count, etc.)
+                2. What: Activities, actions, or behaviors mentioned
+                3. Where: Locations, settings, or environments described
+                4. When: Time of day, season, or temporal context
+                5. Mood descriptors: Any mood, style, or atmosphere words
+                6. Additional details: Any other specific requests or requirements
+
+                If any category is not mentioned or unclear, leave it empty or mark as 'not specified'.
+                """
+            }
+        ],
+        text_format=UserVision,
+    )
+
+    # Access parsed response
+    return response.output_parsed
+
+
+def build_advertising_prompt(image_analysis, moodboard_analysis, user_vision, focus_type):
+    if focus_type == "product":
+        # Product is the hero - what goes first?
+        # Product has to be the actual product from the product image
+        # Not the value from "main_subject" from image_analysis JSON
+        # How to incorporate the scene around it
+        pass
+    elif focus_type == "vibe":
+        # Again, how to get actual product incorporated in the prompt
+        # Secen is the hero - what goes first?
+        # How to weave in the product naturally?
+        pass
+    
+
+# def categorize_keywords(keywords: list[str]) -> KeywordCategorization:
 
     response = client.responses.parse(
         model="gpt-4o-mini",
@@ -181,27 +240,67 @@ Explain your reasoning for each keyword placement, then provide the structured c
     return response.output_parsed
 
 
-image_analysis = analyze_image_structured(product_img_path)
-with open("data/image_analysis.json", "w", encoding="utf-8") as handle:
-    handle.write(image_analysis.model_dump_json(indent=2))
+def main():
+    # Check if cached analysis exists, otherwise analyze
+    image_analysis_file = "data/image_analysis.json"
+    if os.path.exists(image_analysis_file):
+        print("Loading cached image analysis...")
+        with open(image_analysis_file, "r", encoding="utf-8") as handle:
+            image_analysis = ImageAnalysis.model_validate_json(handle.read())
+    else:
+        print("Analyzing product image...")
+        image_analysis = analyze_product_image(product_img_path)
+        with open("data/image_analysis.json", "w", encoding="utf-8") as handle:
+            handle.write(image_analysis.model_dump_json(indent=2))
 
-moodboard_analysis = analyze_moodboard_images(moodboard_img_paths)
-with open("data/moodboard_analysis.json", "w", encoding="utf-8") as handle:
-    json_data = [
-        {
-            "image_path": img_path,
-            "analysis": result.model_dump()
-        }
-        # zip() pairs up elements from two lists position by position
-        for img_path, result in zip(moodboard_img_paths, moodboard_analysis)
-    ]
-    json.dump(json_data, handle, indent=2)
+    # Same for moodboard
+    moodboard_analysis_file = "data/moodboard_analysis.json"
+    if os.path.exists(moodboard_analysis_file):
+        print("Loading cached moodboard analysis...")
+        with open(moodboard_analysis_file, "r", encoding="utf-8") as handle:
+            # Load the list of dicts
+            json_data = json.load(handle)
+            # Convert each "analysis" part to MoodboardAnalysis
+            moodboard_analysis = [
+                MoodboardAnalysis.model_validate(item["analysis"])
+                for item in json_data
+                ]
+    else:
+        print("Analyzing moodboard image...")
+        moodboard_analysis = analyze_moodboard(moodboard_img_paths)
+        with open("data/moodboard_analysis.json", "w", encoding="utf-8") as handle:
+            json_data = [
+                {
+                    "image_path": img_path,
+                    "analysis": result.model_dump()
+                }
+                # zip() pairs up elements from two lists position by position
+                for img_path, result in zip(moodboard_img_paths, moodboard_analysis)
+            ]
+            json.dump(json_data, handle, indent=2)
+    
+    # Same for user vision
+    user_vision_file = "data/user_vision.json"
+    if os.path.exists(user_vision_file):
+        print("Loading cached user vision...")
+        with open(user_vision_file, "r", encoding="utf-8") as handle:
+            image_analysis = UserVision.model_validate_json(handle.read())
+    else:
+        print("Parsing user vision...")
+        user_vision = parse_user_vision(user_text1)
+        with open("data/user_vision.json", "w", encoding="utf-8") as handle:
+            handle.write(user_vision.model_dump_json(indent=2))
 
-all_keywords = image_analysis.suggested_keywords + [
-    kw for result in moodboard_analysis for kw in result.suggested_keywords
-]
-kw_categorization = categorize_keywords(all_keywords)
-with open("data/keywords_categorization.json", "w", encoding="utf-8") as handle:
-    handle.write(kw_categorization.model_dump_json(indent=2))
+
+    # all_keywords = image_analysis.suggested_keywords + [
+    #     kw for result in moodboard_analysis for kw in result.suggested_keywords
+    # ]
+    # kw_categorization = categorize_keywords(all_keywords)
+    # with open("data/keywords_categorization.json", "w", encoding="utf-8") as handle:
+    #     handle.write(kw_categorization.model_dump_json(indent=2))
+
+
+if __name__ == "__main__":
+    main()
 
 
