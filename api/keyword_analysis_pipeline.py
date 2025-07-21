@@ -47,6 +47,7 @@ class KeywordCategorization(BaseModel):
     lifestyle_terms: list[str]
     style_terms: list[str]
     uncategorized_terms: list[str]
+    
 
 def categorize_keywords(keywords: list[str]) -> KeywordCategorization:
 

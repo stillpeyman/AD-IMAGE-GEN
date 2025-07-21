@@ -60,13 +60,6 @@ class UserVision(BaseModel):
     mood_descriptors: list[str]
     additional_details: list[str]
 
-# class KeywordCategorization(BaseModel):
-#     brand_terms: list[str]
-#     product_terms: list[str]
-#     lifestyle_terms: list[str]
-#     style_terms: list[str]
-#     uncategorized_terms: list[str]
-
 
 # Function to encode the image
 def encode_image(image_path):
@@ -202,42 +195,6 @@ def build_advertising_prompt(image_analysis, moodboard_analysis, user_vision, fo
         # Secen is the hero - what goes first?
         # How to weave in the product naturally?
         pass
-    
-
-# def categorize_keywords(keywords: list[str]) -> KeywordCategorization:
-
-    response = client.responses.parse(
-        model="gpt-4o-mini",
-        input=[
-            {
-                "role": "system",
-                "content": "You are an expert at categorizing marketing keywords for social media trend analysis."
-            },
-            {
-                "role": "user",
-                "content": f"""
-                Categorize these keywords from a product image analysis: {keywords}
-
-Categories:
-- brand_terms: Specific brand names, company names
-- product_terms: Actual products, items, categories
-- lifestyle_terms: Activities, behaviors, lifestyle concepts
-- style_terms: Fashion, aesthetics, visual style descriptors
-- uncategorized_terms: Anything that doesn't fit above
-
-Explain your reasoning for each keyword placement, then provide the structured categorization.
-"""
-            }
-        ],
-        text_format=KeywordCategorization
-    )
-
-    # Save structured results to a JSON file
-    with open("data/keywords_categorization_structured.json", "w", encoding="utf-8") as handle:
-        handle.write(response.model_dump_json(indent=2))
-
-    # Access parsed response
-    return response.output_parsed
 
 
 def main():
@@ -290,14 +247,6 @@ def main():
         user_vision = parse_user_vision(user_text1)
         with open("data/user_vision.json", "w", encoding="utf-8") as handle:
             handle.write(user_vision.model_dump_json(indent=2))
-
-
-    # all_keywords = image_analysis.suggested_keywords + [
-    #     kw for result in moodboard_analysis for kw in result.suggested_keywords
-    # ]
-    # kw_categorization = categorize_keywords(all_keywords)
-    # with open("data/keywords_categorization.json", "w", encoding="utf-8") as handle:
-    #     handle.write(kw_categorization.model_dump_json(indent=2))
 
 
 if __name__ == "__main__":
