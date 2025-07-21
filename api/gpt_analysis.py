@@ -2,6 +2,7 @@ import base64
 from openai import OpenAI
 from dotenv import load_dotenv
 from pydantic import BaseModel
+from typing import Optional
 import os
 import json
 
@@ -28,6 +29,7 @@ moodboard_img_paths = [
     if file.endswith((".jpg", ".jpeg", ".png"))
     ]
 
+
 # User text examples for testing
 user_text1 = "young teenage girl skating, location similar to Venice Beach skatepark, blue hour"
 
@@ -35,14 +37,20 @@ user_text2 = "professional woman in business attire, urban coffee shop, morning 
 
 user_text3 = "group of friends laughing, cozy living room, warm evening light, casual weekend vibe"
 
+
 # Define structured output schema
 class ImageAnalysis(BaseModel):
-    main_subject: str
-    dominant_colors: list[str]
-    style_description: str
-    composition_details: str
-    mood_atmosphere: str
-    suggested_keywords: list[str]
+    product_type: str
+    product_category: str
+    style_descriptors: list[str]
+    material_details: list[str]
+    distinctive_features: list[str]
+    primary_colors: list[str]
+    accent_colors: list[str]
+    brand_elements: list[str]
+    advertising_keywords: list[str]
+    # Optional means, it can be a string or None
+    overall_aesthetic: Optional[str] = None
 
 class MoodboardAnalysis(BaseModel):
     scene_description: str
@@ -86,13 +94,19 @@ def analyze_product_image(image_path: str) -> ImageAnalysis:
                 "content": [
                     {
                         "type": "input_text",
-                        "text": """Analyze this image for advertising purposes and provide:
-                        1. Main subject/product in the image
-                        2. 3-5 dominant colors (be specific, e.g., 'deep navy blue', 'warm cream')
-                        3. Overall style description (e.g., minimalist, urban, vintage)
-                        4. Composition details (e.g., centered, rule of thirds, close-up)
-                        5. Mood/atmosphere (e.g., energetic, calm, luxurious)
-                        6. 5-7 relevant keywords for social media marketing"""
+                        "text": """
+                        Analyze this product image for advertising purposes and provide:
+                        1. Product type (e.g., 'sneakers', 'dress shirt', 'backpack')
+                        2. Product category (e.g., 'footwear', 'apparel', 'accessories', 'electronics')
+                        3. Style descriptors as list (e.g., ['minimalist', 'low-top'], ['vintage', 'elegant'])
+                        4. Material details as list (e.g., ['leather', 'mesh'], ['cotton', 'denim'])
+                        5. Distinctive features as list (e.g., ['white sole', 'perforated toe'])
+                        6. Primary colors as list (e.g., ['black', 'white'], ['navy blue', 'gray'])
+                        7. Accent colors as list (e.g., ['red accents', 'silver details'])
+                        8. Brand elements as list (e.g., ['Puma logo', 'embossed text'], ['Nike logo, 'swoosh'])
+                        9. Advertising keywords as list (e.g., ['urban', 'athletic', 'versatile'])
+                        10. Overall aesthetic (optional) (e.g., 'luxury minimalist', 'urban casual')
+                        """
                     },
                     {
                         "type": "input_image",
@@ -152,7 +166,7 @@ def analyze_moodboard(image_paths: list[str]) -> list[MoodboardAnalysis]:
     return results
 
 
-def parse_user_vision(user_text):
+def parse_user_vision(user_text: str) -> UserVision:
     response = client.responses.parse(
         model="gpt-4o-mini",
         input=[
@@ -183,18 +197,91 @@ def parse_user_vision(user_text):
     return response.output_parsed
 
 
-def build_advertising_prompt(image_analysis, moodboard_analysis, user_vision, focus_type):
-    if focus_type == "product":
-        # Product is the hero - what goes first?
-        # Product has to be the actual product from the product image
-        # Not the value from "main_subject" from image_analysis JSON
-        # How to incorporate the scene around it
-        pass
-    elif focus_type == "vibe":
-        # Again, how to get actual product incorporated in the prompt
-        # Secen is the hero - what goes first?
-        # How to weave in the product naturally?
-        pass
+def build_advertising_prompt(image_analysis_path: str, moodboard_analysis_path: str, user_vision_path: str, focus_slider: int) -> str:
+    """
+    Build an optimized Stable Diffusion prompt by loading analysis data from JSON files,
+    using a more granular focus instruction, and saving the generated prompt as JSON.
+    """
+    # Load product analysis
+    with open(image_analysis_path, "r", encoding="utf-8") as handle:
+        product_data = json.load(handle)
+
+    # Load moodboard analysis
+    with open(moodboard_analysis_path, "r", encoding="utf-8") as handle:
+        moodboard_data = json.load(handle)
+
+    # Load user vision
+    with open(user_vision_path, "r", encoding="utf-8") as handle:
+        vision_data = json.load(handle)
+
+    # More granular focus instruction
+    if focus_slider == 0:
+        focus_instruction = "The product is the sole focus, with minimal background or scene elements."
+    elif focus_slider == 1:
+        focus_instruction = "The product is the main focus, with a subtle hint of the scene for context."
+    elif focus_slider == 2:
+        focus_instruction = "The product is prominent, but the scene provides gentle support."
+    elif focus_slider == 3:
+        focus_instruction = "The product is clearly the hero, but the scene is present and meaningful."
+    elif focus_slider == 4:
+        focus_instruction = "The product and scene are balanced, each drawing equal attention."
+    elif focus_slider == 5:
+        focus_instruction = "The scene and product are equally important, blending together."
+    elif focus_slider == 6:
+        focus_instruction = "The scene is slightly more prominent, but the product remains clearly visible."
+    elif focus_slider == 7:
+        focus_instruction = "The scene is dominant, with the product naturally integrated and visible."
+    elif focus_slider == 8:
+        focus_instruction = "The scene is the main focus, with the product subtly present."
+    elif focus_slider == 9:
+        focus_instruction = "The scene is highly dominant, with the product as a supporting element."
+    else:  
+        focus_instruction = "The atmosphere and setting are the sole focus, with the product barely visible but still present."
+
+    # Compose the prompt for GPT
+    response = client.responses.create(
+        model="gpt-4o-mini",
+        input=[
+            {
+                "role": "system",
+                "content": "You are an expert at creating optimized Stable Diffusion prompts for advertising imagery. You understand how to balance product visibility with atmospheric storytelling."
+            },
+            {
+                "role": "user",
+                "content": f"""Create an optimized Stable Diffusion prompt for advertising imagery using this data:
+
+                PRODUCT ANALYSIS: {json.dumps(product_data, indent=2)}MOODBOARD INSPIRATION: {json.dumps(moodboard_data, indent=2)}
+                USER VISION: {json.dumps(vision_data, indent=2)}
+                FOCUS INSTRUCTION: {focus_instruction}
+
+                Requirements:
+                - Create a single, cohesive prompt (not multiple options)
+                - Keep it 30-75 words for optimal Stable Diffusion performance
+                - Include specific details that help the AI understand the product and scene
+                - Ensure the actual product will be recognizable in the generated image
+                - Use photography/cinematography terms when appropriate
+                - The product MUST be visible and identifiable in the final image
+                
+                Return only the prompt text, no explanation."""
+            }
+        ]
+    )
+
+    prompt_text = response.output_text
+
+    # Save the prompt and input data as JSON
+    output_json = {
+        "prompt": prompt_text,
+        "product_data": product_data,
+        "moodboard_data": moodboard_data,
+        "vision_data": vision_data,
+        "focus_slider": focus_slider
+    }
+    output_path = os.path.join(os.path.dirname(__file__), "..", "data", "generated_prompt.json")
+    with open(output_path, "w", encoding="utf-8") as f:
+        json.dump(output_json, f, indent=2)
+
+    return prompt_text
 
 
 def main():
@@ -207,7 +294,7 @@ def main():
     else:
         print("Analyzing product image...")
         image_analysis = analyze_product_image(product_img_path)
-        with open("data/image_analysis.json", "w", encoding="utf-8") as handle:
+        with open(image_analysis_file, "w", encoding="utf-8") as handle:
             handle.write(image_analysis.model_dump_json(indent=2))
 
     # Same for moodboard
@@ -225,7 +312,7 @@ def main():
     else:
         print("Analyzing moodboard image...")
         moodboard_analysis = analyze_moodboard(moodboard_img_paths)
-        with open("data/moodboard_analysis.json", "w", encoding="utf-8") as handle:
+        with open(moodboard_analysis_file, "w", encoding="utf-8") as handle:
             json_data = [
                 {
                     "image_path": img_path,
@@ -241,12 +328,25 @@ def main():
     if os.path.exists(user_vision_file):
         print("Loading cached user vision...")
         with open(user_vision_file, "r", encoding="utf-8") as handle:
-            image_analysis = UserVision.model_validate_json(handle.read())
+            user_vision = UserVision.model_validate_json(handle.read())
     else:
         print("Parsing user vision...")
         user_vision = parse_user_vision(user_text1)
-        with open("data/user_vision.json", "w", encoding="utf-8") as handle:
+        with open(user_vision_file, "w", encoding="utf-8") as handle:
             handle.write(user_vision.model_dump_json(indent=2))
+
+    # Call the new build_advertising_prompt function
+    focus_slider = 5  # Example value, can be changed or made user-configurable
+    
+    prompt_text = build_advertising_prompt(
+        image_analysis_file,
+        moodboard_analysis_file,
+        user_vision_file,
+        focus_slider
+    )
+
+    print("Generated prompt:")
+    print(prompt_text)
 
 
 if __name__ == "__main__":

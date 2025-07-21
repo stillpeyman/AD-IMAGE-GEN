@@ -1,6 +1,6 @@
 {
-  "id": "resp_6874ed7b72a8819884ae71227046327d073205a9431b6af0",
-  "created_at": 1752493437.0,
+  "id": "resp_687e777d6300819894b376dafc1e7f12035b094f217ca857",
+  "created_at": 1753118590.0,
   "error": null,
   "incomplete_details": null,
   "instructions": null,
@@ -9,30 +9,43 @@
   "object": "response",
   "output": [
     {
-      "id": "msg_6874ed7eebf48198a516ce0e39bf0556073205a9431b6af0",
+      "id": "msg_687e778185e881988c9451c7d9f3dbff035b094f217ca857",
       "content": [
         {
           "annotations": [],
-          "text": "{\n  \"main_subject\": \"White sneakers by Puma\",\n  \"dominant_colors\": [\n    \"pure white\",\n    \"black (background)\"\n  ],\n  \"style_description\": \"minimalist\",\n  \"composition_details\": \"symmetrical, centered\",\n  \"mood_atmosphere\": \"clean and modern\",\n  \"suggested_keywords\": [\n    \"Puma\",\n    \"sneakers\",\n    \"minimalist\",\n    \"urban style\",\n    \"fashion\",\n    \"athleisure\",\n    \"footwear\"\n  ]\n}",
+          "text": "{\"product_type\":\"sneakers\",\"product_category\":\"footwear\",\"style_descriptors\":[\"minimalist\",\"low-top\"],\"material_details\":[\"leather\",\"synthetic\"],\"distinctive_features\":[\"perforated design\",\"embroidered logo\"],\"primary_colors\":[\"white\"],\"accent_colors\":[\"black detailing\"],\"brand_elements\":[\"Puma logo\",\"embossed text\"],\"advertising_keywords\":[\"urban\",\"casual\",\"comfortable\"],\"overall_aesthetic\":\"modern minimalist\"}",
           "type": "output_text",
           "parsed": {
-            "main_subject": "White sneakers by Puma",
-            "dominant_colors": [
-              "pure white",
-              "black (background)"
-            ],
-            "style_description": "minimalist",
-            "composition_details": "symmetrical, centered",
-            "mood_atmosphere": "clean and modern",
-            "suggested_keywords": [
-              "Puma",
-              "sneakers",
+            "product_type": "sneakers",
+            "product_category": "footwear",
+            "style_descriptors": [
               "minimalist",
-              "urban style",
-              "fashion",
-              "athleisure",
-              "footwear"
-            ]
+              "low-top"
+            ],
+            "material_details": [
+              "leather",
+              "synthetic"
+            ],
+            "distinctive_features": [
+              "perforated design",
+              "embroidered logo"
+            ],
+            "primary_colors": [
+              "white"
+            ],
+            "accent_colors": [
+              "black detailing"
+            ],
+            "brand_elements": [
+              "Puma logo",
+              "embossed text"
+            ],
+            "advertising_keywords": [
+              "urban",
+              "casual",
+              "comfortable"
+            ],
+            "overall_aesthetic": "modern minimalist"
           },
           "logprobs": []
         }
@@ -62,44 +75,86 @@
       "name": "ImageAnalysis",
       "schema_": {
         "properties": {
-          "main_subject": {
-            "title": "Main Subject",
+          "product_type": {
+            "title": "Product Type",
             "type": "string"
           },
-          "dominant_colors": {
+          "product_category": {
+            "title": "Product Category",
+            "type": "string"
+          },
+          "style_descriptors": {
             "items": {
               "type": "string"
             },
-            "title": "Dominant Colors",
+            "title": "Style Descriptors",
             "type": "array"
           },
-          "style_description": {
-            "title": "Style Description",
-            "type": "string"
-          },
-          "composition_details": {
-            "title": "Composition Details",
-            "type": "string"
-          },
-          "mood_atmosphere": {
-            "title": "Mood Atmosphere",
-            "type": "string"
-          },
-          "suggested_keywords": {
+          "material_details": {
             "items": {
               "type": "string"
             },
-            "title": "Suggested Keywords",
+            "title": "Material Details",
             "type": "array"
+          },
+          "distinctive_features": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Distinctive Features",
+            "type": "array"
+          },
+          "primary_colors": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Primary Colors",
+            "type": "array"
+          },
+          "accent_colors": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Accent Colors",
+            "type": "array"
+          },
+          "brand_elements": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Brand Elements",
+            "type": "array"
+          },
+          "advertising_keywords": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Advertising Keywords",
+            "type": "array"
+          },
+          "overall_aesthetic": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Overall Aesthetic"
           }
         },
         "required": [
-          "main_subject",
-          "dominant_colors",
-          "style_description",
-          "composition_details",
-          "mood_atmosphere",
-          "suggested_keywords"
+          "product_type",
+          "product_category",
+          "style_descriptors",
+          "material_details",
+          "distinctive_features",
+          "primary_colors",
+          "accent_colors",
+          "brand_elements",
+          "advertising_keywords",
+          "overall_aesthetic"
         ],
         "title": "ImageAnalysis",
         "type": "object",
@@ -112,18 +167,20 @@
   },
   "truncation": "disabled",
   "usage": {
-    "input_tokens": 25758,
+    "input_tokens": 26003,
     "input_tokens_details": {
       "cached_tokens": 0
     },
-    "output_tokens": 112,
+    "output_tokens": 95,
     "output_tokens_details": {
       "reasoning_tokens": 0
     },
-    "total_tokens": 25870
+    "total_tokens": 26098
   },
   "user": null,
   "max_tool_calls": null,
+  "prompt_cache_key": null,
+  "safety_identifier": null,
   "store": true,
   "top_logprobs": 0
 }

@@ -2,75 +2,75 @@
   {
     "image_path": "/Users/peymanfarahani/VisualStudioProjects/AI_ENGINEERING_PROJECT/ad_image_gen/test_images/moodboard/skater2-unsplash.jpg",
     "analysis": {
-      "scene_description": "A young man is performing a skateboard trick, jumping off a wall adorned with graffiti art. The scene captures the dynamic energy of skateboarding in an urban environment.",
-      "visual_style": "Vibrant and edgy, characterized by bold graffiti art and an athletic subject, conveying a youthful urban culture.",
-      "mood_atmosphere": "Energetic and rebellious, reflecting the adrenaline of skateboarding and the creativity of street art.",
+      "scene_description": "A young skateboarder is performing a trick over a graffiti-covered wall in a vibrant urban environment.",
+      "visual_style": "Street urban with a focus on action and movement, showcasing skate culture and artistic graffiti.",
+      "mood_atmosphere": "Energetic and rebellious, highlighting youth culture and a sense of freedom.",
       "color_theme": [
-        "Bright blue",
-        "Vivid red",
+        "Bright Red",
+        "Sky Blue",
         "Black",
         "White",
-        "Earthy tones"
+        "Khaki"
       ],
-      "composition_patterns": "Diagonal lines created by the skateboarder's motion, complemented by the vertical and horizontal lines of the graffiti-covered wall and the urban backdrop.",
+      "composition_patterns": "Dynamic diagonal lines created by the skateboarder\u2019s movement, leading the viewer's eye through the scene; layered background with graffiti adds depth.",
       "suggested_keywords": [
         "Skateboarding",
-        "Urban culture",
-        "Graffiti art",
-        "Action sports",
-        "Youth lifestyle",
-        "Adrenaline",
-        "Streetwear"
+        "Graffiti",
+        "Urban",
+        "Youth Culture",
+        "Action Sports",
+        "Rebellion",
+        "Vibrant"
       ]
     }
   },
   {
     "image_path": "/Users/peymanfarahani/VisualStudioProjects/AI_ENGINEERING_PROJECT/ad_image_gen/test_images/moodboard/skater3-unsplash.jpg",
     "analysis": {
-      "scene_description": "The image depicts a vibrant skateboarding scene under a concrete overpass, where several skaters are actively engaged in skating tricks and casually hanging out. The surroundings are adorned with colorful graffiti, suggesting a youthful and urban culture.",
-      "visual_style": "The visual style is gritty and urban, characterized by a mix of dynamic action and static urban elements. The presence of graffiti and concrete structures reflects a raw, contemporary street style.",
-      "mood_atmosphere": "The overall mood is energetic and lively, fostering a sense of community among skateboarders. It captures the thrill of skateboarding culture, combined with a somewhat rebellious yet fun urban vibe.",
+      "scene_description": "A group of young people are skateboarding under a concrete overpass, some performing tricks while others casually ride. The area is adorned with vibrant graffiti art, creating a contrasting urban atmosphere.",
+      "visual_style": "Urban and gritty, characterized by a mix of motion and stillness, showcasing youthful skate culture and street art.",
+      "mood_atmosphere": "Energetic and lively, yet having a laid-back vibe, capturing the essence of urban youth and creativity.",
       "color_theme": [
-        "Grey",
+        "Concrete gray",
+        "Vibrant multicolors (graffiti)",
         "Black",
-        "Bright Blue",
-        "Vibrant Yellow",
-        "Muted Pink"
+        "White",
+        "Soft pastels"
       ],
-      "composition_patterns": "The composition showcases a balanced mix of motion and stillness, with skaters positioned throughout the scene, creating a sense of depth. The use of leading lines formed by the concrete structure guides the viewer\u2019s eye through the image.",
+      "composition_patterns": "Dynamic; the arrangement of figures and graffiti creates a sense of movement and depth, leading the eye through the scene.",
       "suggested_keywords": [
         "Skateboarding",
-        "Urban Culture",
+        "Urban culture",
         "Graffiti",
-        "Youthful Energy",
-        "Concrete Jungle",
-        "Street Style",
-        "Dynamic Movement"
+        "Youth",
+        "Energy",
+        "Street art",
+        "Concrete"
       ]
     }
   },
   {
     "image_path": "/Users/peymanfarahani/VisualStudioProjects/AI_ENGINEERING_PROJECT/ad_image_gen/test_images/moodboard/skater1-unsplash.jpg",
     "analysis": {
-      "scene_description": "A young boy walks through a skate park, holding a skateboard in one hand, as he approaches various graffiti-covered ramps and walls.",
-      "visual_style": "Casual and urban, with a focus on street culture and skateboarding aesthetics.",
-      "mood_atmosphere": "Energetic and youthful, evoking a sense of freedom and adventure.",
+      "scene_description": "A young boy is walking through a skate park, holding his skateboard under one arm, showcasing a casual and relaxed demeanor.",
+      "visual_style": "Urban and dynamic, characterized by streetwear aesthetics and graffiti art, highlighting the skate culture.",
+      "mood_atmosphere": "Energetic and youthful, with a sense of freedom and excitement inherent in skateboarding culture.",
       "color_theme": [
-        "Blue",
-        "Orange",
-        "Gray",
-        "Green",
-        "Black"
+        "Sky Blue",
+        "Bright Orange",
+        "Deep Green",
+        "Black",
+        "Light Gray"
       ],
-      "composition_patterns": "The subject is positioned in the foreground, creating a clear focal point against a backdrop of vibrant graffiti, leading the viewer's eye throughout the scene.",
+      "composition_patterns": "Diagonal lines from the ramps and the boy's movement create a dynamic flow, enhancing the sense of action and energy in the scene.",
       "suggested_keywords": [
         "Skateboarding",
-        "Youth Culture",
-        "Urban",
+        "Urban Culture",
+        "Youthful",
         "Graffiti",
         "Action",
-        "Adventure",
-        "Casual"
+        "Streetwear",
+        "Freedom"
       ]
     }
   }

@@ -1,19 +1,32 @@
 {
-  "main_subject": "White sneakers by Puma",
-  "dominant_colors": [
-    "pure white",
-    "black (background)"
-  ],
-  "style_description": "minimalist",
-  "composition_details": "symmetrical, centered",
-  "mood_atmosphere": "clean and modern",
-  "suggested_keywords": [
-    "Puma",
-    "sneakers",
+  "product_type": "sneakers",
+  "product_category": "footwear",
+  "style_descriptors": [
     "minimalist",
-    "urban style",
-    "fashion",
-    "athleisure",
-    "footwear"
-  ]
+    "low-top"
+  ],
+  "material_details": [
+    "leather",
+    "synthetic"
+  ],
+  "distinctive_features": [
+    "perforated design",
+    "embroidered logo"
+  ],
+  "primary_colors": [
+    "white"
+  ],
+  "accent_colors": [
+    "black detailing"
+  ],
+  "brand_elements": [
+    "Puma logo",
+    "embossed text"
+  ],
+  "advertising_keywords": [
+    "urban",
+    "casual",
+    "comfortable"
+  ],
+  "overall_aesthetic": "modern minimalist"
 }
