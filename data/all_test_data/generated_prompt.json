@@ -1,0 +1,121 @@
+{
+  "prompt": "A young teenage girl is skating at a vibrant Venice Beach skatepark at blue hour, wearing minimalist low-top Puma sneakers with a white leather and synthetic finish. The sneakers feature a perforated design and embroidered logo, blending seamlessly into the energetic urban backdrop filled with colorful graffiti. The composition captures her dynamic movement amidst an atmosphere of youth and freedom, showcasing both the product and the lively skate culture.",
+  "product_data": {
+    "product_type": "sneakers",
+    "product_category": "footwear",
+    "style_descriptors": [
+      "minimalist",
+      "low-top"
+    ],
+    "material_details": [
+      "leather",
+      "synthetic"
+    ],
+    "distinctive_features": [
+      "perforated design",
+      "embroidered logo"
+    ],
+    "primary_colors": [
+      "white"
+    ],
+    "accent_colors": [
+      "black detailing"
+    ],
+    "brand_elements": [
+      "Puma logo",
+      "embossed text"
+    ],
+    "advertising_keywords": [
+      "urban",
+      "casual",
+      "comfortable"
+    ],
+    "overall_aesthetic": "modern minimalist"
+  },
+  "moodboard_data": [
+    {
+      "image_path": "/Users/peymanfarahani/VisualStudioProjects/AI_ENGINEERING_PROJECT/ad_image_gen/test_images/moodboard/skater2-unsplash.jpg",
+      "analysis": {
+        "scene_description": "A young skateboarder is performing a trick over a graffiti-covered wall in a vibrant urban environment.",
+        "visual_style": "Street urban with a focus on action and movement, showcasing skate culture and artistic graffiti.",
+        "mood_atmosphere": "Energetic and rebellious, highlighting youth culture and a sense of freedom.",
+        "color_theme": [
+          "Bright Red",
+          "Sky Blue",
+          "Black",
+          "White",
+          "Khaki"
+        ],
+        "composition_patterns": "Dynamic diagonal lines created by the skateboarder\u2019s movement, leading the viewer's eye through the scene; layered background with graffiti adds depth.",
+        "suggested_keywords": [
+          "Skateboarding",
+          "Graffiti",
+          "Urban",
+          "Youth Culture",
+          "Action Sports",
+          "Rebellion",
+          "Vibrant"
+        ]
+      }
+    },
+    {
+      "image_path": "/Users/peymanfarahani/VisualStudioProjects/AI_ENGINEERING_PROJECT/ad_image_gen/test_images/moodboard/skater3-unsplash.jpg",
+      "analysis": {
+        "scene_description": "A group of young people are skateboarding under a concrete overpass, some performing tricks while others casually ride. The area is adorned with vibrant graffiti art, creating a contrasting urban atmosphere.",
+        "visual_style": "Urban and gritty, characterized by a mix of motion and stillness, showcasing youthful skate culture and street art.",
+        "mood_atmosphere": "Energetic and lively, yet having a laid-back vibe, capturing the essence of urban youth and creativity.",
+        "color_theme": [
+          "Concrete gray",
+          "Vibrant multicolors (graffiti)",
+          "Black",
+          "White",
+          "Soft pastels"
+        ],
+        "composition_patterns": "Dynamic; the arrangement of figures and graffiti creates a sense of movement and depth, leading the eye through the scene.",
+        "suggested_keywords": [
+          "Skateboarding",
+          "Urban culture",
+          "Graffiti",
+          "Youth",
+          "Energy",
+          "Street art",
+          "Concrete"
+        ]
+      }
+    },
+    {
+      "image_path": "/Users/peymanfarahani/VisualStudioProjects/AI_ENGINEERING_PROJECT/ad_image_gen/test_images/moodboard/skater1-unsplash.jpg",
+      "analysis": {
+        "scene_description": "A young boy is walking through a skate park, holding his skateboard under one arm, showcasing a casual and relaxed demeanor.",
+        "visual_style": "Urban and dynamic, characterized by streetwear aesthetics and graffiti art, highlighting the skate culture.",
+        "mood_atmosphere": "Energetic and youthful, with a sense of freedom and excitement inherent in skateboarding culture.",
+        "color_theme": [
+          "Sky Blue",
+          "Bright Orange",
+          "Deep Green",
+          "Black",
+          "Light Gray"
+        ],
+        "composition_patterns": "Diagonal lines from the ramps and the boy's movement create a dynamic flow, enhancing the sense of action and energy in the scene.",
+        "suggested_keywords": [
+          "Skateboarding",
+          "Urban Culture",
+          "Youthful",
+          "Graffiti",
+          "Action",
+          "Streetwear",
+          "Freedom"
+        ]
+      }
+    }
+  ],
+  "vision_data": {
+    "subjects": "young teenage girl",
+    "action": "skating",
+    "setting": "location similar to Venice Beach skatepark",
+    "lighting": "blue hour",
+    "mood_descriptors": [],
+    "additional_details": []
+  },
+  "focus_slider": 5
+}

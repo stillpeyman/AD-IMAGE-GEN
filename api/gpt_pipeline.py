@@ -14,12 +14,12 @@ client = OpenAI(api_key=api_key)
 
 
 # Path to product image
-product_img_path = os.path.join(os.path.dirname(__file__), "..", "test_images", "puma-sneakers-unsplash.jpg")
+product_img_path = os.path.join(os.path.dirname(__file__), "..", "data", "test_images", "puma-sneakers-unsplash.jpg")
 # Convert to absolute path
 product_img_path = os.path.abspath(product_img_path)
 
 # Path to moodboard folder
-moodboard_paths = os.path.join(os.path.dirname(__file__), "..", "test_images", "moodboard")
+moodboard_paths = os.path.join(os.path.dirname(__file__), "..", "data", "test_images", "moodboard")
 # Convert to absolute path
 moodboard_paths = os.path.abspath(moodboard_paths)
 # Path to each moonboard image
@@ -83,7 +83,7 @@ def analyze_product_image(image_path: str) -> ImageAnalysis:
     base64_image = encode_image(image_path)
 
     response = client.responses.parse(
-        model="gpt-4o-mini",
+        model="gpt-4.1",
         input=[
             {
                 "role": "system",
@@ -132,7 +132,7 @@ def analyze_moodboard(image_paths: list[str]) -> list[MoodboardAnalysis]:
         base64_image = encode_image(image_path)
 
         response = client.responses.parse(
-        model="gpt-4o-mini",
+        model="gpt-4.1",
         input=[
             {
                 "role": "system",
@@ -168,7 +168,7 @@ def analyze_moodboard(image_paths: list[str]) -> list[MoodboardAnalysis]:
 
 def parse_user_vision(user_text: str) -> UserVision:
     response = client.responses.parse(
-        model="gpt-4o-mini",
+        model="gpt-4.1",
         input=[
             {
                 "role": "system",
@@ -240,7 +240,7 @@ def build_advertising_prompt(image_analysis_path: str, moodboard_analysis_path: 
 
     # Compose the prompt for GPT
     response = client.responses.create(
-        model="gpt-4o-mini",
+        model="gpt-4.1",
         input=[
             {
                 "role": "system",
@@ -250,7 +250,8 @@ def build_advertising_prompt(image_analysis_path: str, moodboard_analysis_path: 
                 "role": "user",
                 "content": f"""Create an optimized Stable Diffusion prompt for advertising imagery using this data:
 
-                PRODUCT ANALYSIS: {json.dumps(product_data, indent=2)}MOODBOARD INSPIRATION: {json.dumps(moodboard_data, indent=2)}
+                PRODUCT ANALYSIS: {json.dumps(product_data, indent=2)}
+                MOODBOARD INSPIRATION: {json.dumps(moodboard_data, indent=2)}
                 USER VISION: {json.dumps(vision_data, indent=2)}
                 FOCUS INSTRUCTION: {focus_instruction}
 
