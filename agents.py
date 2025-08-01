@@ -3,13 +3,19 @@ from pydantic_ai.models.openai import OpenAIModel
 # from pydantic_ai.models.gemini import GeminiModel  # Uncomment if you want Gemini support
 from models import ImageAnalysis, MoodboardAnalysis, UserVision, Prompt, GeneratedImage
 import base64
-from typing import Optional, List
+from typing import Optional
+
+
+"""
+NOTE TO MYSELF:
+In computer programming, asynchronous (async) operation means that a process operates independent of other processes ("non-blocking"). Synchronous (sync) operation means that the process runs only as a result of some other completed or handed-off processes ("blocking").
+
+"""
+
 
 class Agents:
     """
-    Encapsulates all AI agent logic for product image analysis, moodboard analysis, user vision parsing,
-    prompt building, and image generation. Supports multiple LLM providers and dynamic model selection.
-    All methods are async and ready for FastAPI integration.
+    Encapsulates all AI agent logic for product image analysis, moodboard analysis, user vision parsing, prompt building, and image generation. Supports multiple LLM providers and dynamic model selection. All methods are async and ready for FastAPI integration.
     """
     def __init__(
         self,
@@ -20,8 +26,7 @@ class Agents:
     ):
         """
         Initialize the Agents class with API keys, model name, and provider.
-        Sets up all agent instances for product image analysis, moodboard analysis, user vision parsing,
-        prompt building, and image generation.
+        Sets up all agent instances for product image analysis, moodboard analysis, user vision parsing, prompt building, and image generation.
 
         Args:
             openai_api_key (Optional[str]): API key for OpenAI models.
@@ -160,48 +165,45 @@ class Agents:
             ImageAnalysis: Structured analysis of the product image.
         """
         base64_image = self.encode_image(image_path)
-        prompt = {
-            "role": "user",
-            "content": [
-                {
-                    "type": "input_text",
-                    "text": (
-                        "Analyze this product image for advertising purposes and provide:\n"
-                        "1. Product type (e.g., 'sneakers', 'dress shirt', 'backpack')\n"
-                        "2. Product category (e.g., 'footwear', 'apparel', 'accessories', 'electronics')\n"
-                        "3. Style descriptors as list (e.g., ['minimalist', 'low-top'], ['vintage', 'elegant'])\n"
-                        "4. Material details as list (e.g., ['leather', 'mesh'], ['cotton', 'denim'])\n"
-                        "5. Distinctive features as list (e.g., ['white sole', 'perforated toe'])\n"
-                        "6. Primary colors as list (e.g., ['black', 'white'], ['navy blue', 'gray'])\n"
-                        "7. Accent colors as list (e.g., ['red accents', 'silver details'])\n"
-                        "8. Brand elements as list (e.g., ['Puma logo', 'embossed text'], ['Nike logo', 'swoosh'])\n"
-                        "9. Advertising keywords as list (e.g., ['urban', 'athletic', 'versatile'])\n"
-                        "10. Overall aesthetic (optional) (e.g., 'luxury minimalist', 'urban casual')\n"
-                        "Return only the structured JSON, no explanation."
-                    )
-                },
-                {
-                    "type": "input_image",
-                    "image_url": f"data:image/jpeg;base64,{base64_image}",
-                }
-            ]
-        }
-        result = await self.product_image_agent.run([prompt])
+        prompt = [
+            {
+                "type": "input_text",
+                "text": (
+                    "Analyze this product image for advertising purposes and provide:\n"
+                    "1. Product type (e.g., 'sneakers', 'dress shirt', 'backpack')\n"
+                    "2. Product category (e.g., 'footwear', 'apparel', 'accessories', 'electronics')\n"
+                    "3. Style descriptors as list (e.g., ['minimalist', 'low-top'], ['vintage', 'elegant'])\n"
+                    "4. Material details as list (e.g., ['leather', 'mesh'], ['cotton', 'denim'])\n"
+                    "5. Distinctive features as list (e.g., ['white sole', 'perforated toe'])\n"
+                    "6. Primary colors as list (e.g., ['black', 'white'], ['navy blue', 'gray'])\n"
+                    "7. Accent colors as list (e.g., ['red accents', 'silver details'])\n"
+                    "8. Brand elements as list (e.g., ['Puma logo', 'embossed text'], ['Nike logo', 'swoosh'])\n"
+                    "9. Advertising keywords as list (e.g., ['urban', 'athletic', 'versatile'])\n"
+                    "10. Overall aesthetic (optional) (e.g., 'luxury minimalist', 'urban casual')\n"
+                    "Return only the structured JSON, no explanation."
+                )
+            },
+            {
+                "type": "input_image",
+                "image_url": f"data:image/jpeg;base64,{base64_image}",
+            }
+        ]
+        result = await self.product_image_agent.run(prompt)
         return result.output
 
-    async def analyze_moodboard(self, image_path: str) -> MoodboardAnalysis:
+    async def analyze_moodboard(self, image_paths: list[str]) -> list[MoodboardAnalysis]:
         """
-        Analyze a moodboard image using the moodboard_agent and return structured analysis.
+        Analyze a list of moodboard images using the moodboard_agent and return structured analyses.
 
         Args:
-            image_path (str): Path to the moodboard image file.
+            image_paths (list[str]): List of paths to moodboard image files.
         Returns:
-            MoodboardAnalysis: Structured analysis of the moodboard image.
+            list[MoodboardAnalysis]: List of structured analyses for each moodboard image.
         """
-        base64_image = self.encode_image(image_path)
-        prompt = {
-            "role": "user",
-            "content": [
+        results = []
+        for image_path in image_paths:
+            base64_image = self.encode_image(image_path)
+            prompt = [
                 {
                     "type": "input_text",
                     "text": (
@@ -220,9 +222,9 @@ class Agents:
                     "image_url": f"data:image/jpeg;base64,{base64_image}",
                 }
             ]
-        }
-        result = await self.moodboard_agent.run([prompt])
-        return result.output
+            result = await self.moodboard_agent.run(prompt)
+            results.append(result.output)
+        return results
 
     async def parse_user_vision(self, user_text: str) -> UserVision:
         """
@@ -299,27 +301,35 @@ class Agents:
     async def generate_image(
         self,
         prompt: str,
-        input_image_paths: List[str]
+        input_image_paths: list[str]
     ) -> GeneratedImage:
         """
         Generate an advertising image using OpenAI's image generation API, given a prompt and input images.
 
         Args:
-            prompt (str): The advertising prompt text.
-            input_image_paths (List[str]): List of paths to input image files.
+            prompt (str): The advertising prompt text (from build_advertising_prompt).
+            input_image_paths (list[str]): List of paths to input image files.
         Returns:
             GeneratedImage: The generated advertising image and metadata.
         """
         input_images_base64 = [self.encode_image(path) for path in input_image_paths]
-        prompt_content = [
-            {"type": "input_text", "text": prompt}
-        ] + [
-            {"type": "input_image", "image_url": f"data:image/jpeg;base64,{img}"}
-            for img in input_images_base64
-        ]
-        user_prompt = {
-            "role": "user",
-            "content": prompt_content
-        }
-        result = await self.image_gen_agent.run([user_prompt])
+        
+        # Create final prompt that references the input images
+        final_prompt = (
+            f"{prompt}\n\n"
+            "Use the provided reference images to ensure accuracy:\n"
+            "- Product image: Use this for exact product details, colors, and branding\n"
+            "- Character/reference images: Use these for pose, style, and scene elements\n"
+            "Generate the image based on this description and the provided reference images."
+        )
+        
+        # Create content array with final prompt and images
+        content = [{"type": "input_text", "text": final_prompt}]
+        for img in input_images_base64:
+            content.append({
+                "type": "input_image", 
+                "image_url": f"data:image/jpeg;base64,{img}"
+            })
+        
+        result = await self.image_gen_agent.run(content)
         return result.output
