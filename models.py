@@ -5,6 +5,17 @@ from sqlalchemy import Column
 from sqlalchemy.dialects.sqlite import JSON
 
 
+"""
+NOTE TO MYSELF:
+When using Field(sa_column=Column(JSON)) in SQLModel,
+SQLModel automatically handles the conversion:
+When saving to database: Python list[str] → JSON string
+When reading from database: JSON string → Python list[str]
+You don't need to manually call model_dump_json() or json.dumps()
+- SQLModel does this automatically.
+"""
+
+
 class ImageAnalysis(SQLModel, table=True):
     """Stores analysis results for a product image."""
     id: Optional[int] = Field(default=None, primary_key=True)
@@ -18,7 +29,9 @@ class ImageAnalysis(SQLModel, table=True):
     brand_elements: list[str] = Field(sa_column=Column(JSON))
     advertising_keywords: list[str] = Field(sa_column=Column(JSON))
     overall_aesthetic: Optional[str] = None
+    image_path: Optional[str] = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
 
 class MoodboardAnalysis(SQLModel, table=True):
     """Stores analysis results for a moodboard image."""
@@ -29,7 +42,9 @@ class MoodboardAnalysis(SQLModel, table=True):
     color_theme: list[str] = Field(sa_column=Column(JSON))
     composition_patterns: str
     suggested_keywords: list[str] = Field(sa_column=Column(JSON))
+    image_path: Optional[str] = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
 
 class UserVision(SQLModel, table=True):
     """Stores structured user vision input."""
@@ -42,15 +57,17 @@ class UserVision(SQLModel, table=True):
     additional_details: list[str] = Field(sa_column=Column(JSON))
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
+
 class Prompt(SQLModel, table=True):
     """Stores generated prompts for image generation."""
     id: Optional[int] = Field(default=None, primary_key=True)
     prompt_text: str
     image_analysis_id: Optional[int] = Field(default=None, foreign_key="imageanalysis.id")
-    moodboard_analysis_id: Optional[int] = Field(default=None, foreign_key="moodboardanalysis.id")
+    moodboard_analysis_ids: list[int] = Field(sa_column=Column(JSON))  # Changed to list of IDs
     user_vision_id: Optional[int] = Field(default=None, foreign_key="uservision.id")
     focus_slider: int
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
 
 class GeneratedImage(SQLModel, table=True):
     """Stores final generated ad images and their metadata."""

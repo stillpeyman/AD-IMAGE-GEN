@@ -8,8 +8,12 @@ from typing import Optional
 
 """
 NOTE TO MYSELF:
+
+-> async:
 In computer programming, asynchronous (async) operation means that a process operates independent of other processes ("non-blocking"). Synchronous (sync) operation means that the process runs only as a result of some other completed or handed-off processes ("blocking").
 
+-> How to read base64.b64encode(image_file.read()).decode("utf-8")? (same for "image_bytes" as param):
+Plain English: "Take these image bytes or open this image file and read its content as bytes, then convert them to base64 format, then turn the base64 bytes into a readable string. But we need a string for the API, so decode the bytes to UTF-8 (Unicode Transformation Format 8-bit) string."
 """
 
 
@@ -40,6 +44,7 @@ class Agents:
         self.provider = provider
         self._init_agents()
 
+
     def _get_model(self):
         if self.provider == "openai":
             return OpenAIModel(self.model_name, api_key=self.openai_api_key)
@@ -47,6 +52,7 @@ class Agents:
         #     return GeminiModel(self.model_name, api_key=self.gemini_api_key)
         else:
             raise ValueError(f"Unsupported provider: {self.provider}")
+
 
     def _init_agents(self):
         model = self._get_model()
@@ -130,6 +136,7 @@ class Agents:
             )
         )
 
+
     def set_model(self, model_name: str, provider: str = "openai"):
         """
         Change the model and provider for all agents. Re-initializes all agent instances.
@@ -142,20 +149,8 @@ class Agents:
         self.provider = provider
         self._init_agents()
 
-    @staticmethod
-    def encode_image(image_path: str) -> str:
-        """
-        Encode an image file as a base64 string for API input.
 
-        Args:
-            image_path (str): Path to the image file.
-        Returns:
-            str: Base64-encoded string of the image.
-        """
-        with open(image_path, "rb") as image_file:
-            return base64.b64encode(image_file.read()).decode("utf-8")
-
-    async def analyze_product_image(self, image_path: str) -> ImageAnalysis:
+    async def analyze_product_image(self, base64_image: str) -> ImageAnalysis:
         """
         Analyze a product image using the product_image_agent and return structured analysis.
 
@@ -164,7 +159,6 @@ class Agents:
         Returns:
             ImageAnalysis: Structured analysis of the product image.
         """
-        base64_image = self.encode_image(image_path)
         prompt = [
             {
                 "type": "input_text",
@@ -191,7 +185,8 @@ class Agents:
         result = await self.product_image_agent.run(prompt)
         return result.output
 
-    async def analyze_moodboard(self, image_paths: list[str]) -> list[MoodboardAnalysis]:
+
+    async def analyze_moodboard(self, base64_images: list[str]) -> list[MoodboardAnalysis]:
         """
         Analyze a list of moodboard images using the moodboard_agent and return structured analyses.
 
@@ -201,8 +196,7 @@ class Agents:
             list[MoodboardAnalysis]: List of structured analyses for each moodboard image.
         """
         results = []
-        for image_path in image_paths:
-            base64_image = self.encode_image(image_path)
+        for base64_image in base64_images:
             prompt = [
                 {
                     "type": "input_text",
@@ -250,10 +244,11 @@ class Agents:
         result = await self.user_vision_agent.run(prompt)
         return result.output
 
+
     async def build_advertising_prompt(
         self,
         image_analysis: ImageAnalysis,
-        moodboard_analysis: MoodboardAnalysis,
+        moodboard_analyses: list[MoodboardAnalysis],
         user_vision: UserVision,
         focus_slider: int
     ) -> Prompt:
@@ -262,9 +257,13 @@ class Agents:
 
         Args:
             image_analysis (ImageAnalysis): Structured product image analysis.
-            moodboard_analysis (MoodboardAnalysis): Structured moodboard analysis.
+
+            moodboard_analyses (list[MoodboardAnalysis]): List of structured moodboard analyses.
+
             user_vision (UserVision): Structured user vision information.
+
             focus_slider (int): Value (0-10) indicating the desired product/scene focus.
+            
         Returns:
             Prompt: The generated advertising prompt.
         """
@@ -282,10 +281,19 @@ class Agents:
             "The atmosphere and setting are the sole focus, with the product barely visible but still present."
         ]
         focus_instruction = focus_instructions[min(max(focus_slider, 0), len(focus_instructions)-1)]
+        
+        # Combine all moodboard analyses into a single description
+        moodboard_descriptions = []
+        for i, moodboard in enumerate(moodboard_analyses, 1):
+            moodboard_descriptions.append(
+                f"MOODBOARD {i}: {moodboard.model_dump_json(indent=2)}"
+            )
+        combined_moodboards = "\n".join(moodboard_descriptions)
+        
         prompt = (
             "Create a single, cohesive prompt for OpenAI's image generation tool using the following data:\n"
             f"PRODUCT ANALYSIS: {image_analysis.model_dump_json(indent=2)}\n"
-            f"MOODBOARD INSPIRATION: {moodboard_analysis.model_dump_json(indent=2)}\n"
+            f"MOODBOARD INSPIRATIONS:\n{combined_moodboards}\n"
             f"USER VISION: {user_vision.model_dump_json(indent=2)}\n"
             f"FOCUS INSTRUCTION: {focus_instruction}\n"
             "Requirements:\n"
@@ -298,22 +306,23 @@ class Agents:
         result = await self.prompt_agent.run(prompt)
         return result.output
 
+
     async def generate_image(
         self,
         prompt: str,
-        input_image_paths: list[str]
+        product_image_base64: str,
+        reference_images_base64: list[str] | None = None
     ) -> GeneratedImage:
         """
         Generate an advertising image using OpenAI's image generation API, given a prompt and input images.
 
         Args:
             prompt (str): The advertising prompt text (from build_advertising_prompt).
+
             input_image_paths (list[str]): List of paths to input image files.
         Returns:
             GeneratedImage: The generated advertising image and metadata.
         """
-        input_images_base64 = [self.encode_image(path) for path in input_image_paths]
-        
         # Create final prompt that references the input images
         final_prompt = (
             f"{prompt}\n\n"
@@ -325,11 +334,20 @@ class Agents:
         
         # Create content array with final prompt and images
         content = [{"type": "input_text", "text": final_prompt}]
-        for img in input_images_base64:
-            content.append({
-                "type": "input_image", 
-                "image_url": f"data:image/jpeg;base64,{img}"
-            })
+        
+        # Add product image first
+        content.append({
+            "type": "input_image", 
+            "image_url": f"data:image/jpeg;base64,{product_image_base64}"
+        })
+        
+        # Add reference images if provided
+        if reference_images_base64:
+            for img in reference_images_base64:
+                content.append({
+                    "type": "input_image", 
+                    "image_url": f"data:image/jpeg;base64,{img}"
+                })
         
         result = await self.image_gen_agent.run(content)
         return result.output
