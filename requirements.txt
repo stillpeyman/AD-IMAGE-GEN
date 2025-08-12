@@ -1,0 +1,26 @@
+# Core dependencies
+sqlmodel>=0.0.14
+sqlalchemy>=2.0.0
+pydantic-ai>=0.0.1
+pydantic>=2.0.0
+
+# Web framework
+flask>=3.0.0
+flask-sqlalchemy>=3.0.0
+
+# AI and API
+openai>=1.0.0
+transformers>=4.30.0
+
+# HTTP requests
+requests>=2.31.0
+
+# Environment variables
+python-dotenv>=1.0.0
+
+# Image processing
+pillow>=10.0.0
+
+# Data analysis
+pandas>=2.0.0
+pytrends>=4.9.0

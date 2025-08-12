@@ -1,5 +1,7 @@
+from openai import AsyncOpenAI
 from pydantic_ai import Agent
 from pydantic_ai.models.openai import OpenAIModel
+from pydantic_ai.providers.openai import OpenAIProvider
 # from pydantic_ai.models.gemini import GeminiModel  # Uncomment if you want Gemini support
 from models import ImageAnalysis, MoodboardAnalysis, UserVision, Prompt, GeneratedImage
 import base64
@@ -23,7 +25,8 @@ class Agents:
     """
     def __init__(
         self,
-        openai_api_key: Optional[str] = None,
+        text_openai_api_key: Optional[str] = None, # For GPT calls (MS_OPENAI_API_KEY)
+        img_openai_api_key: Optional[str] = None, # For GPT image calls (MY_OPENAI_API_KEY)
         gemini_api_key: Optional[str] = None,
         model_name: str = "openai:gpt-4o",
         provider: str = "openai"
@@ -33,21 +36,52 @@ class Agents:
         Sets up all agent instances for product image analysis, moodboard analysis, user vision parsing, prompt building, and image generation.
 
         Args:
-            openai_api_key (Optional[str]): API key for OpenAI models.
+            text_openai_api_key (Optional[str]): API key for OpenAI text models (GPT calls).
+            img_openai_api_key (Optional[str]): API key for OpenAI image generation models (DALL-E calls).
             gemini_api_key (Optional[str]): API key for Gemini models (if used).
             model_name (str): The model name to use (default: 'openai:gpt-4o').
             provider (str): The provider name (default: 'openai').
         """
-        self.openai_api_key = openai_api_key
+        self.text_openai_api_key = text_openai_api_key
+        self.img_openai_api_key = img_openai_api_key
         self.gemini_api_key = gemini_api_key
         self.model_name = model_name
         self.provider = provider
         self._init_agents()
 
 
-    def _get_model(self):
+    def _get_text_model(self):
+        """
+        Get the OpenAI model for text-based operations (GPT calls).
+        
+        Returns:
+            OpenAIModel: Configured model for text analysis and prompt generation.
+            
+        Raises:
+            ValueError: If provider is not supported.
+        """
         if self.provider == "openai":
-            return OpenAIModel(self.model_name, api_key=self.openai_api_key)
+            client = AsyncOpenAI(api_key=self.text_openai_api_key)
+            return OpenAIModel(self.model_name, provider=OpenAIProvider(openai_client=client))
+        # elif self.provider == "gemini":
+        #     return GeminiModel(self.model_name, api_key=self.gemini_api_key)
+        else:
+            raise ValueError(f"Unsupported provider: {self.provider}")
+
+
+    def _get_image_model(self):
+        """
+        Get the OpenAI model for image generation operations (DALL-E calls).
+        
+        Returns:
+            OpenAIModel: Configured model for image generation.
+            
+        Raises:
+            ValueError: If provider is not supported.
+        """
+        if self.provider == "openai":
+            client = AsyncOpenAI(api_key=self.img_openai_api_key)
+            return OpenAIModel(self.model_name, provider=OpenAIProvider(openai_client=client))
         # elif self.provider == "gemini":
         #     return GeminiModel(self.model_name, api_key=self.gemini_api_key)
         else:
@@ -55,10 +89,12 @@ class Agents:
 
 
     def _init_agents(self):
-        model = self._get_model()
+        text_model = self._get_text_model()
+        image_model = self._get_image_model()
+
         self.product_image_agent = Agent(
-            model,
-            result_type=ImageAnalysis,
+            text_model,
+            output_type=ImageAnalysis,
             system_prompt=(
                 "You are an expert visual analyst for advertising and social media. "
                 "Analyze the product image and return a structured JSON with the following fields: "
@@ -79,8 +115,8 @@ class Agents:
             )
         )
         self.moodboard_agent = Agent(
-            model,
-            result_type=MoodboardAnalysis,
+            text_model,
+            output_type=MoodboardAnalysis,
             system_prompt=(
                 "You are an expert moodboard analyst for advertising and social media. "
                 "Analyze the moodboard image and return a structured JSON with the following fields: "
@@ -96,8 +132,8 @@ class Agents:
             )
         )
         self.user_vision_agent = Agent(
-            model,
-            result_type=UserVision,
+            text_model,
+            output_type=UserVision,
             system_prompt=(
                 "You are an expert at extracting structured information from user descriptions for advertising content creation. "
                 "Extract: subjects, action, setting, lighting, mood_descriptors, additional_details.\n"
@@ -112,8 +148,8 @@ class Agents:
             )
         )
         self.prompt_agent = Agent(
-            model,
-            result_type=Prompt,
+            text_model,
+            output_type=Prompt,
             system_prompt=(
                 "You are an expert at creating optimized prompts for OpenAI's image generation tool for advertising imagery. "
                 "Given product analysis, moodboard inspiration, user vision, and a focus instruction, "
@@ -127,8 +163,8 @@ class Agents:
             )
         )
         self.image_gen_agent = Agent(
-            model,
-            result_type=GeneratedImage,
+            image_model,
+            output_type=GeneratedImage,
             system_prompt=(
                 "You are an expert at generating advertising images from prompts and reference images using OpenAI's image generation API. "
                 "Given a prompt and one or more input images, generate a realistic advertising image.\n"
