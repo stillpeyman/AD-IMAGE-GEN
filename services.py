@@ -328,16 +328,27 @@ class AdGeneratorService:
                     base64_image = self.encode_image(image_bytes)
                     reference_images_base64.append(base64_image)
             
-            ad_image = await self.agents.generate_image(
+            # Save reference images to disk if provided
+            saved_reference_paths = []
+            if reference_image_bytes_list:
+                for idx, ref_bytes in enumerate(reference_image_bytes_list):
+                    saved_ref = self._save_image(ref_bytes, "references", f"ref_{idx+1}")
+                    saved_reference_paths.append(saved_ref)
+            
+            final_image = await self.agents.generate_image(
                 prompt.prompt_text, 
                 product_image_base64, 
                 reference_images_base64 if reference_images_base64 else None
             )
+
+            # Store the exact file paths used for generation
+            used_paths = [product_analysis.image_path] if product_analysis.image_path else []
+            used_paths.extend(saved_reference_paths)
             
             db_ad_img = GeneratedImage(
                 prompt_id=prompt_id,
-                image_url=ad_image.image_url,
-                input_images=ad_image.input_images
+                image_url=final_image.image_url,
+                input_images=used_paths
             )
             
             self.session.add(db_ad_img)
@@ -398,24 +409,7 @@ class AdGeneratorService:
             )
             
             # Step 5: Generate final image using product + optional references
-            saved_reference_paths = []
-            if reference_image_bytes_list:
-                for idx, ref_bytes in enumerate(reference_image_bytes_list):
-                    saved_ref = self._save_image(ref_bytes, "references", f"ref_{idx+1}")
-                    saved_reference_paths.append(saved_ref)
             final_image = await self.generate_image(prompt.id, reference_image_bytes_list)
-            
-            # Store the exact file paths used for generation
-            try:
-                used_paths = [product_analysis.image_path] if product_analysis.image_path else []
-                used_paths.extend(saved_reference_paths)
-                final_image.input_images = used_paths
-                self.session.add(final_image)
-                self.session.commit()
-                self.session.refresh(final_image)
-            except Exception as e:
-                self.session.rollback()
-                logger.error(f"Failed to update input_images: {str(e)}")
             
             logger.info(f"Complete ad generation workflow finished: {final_image.id}")
             return final_image
