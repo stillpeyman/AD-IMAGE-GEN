@@ -27,25 +27,25 @@ class Agents:
         self,
         text_openai_api_key: Optional[str] = None, # For GPT calls (MS_OPENAI_API_KEY)
         img_openai_api_key: Optional[str] = None, # For GPT image calls (MY_OPENAI_API_KEY)
-        gemini_api_key: Optional[str] = None,
-        model_name: str = "openai:gpt-4o",
+        text_model_name: str = "gpt-4o-mini", # For text
+        img_model_name: str = "gpt-4.1", # For image generation
         provider: str = "openai"
     ):
         """
-        Initialize the Agents class with API keys, model name, and provider.
-        Sets up all agent instances for product image analysis, moodboard analysis, user vision parsing, prompt building, and image generation.
+    Initialize the Agents class with API keys, model names, and provider.
+    Sets up all agent instances for product image analysis, moodboard analysis, user vision parsing, prompt building, and image generation.
 
-        Args:
-            text_openai_api_key (Optional[str]): API key for OpenAI text models (GPT calls).
-            img_openai_api_key (Optional[str]): API key for OpenAI image generation models (DALL-E calls).
-            gemini_api_key (Optional[str]): API key for Gemini models (if used).
-            model_name (str): The model name to use (default: 'openai:gpt-4o').
-            provider (str): The provider name (default: 'openai').
-        """
+    Args:
+        text_openai_api_key (Optional[str]): API key for OpenAI text models (GPT calls).
+        img_openai_api_key (Optional[str]): API key for OpenAI image generation models (gpt-image-1 calls).
+        text_model_name (str): The model name for text operations (default: 'openai:gpt-4o-mini').
+        img_model_name (str): The model name for image generation operations (default: 'openai:gpt-4.1').
+        provider (str): The provider name (default: 'openai').
+    """
         self.text_openai_api_key = text_openai_api_key
         self.img_openai_api_key = img_openai_api_key
-        self.gemini_api_key = gemini_api_key
-        self.model_name = model_name
+        self.text_model_name = text_model_name
+        self.img_model_name = img_model_name
         self.provider = provider
         self._init_agents()
 
@@ -62,7 +62,7 @@ class Agents:
         """
         if self.provider == "openai":
             client = AsyncOpenAI(api_key=self.text_openai_api_key)
-            return OpenAIModel(self.model_name, provider=OpenAIProvider(openai_client=client))
+            return OpenAIModel(self.text_model_name, provider=OpenAIProvider(openai_client=client))
         # elif self.provider == "gemini":
         #     return GeminiModel(self.model_name, api_key=self.gemini_api_key)
         else:
@@ -71,7 +71,7 @@ class Agents:
 
     def _get_image_model(self):
         """
-        Get the OpenAI model for image generation operations (DALL-E calls).
+        Get the OpenAI model for image generation operations (gpt-image-1 calls).
         
         Returns:
             OpenAIModel: Configured model for image generation.
@@ -81,9 +81,7 @@ class Agents:
         """
         if self.provider == "openai":
             client = AsyncOpenAI(api_key=self.img_openai_api_key)
-            return OpenAIModel(self.model_name, provider=OpenAIProvider(openai_client=client))
-        # elif self.provider == "gemini":
-        #     return GeminiModel(self.model_name, api_key=self.gemini_api_key)
+            return OpenAIModel(self.img_model_name, provider=OpenAIProvider(openai_client=client))
         else:
             raise ValueError(f"Unsupported provider: {self.provider}")
 
