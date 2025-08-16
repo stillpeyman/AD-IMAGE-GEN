@@ -1,11 +1,10 @@
 from openai import AsyncOpenAI
-from pydantic_ai import Agent
+from pydantic_ai import Agent, BinaryContent
 from pydantic_ai.models.openai import OpenAIModel
 from pydantic_ai.providers.openai import OpenAIProvider
 # from pydantic_ai.models.gemini import GeminiModel  # Uncomment if you want Gemini support
 from models import ImageAnalysis, MoodboardAnalysis, UserVision, Prompt, GeneratedImage
 import base64
-from typing import Optional
 
 
 """
@@ -25,8 +24,8 @@ class Agents:
     """
     def __init__(
         self,
-        text_openai_api_key: Optional[str] = None, # For GPT calls (MS_OPENAI_API_KEY)
-        img_openai_api_key: Optional[str] = None, # For GPT image calls (MY_OPENAI_API_KEY)
+        text_openai_api_key: str | None = None, # For GPT calls (MS_OPENAI_API_KEY)
+        img_openai_api_key: str | None = None, # For GPT image calls (MY_OPENAI_API_KEY)
         text_model_name: str = "gpt-4o-mini", # For text
         img_model_name: str = "gpt-4.1", # For image generation
         provider: str = "openai"
@@ -36,8 +35,8 @@ class Agents:
     Sets up all agent instances for product image analysis, moodboard analysis, user vision parsing, prompt building, and image generation.
 
     Args:
-        text_openai_api_key (Optional[str]): API key for OpenAI text models (GPT calls).
-        img_openai_api_key (Optional[str]): API key for OpenAI image generation models (gpt-image-1 calls).
+        text_openai_api_key (str | None): API key for OpenAI text models (GPT calls).
+        img_openai_api_key (str | None): API key for OpenAI image generation models (gpt-image-1 calls).
         text_model_name (str): The model name for text operations (default: 'openai:gpt-4o-mini').
         img_model_name (str): The model name for image generation operations (default: 'openai:gpt-4.1').
         provider (str): The provider name (default: 'openai').
@@ -184,75 +183,66 @@ class Agents:
         self._init_agents()
 
 
-    async def analyze_product_image(self, base64_image: str) -> ImageAnalysis:
+    async def analyze_product_image(self, image_bytes: bytes) -> ImageAnalysis:
         """
         Analyze a product image using the product_image_agent and return structured analysis.
 
         Args:
-            image_path (str): Path to the product image file.
+            image_bytes (bytes): Raw product image data.
         Returns:
             ImageAnalysis: Structured analysis of the product image.
         """
-        prompt = [
-            {
-                "type": "input_text",
-                "text": (
-                    "Analyze this product image for advertising purposes and provide:\n"
-                    "1. Product type (e.g., 'sneakers', 'dress shirt', 'backpack')\n"
-                    "2. Product category (e.g., 'footwear', 'apparel', 'accessories', 'electronics')\n"
-                    "3. Style descriptors as list (e.g., ['minimalist', 'low-top'], ['vintage', 'elegant'])\n"
-                    "4. Material details as list (e.g., ['leather', 'mesh'], ['cotton', 'denim'])\n"
-                    "5. Distinctive features as list (e.g., ['white sole', 'perforated toe'])\n"
-                    "6. Primary colors as list (e.g., ['black', 'white'], ['navy blue', 'gray'])\n"
-                    "7. Accent colors as list (e.g., ['red accents', 'silver details'])\n"
-                    "8. Brand elements as list (e.g., ['Puma logo', 'embossed text'], ['Nike logo', 'swoosh'])\n"
-                    "9. Advertising keywords as list (e.g., ['urban', 'athletic', 'versatile'])\n"
-                    "10. Overall aesthetic (optional) (e.g., 'luxury minimalist', 'urban casual')\n"
-                    "Return only the structured JSON, no explanation."
-                )
-            },
-            {
-                "type": "input_image",
-                "image_url": f"data:image/jpeg;base64,{base64_image}",
-            }
-        ]
-        result = await self.product_image_agent.run(prompt)
+        prompt_text = (
+            "Analyze this product image for advertising purposes and provide:\n"
+            "1. Product type (e.g., 'sneakers', 'dress shirt', 'backpack')\n"
+            "2. Product category (e.g., 'footwear', 'apparel', 'accessories', 'electronics')\n"
+            "3. Style descriptors as list (e.g., ['minimalist', 'low-top'], ['vintage', 'elegant'])\n"
+            "4. Material details as list (e.g., ['leather', 'mesh'], ['cotton', 'denim'])\n"
+            "5. Distinctive features as list (e.g., ['white sole', 'perforated toe'])\n"
+            "6. Primary colors as list (e.g., ['black', 'white'], ['navy blue', 'gray'])\n"
+            "7. Accent colors as list (e.g., ['red accents', 'silver details'])\n"
+            "8. Brand elements as list (e.g., ['Puma logo', 'embossed text'], ['Nike logo', 'swoosh'])\n"
+            "9. Advertising keywords as list (e.g., ['urban', 'athletic', 'versatile'])\n"
+            "10. Overall aesthetic (optional) (e.g., 'luxury minimalist', 'urban casual')\n"
+            "Return only the structured JSON, no explanation."
+        )
+        
+        result = await self.product_image_agent.run([
+            prompt_text,
+            BinaryContent(data=image_bytes, media_type='image/jpeg')
+        ])
         return result.output
 
 
-    async def analyze_moodboard(self, base64_images: list[str]) -> list[MoodboardAnalysis]:
+    async def analyze_moodboard(self, image_bytes_list: list[bytes]) -> list[MoodboardAnalysis]:
         """
         Analyze a list of moodboard images using the moodboard_agent and return structured analyses.
 
         Args:
-            image_paths (list[str]): List of paths to moodboard image files.
+            image_bytes_list (list[bytes]): List of raw moodboard image data.
         Returns:
             list[MoodboardAnalysis]: List of structured analyses for each moodboard image.
         """
         results = []
-        for base64_image in base64_images:
-            prompt = [
-                {
-                    "type": "input_text",
-                    "text": (
-                        "Analyze this moodboard image and provide:\n"
-                        "1. Brief scene description (e.g., 'A group of friends laughing in a cozy living room')\n"
-                        "2. Visual style (e.g., 'warm, inviting, casual')\n"
-                        "3. Mood/atmosphere (e.g., 'relaxed, joyful')\n"
-                        "4. Color theme (e.g., ['beige', 'soft blue', 'warm yellow'])\n"
-                        "5. Composition patterns (e.g., 'central focus, natural light')\n"
-                        "6. 5-7 relevant keywords (e.g., ['weekend', 'friendship', 'comfort', 'home', 'laughter'])\n"
-                        "Return only the structured JSON, no explanation."
-                    )
-                },
-                {
-                    "type": "input_image",
-                    "image_url": f"data:image/jpeg;base64,{base64_image}",
-                }
-            ]
-            result = await self.moodboard_agent.run(prompt)
+        for image_bytes in image_bytes_list:
+            prompt_text = (
+                "Analyze this moodboard image and provide:\n"
+                "1. Brief scene description (e.g., 'A group of friends laughing in a cozy living room')\n"
+                "2. Visual style (e.g., 'warm, inviting, casual')\n"
+                "3. Mood/atmosphere (e.g., 'relaxed, joyful')\n"
+                "4. Color theme (e.g., ['beige', 'soft blue', 'warm yellow'])\n"
+                "5. Composition patterns (e.g., 'central focus, natural light')\n"
+                "6. 5-7 relevant keywords (e.g., ['weekend', 'friendship', 'comfort', 'home', 'laughter'])\n"
+                "Return only the structured JSON, no explanation."
+            )
+            
+            result = await self.moodboard_agent.run([
+                prompt_text,
+                BinaryContent(data=image_bytes, media_type='image/jpeg')
+            ])
             results.append(result.output)
         return results
+
 
     async def parse_user_vision(self, user_text: str) -> UserVision:
         """
@@ -344,16 +334,16 @@ class Agents:
     async def generate_image(
         self,
         prompt: str,
-        product_image_base64: str,
-        reference_images_base64: list[str] | None = None
+        product_image_bytes: bytes,
+        reference_images_bytes: list[bytes] | None = None
     ) -> GeneratedImage:
         """
         Generate an advertising image using OpenAI's image generation API, given a prompt and input images.
 
         Args:
-            prompt (str): The advertising prompt text (from build_advertising_prompt).
-
-            input_image_paths (list[str]): List of paths to input image files.
+            prompt (str): The advertising prompt text.
+            product_image_bytes (bytes): Raw product image data.
+            reference_images_bytes (list[bytes] | None): Optional reference image data.
         Returns:
             GeneratedImage: The generated advertising image and metadata.
         """
@@ -367,21 +357,15 @@ class Agents:
         )
         
         # Create content array with final prompt and images
-        content = [{"type": "input_text", "text": final_prompt}]
-        
-        # Add product image first
-        content.append({
-            "type": "input_image", 
-            "image_url": f"data:image/jpeg;base64,{product_image_base64}"
-        })
+        content = [
+            final_prompt,
+            BinaryContent(data=product_image_bytes, media_type='image/jpeg')
+            ]
         
         # Add reference images if provided
-        if reference_images_base64:
-            for img in reference_images_base64:
-                content.append({
-                    "type": "input_image", 
-                    "image_url": f"data:image/jpeg;base64,{img}"
-                })
+        if reference_images_bytes:
+            for image_bytes in reference_images_bytes:
+                content.append(BinaryContent(data=image_bytes, media_type='image/jpeg'))
         
         result = await self.image_gen_agent.run(content)
         return result.output

@@ -5,8 +5,9 @@ pydantic-ai>=0.0.1
 pydantic>=2.0.0
 
 # Web framework
-flask>=3.0.0
-flask-sqlalchemy>=3.0.0
+fastapi>=0.104.0
+python-multipart>=0.0.20
+uvicorn>=0.24.0
 
 # AI and API
 openai>=1.0.0
