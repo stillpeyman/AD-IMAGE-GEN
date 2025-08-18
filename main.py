@@ -10,6 +10,7 @@ import os  # stdlib
 
 from dotenv import load_dotenv  # third-party
 from fastapi import FastAPI, Depends, File, UploadFile, HTTPException
+from fastapi.staticfiles import StaticFiles
 from sqlmodel import SQLModel, Session, create_engine, select
 
 from agents import Agents  # local
@@ -26,6 +27,7 @@ TEST_SESSION_ID = "test-session-123"
 load_dotenv()
 TEXT_API_KEY = os.getenv("MS_OPENAI_API_KEY")
 IMG_API_KEY = os.getenv("MY_OPENAI_API_KEY")
+IMG_MODEL = "gpt-image-1"  # The only supported model for image generation
 
 # Enable debug endpoint only when ENABLE_DB_PING=true in .env
 ENABLE_DB_PING = os.getenv("ENABLE_DB_PING", "false").lower() == "true"
@@ -60,12 +62,13 @@ def get_session():
 
 # 3) app + agents
 app = FastAPI()
+
+# Serve generated images from local disk under /static
+app.mount("/static", StaticFiles(directory="output_images"), name="static")
+
 agents = Agents(
     text_openai_api_key=TEXT_API_KEY,
-    img_openai_api_key=IMG_API_KEY,
     text_model_name="gpt-4o-mini",
-    img_model_name="gpt-4.1",
-    provider="openai",
 )
 
 
@@ -73,10 +76,15 @@ def get_service(session: Session = Depends(get_session)) -> AdGeneratorService:
     """
     Build an AdGeneratorService bound to this request's Session.
 
-    Depends(get_session) means: “Before calling this, first call get_session()
-    and give me its returned Session.”
+    Depends(get_session) means: "Before calling this, first call get_session()
+    and give me its returned Session."
     """
-    return AdGeneratorService(agents=agents, session=session)
+    return AdGeneratorService(
+        agents=agents, 
+        session=session,
+        img_api_key=IMG_API_KEY,
+        img_model=IMG_MODEL
+    )
 
 
 @app.on_event("startup")
@@ -101,7 +109,7 @@ async def start_session():
 
 @app.post("/analyze/product-image", response_model=ImageAnalysis)
 async def analyze_product_image(
-    file: UploadFile,
+    file: UploadFile = File(...),
     session_id: str = TEST_SESSION_ID,
     service: AdGeneratorService = Depends(get_service)
 ):
@@ -115,24 +123,26 @@ async def analyze_product_image(
 
 @app.post("/analyze/moodboard", response_model=list[MoodboardAnalysis])
 async def analyze_moodboard_images(
-    files: list[UploadFile],
+    files: list[UploadFile] | None = File(default=None),
     session_id: str = TEST_SESSION_ID,
     service: AdGeneratorService = Depends(get_service)
 ):
     try:
-        image_bytes_list = []
-        for file in files:
-            image_bytes = await file.read()
-            image_bytes_list.append(image_bytes)
+        image_bytes_list = None
+        if files:
+            image_bytes_list = []
+            for file in files:
+                image_bytes = await file.read()
+                image_bytes_list.append(image_bytes)
         result = await service.analyze_moodboard_images(image_bytes_list, session_id)
         return result
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@app.post("/vision/parse", response_model=UserVision)
+@app.post("/vision/parse", response_model=UserVision | None)
 async def parse_user_vision(
-    text: str,
+    text: str | None,
     session_id: str = TEST_SESSION_ID,
     service: AdGeneratorService = Depends(get_service)
 ):
@@ -166,8 +176,6 @@ async def build_advertising_prompt(
         user_vision = service.session.exec(
             select(UserVision).where(UserVision.session_id == session_id)
         ).first()
-        if not user_vision:
-            raise HTTPException(status_code=404, detail="No user vision found for this session")
         
         # Extract IDs
         moodboard_ids = [analysis.id for analysis in moodboard_analyses]
@@ -176,7 +184,7 @@ async def build_advertising_prompt(
         result = await service.build_advertising_prompt(
             image_analysis.id,
             moodboard_ids,
-            user_vision.id,
+            (user_vision.id if user_vision else None),
             focus_slider,
             session_id
         )
@@ -188,7 +196,7 @@ async def build_advertising_prompt(
 @app.post("/images/generate", response_model=GeneratedImage)
 async def generate_image(
     session_id: str = TEST_SESSION_ID,
-    reference_files: list[UploadFile] | None = None,
+    reference_files: list[UploadFile] | None = File(default=None),
     service: AdGeneratorService = Depends(get_service)
 ):
     try:
@@ -214,23 +222,25 @@ async def generate_image(
 
 @app.post("/ad/complete", response_model=GeneratedImage)
 async def create_complete_ad(
-    product_file: UploadFile,
-    moodboard_files: list[UploadFile],
-    user_vision_text: str,
+    user_vision_text: str | None,
     focus_slider: int,
     session_id: str = TEST_SESSION_ID,
-    reference_files: list[UploadFile] | None = None,
+    product_file: UploadFile = File(...),
+    moodboard_files: list[UploadFile] | None = File(default=None),
+    reference_files: list[UploadFile] | None = File(default=None),
     service: AdGeneratorService = Depends(get_service)
 ):
     try:
         # Read product image
         product_image_bytes = await product_file.read()
         
-        # Read moodboard images
-        moodboard_image_bytes_list = []
-        for file in moodboard_files:
-            image_bytes = await file.read()
-            moodboard_image_bytes_list.append(image_bytes)
+        # Read moodboard images (optional)
+        moodboard_image_bytes_list = None
+        if moodboard_files:
+            moodboard_image_bytes_list = []
+            for file in moodboard_files:
+                image_bytes = await file.read()
+                moodboard_image_bytes_list.append(image_bytes)
         
         # Read reference images if provided
         reference_image_bytes_list = None

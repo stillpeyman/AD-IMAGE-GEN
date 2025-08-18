@@ -1,10 +1,14 @@
+# stdlib imports first
+import base64
+
+# third-party imports
 from openai import AsyncOpenAI
 from pydantic_ai import Agent, BinaryContent
 from pydantic_ai.models.openai import OpenAIModel
 from pydantic_ai.providers.openai import OpenAIProvider
-# from pydantic_ai.models.gemini import GeminiModel  # Uncomment if you want Gemini support
-from models import ImageAnalysis, MoodboardAnalysis, UserVision, Prompt, GeneratedImage
-import base64
+
+# local imports
+from models import ImageAnalysis, MoodboardAnalysis, UserVision, Prompt
 
 
 """
@@ -20,74 +24,48 @@ Plain English: "Take these image bytes or open this image file and read its cont
 
 class Agents:
     """
-    Encapsulates all AI agent logic for product image analysis, moodboard analysis, user vision parsing, prompt building, and image generation. Supports multiple LLM providers and dynamic model selection. All methods are async and ready for FastAPI integration.
+    Handles text-based AI tasks for the ad generation workflow:
+    - Product image analysis
+    - Moodboard analysis  
+    - User vision parsing
+    - Prompt building
+    
+    Note: Image generation is handled separately in api/image_generator.py
     """
     def __init__(
         self,
-        text_openai_api_key: str | None = None, # For GPT calls (MS_OPENAI_API_KEY)
-        img_openai_api_key: str | None = None, # For GPT image calls (MY_OPENAI_API_KEY)
-        text_model_name: str = "gpt-4o-mini", # For text
-        img_model_name: str = "gpt-4.1", # For image generation
-        provider: str = "openai"
+        text_openai_api_key: str | None = None,
+        text_model_name: str = "gpt-4o-mini",
     ):
         """
-    Initialize the Agents class with API keys, model names, and provider.
-    Sets up all agent instances for product image analysis, moodboard analysis, user vision parsing, prompt building, and image generation.
-
-    Args:
-        text_openai_api_key (str | None): API key for OpenAI text models (GPT calls).
-        img_openai_api_key (str | None): API key for OpenAI image generation models (gpt-image-1 calls).
-        text_model_name (str): The model name for text operations (default: 'openai:gpt-4o-mini').
-        img_model_name (str): The model name for image generation operations (default: 'openai:gpt-4.1').
-        provider (str): The provider name (default: 'openai').
-    """
+        Initialize the Agents class with API key and model name for text operations.
+        
+        Args:
+            text_openai_api_key (str | None): API key for OpenAI text models (MS_OPENAI_API_KEY).
+            text_model_name (str): The model name for text operations (default: 'gpt-4o-mini').
+        """
         self.text_openai_api_key = text_openai_api_key
-        self.img_openai_api_key = img_openai_api_key
         self.text_model_name = text_model_name
-        self.img_model_name = img_model_name
-        self.provider = provider
-        self._init_agents()
-
-
-    def _get_text_model(self):
-        """
-        Get the OpenAI model for text-based operations (GPT calls).
         
-        Returns:
-            OpenAIModel: Configured model for text analysis and prompt generation.
-            
-        Raises:
-            ValueError: If provider is not supported.
-        """
-        if self.provider == "openai":
-            client = AsyncOpenAI(api_key=self.text_openai_api_key)
-            return OpenAIModel(self.text_model_name, provider=OpenAIProvider(openai_client=client))
-        # elif self.provider == "gemini":
-        #     return GeminiModel(self.model_name, api_key=self.gemini_api_key)
-        else:
-            raise ValueError(f"Unsupported provider: {self.provider}")
-
-
-    def _get_image_model(self):
-        """
-        Get the OpenAI model for image generation operations (gpt-image-1 calls).
+        # Initialize the OpenAI model for pydantic-ai
+        # We need AsyncOpenAI client because pydantic-ai's OpenAIModel requires it
+        client = AsyncOpenAI(api_key=self.text_openai_api_key)
+        text_model = OpenAIModel(
+            self.text_model_name, 
+            provider=OpenAIProvider(openai_client=client)
+        )
         
-        Returns:
-            OpenAIModel: Configured model for image generation.
-            
-        Raises:
-            ValueError: If provider is not supported.
+        # Initialize all text-based agents
+        self._initialize_agents(text_model)
+
+
+    def _initialize_agents(self, text_model):
         """
-        if self.provider == "openai":
-            client = AsyncOpenAI(api_key=self.img_openai_api_key)
-            return OpenAIModel(self.img_model_name, provider=OpenAIProvider(openai_client=client))
-        else:
-            raise ValueError(f"Unsupported provider: {self.provider}")
-
-
-    def _init_agents(self):
-        text_model = self._get_text_model()
-        image_model = self._get_image_model()
+        Initialize all text-based agents with the provided model.
+        
+        Args:
+            text_model: The configured OpenAI model for text operations.
+        """
 
         self.product_image_agent = Agent(
             text_model,
@@ -159,28 +137,7 @@ class Agents:
                 "- Return only the prompt text, no explanation."
             )
         )
-        self.image_gen_agent = Agent(
-            image_model,
-            output_type=GeneratedImage,
-            system_prompt=(
-                "You are an expert at generating advertising images from prompts and reference images using OpenAI's image generation API. "
-                "Given a prompt and one or more input images, generate a realistic advertising image.\n"
-                "Return only the generated image data, no explanation."
-            )
-        )
-
-
-    def set_model(self, model_name: str, provider: str = "openai"):
-        """
-        Change the model and provider for all agents. Re-initializes all agent instances.
-
-        Args:
-            model_name (str): The new model name to use.
-            provider (str): The provider name (e.g., 'openai', 'gemini').
-        """
-        self.model_name = model_name
-        self.provider = provider
-        self._init_agents()
+        # Note: image generation is handled via OpenAI Responses API directly (see api/image_generator.py)
 
 
     async def analyze_product_image(self, image_bytes: bytes) -> ImageAnalysis:
@@ -273,7 +230,7 @@ class Agents:
         self,
         image_analysis: ImageAnalysis,
         moodboard_analyses: list[MoodboardAnalysis],
-        user_vision: UserVision,
+        user_vision: UserVision | None,
         focus_slider: int
     ) -> Prompt:
         """
@@ -314,11 +271,17 @@ class Agents:
             )
         combined_moodboards = "\n".join(moodboard_descriptions)
         
+        user_vision_block = (
+            user_vision.model_dump_json(indent=2)
+            if user_vision is not None
+            else "<not provided>"
+        )
+
         prompt = (
             "Create a single, cohesive prompt for OpenAI's image generation tool using the following data:\n"
             f"PRODUCT ANALYSIS: {image_analysis.model_dump_json(indent=2)}\n"
             f"MOODBOARD INSPIRATIONS:\n{combined_moodboards}\n"
-            f"USER VISION: {user_vision.model_dump_json(indent=2)}\n"
+            f"USER VISION: {user_vision_block}\n"
             f"FOCUS INSTRUCTION: {focus_instruction}\n"
             "Requirements:\n"
             "- The prompt should be 30-75 words.\n"
@@ -331,41 +294,3 @@ class Agents:
         return result.output
 
 
-    async def generate_image(
-        self,
-        prompt: str,
-        product_image_bytes: bytes,
-        reference_images_bytes: list[bytes] | None = None
-    ) -> GeneratedImage:
-        """
-        Generate an advertising image using OpenAI's image generation API, given a prompt and input images.
-
-        Args:
-            prompt (str): The advertising prompt text.
-            product_image_bytes (bytes): Raw product image data.
-            reference_images_bytes (list[bytes] | None): Optional reference image data.
-        Returns:
-            GeneratedImage: The generated advertising image and metadata.
-        """
-        # Create final prompt that references the input images
-        final_prompt = (
-            f"{prompt}\n\n"
-            "Use the provided reference images to ensure accuracy:\n"
-            "- Product image: Use this for exact product details, colors, and branding\n"
-            "- Character/reference images: Use these for pose, style, and scene elements\n"
-            "Generate the image based on this description and the provided reference images."
-        )
-        
-        # Create content array with final prompt and images
-        content = [
-            final_prompt,
-            BinaryContent(data=product_image_bytes, media_type='image/jpeg')
-            ]
-        
-        # Add reference images if provided
-        if reference_images_bytes:
-            for image_bytes in reference_images_bytes:
-                content.append(BinaryContent(data=image_bytes, media_type='image/jpeg'))
-        
-        result = await self.image_gen_agent.run(content)
-        return result.output

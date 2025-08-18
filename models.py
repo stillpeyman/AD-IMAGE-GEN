@@ -1,7 +1,10 @@
-from sqlmodel import SQLModel, Field
+# stdlib imports
 from datetime import datetime, timezone
+
+# third-party imports
 from sqlalchemy import Column
 from sqlalchemy.dialects.sqlite import JSON
+from sqlmodel import SQLModel, Field
 
 
 """
