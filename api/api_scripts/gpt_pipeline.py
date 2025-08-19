@@ -9,25 +9,11 @@ import json
 
 # Load API key & initialize client
 load_dotenv()
-api_key = os.getenv("OPENAI_API_KEY")
+api_key = os.getenv("MS_OPENAI_API_KEY")
 client = OpenAI(api_key=api_key)
 
 
-# Path to product image
-product_img_path = os.path.join(os.path.dirname(__file__), "..", "data", "test_images", "puma-sneakers-unsplash.jpg")
-# Convert to absolute path
-product_img_path = os.path.abspath(product_img_path)
-
-# Path to moodboard folder
-moodboard_paths = os.path.join(os.path.dirname(__file__), "..", "data", "test_images", "moodboard")
-# Convert to absolute path
-moodboard_paths = os.path.abspath(moodboard_paths)
-# Path to each moonboard image
-moodboard_img_paths = [
-    os.path.join(moodboard_paths, file) 
-    for file in os.listdir(moodboard_paths) 
-    if file.endswith((".jpg", ".jpeg", ".png"))
-    ]
+# NOTE: Avoid top-level I/O or filesystem operations here to keep imports side-effect free.
 
 
 # User text examples for testing
@@ -83,7 +69,7 @@ def analyze_product_image(image_path: str) -> ImageAnalysis:
     base64_image = encode_image(image_path)
 
     response = client.responses.parse(
-        model="gpt-4.1",
+        model="gpt-4o-mini",
         input=[
             {
                 "role": "system",
@@ -286,6 +272,23 @@ def build_advertising_prompt(image_analysis_path: str, moodboard_analysis_path: 
 
 
 def main():
+    # Resolve example image paths only when running this module as a script
+    product_img_path = os.path.abspath(
+        os.path.join(
+            os.path.dirname(__file__), "..", "..", "data", "test_images", "puma-sneakers-unsplash.jpg"
+        )
+    )
+
+    moodboard_paths = os.path.abspath(
+        os.path.join(
+            os.path.dirname(__file__), "..", "..", "data", "test_images", "moodboard"
+        )
+    )
+    moodboard_img_paths = [
+        os.path.join(moodboard_paths, file)
+        for file in os.listdir(moodboard_paths)
+        if file.endswith((".jpg", ".jpeg", ".png"))
+    ]
     # Check if cached analysis exists, otherwise analyze
     image_analysis_file = "data/image_analysis.json"
     if os.path.exists(image_analysis_file):

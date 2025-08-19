@@ -1,61 +1,54 @@
 {
-  "id": "resp_6880c947ce9481a38b2f1c1f891979d80b0c8d3de0dc7777",
-  "created_at": 1753270600.0,
+  "id": "resp_68a49d873a408190932994a77c23a78b01039bbd0b09e110",
+  "created_at": 1755618695.0,
   "error": null,
   "incomplete_details": null,
   "instructions": null,
   "metadata": {},
-  "model": "gpt-4.1-2025-04-14",
+  "model": "gpt-4o-mini-2024-07-18",
   "object": "response",
   "output": [
     {
-      "id": "msg_6880c949d67481a394cd6ba45333d76d0b0c8d3de0dc7777",
+      "id": "msg_68a49d892c848190a7dcc656d43b12a701039bbd0b09e110",
       "content": [
         {
           "annotations": [],
-          "text": "{\n  \"product_type\": \"sneakers\",\n  \"product_category\": \"footwear\",\n  \"style_descriptors\": [\"minimalist\", \"classic\", \"low-top\", \"clean design\"],\n  \"material_details\": [\"synthetic leather\", \"rubber sole\"],\n  \"distinctive_features\": [\"white sole\", \"perforated side panels\", \"bold side branding\", \"tonal stitching\"],\n  \"primary_colors\": [\"white\"],\n  \"accent_colors\": [\"black text accents\"],\n  \"brand_elements\": [\"Puma logo\", \"embossed PUMA text on heel and sole\"],\n  \"advertising_keywords\": [\"timeless\", \"versatile\", \"urban\", \"streetwear\", \"everyday\", \"comfortable\", \"clean\"],\n  \"overall_aesthetic\": \"urban minimalist\"\n}",
+          "text": "{\"product_type\":\"sneakers\",\"product_category\":\"footwear\",\"style_descriptors\":[\"athletic\",\"lightweight\"],\"material_details\":[\"mesh\",\"synthetic\"],\"distinctive_features\":[\"flyknit upper\",\"flexible sole\"],\"primary_colors\":[\"red\",\"black\"],\"accent_colors\":[\"white\"],\"brand_elements\":[\"Nike logo\",\"branding on tongue\"],\"advertising_keywords\":[\"performance\",\"running\",\"dynamic\"],\"overall_aesthetic\":\"sporty modern\"}",
           "type": "output_text",
+          "logprobs": [],
           "parsed": {
             "product_type": "sneakers",
             "product_category": "footwear",
             "style_descriptors": [
-              "minimalist",
-              "classic",
-              "low-top",
-              "clean design"
+              "athletic",
+              "lightweight"
             ],
             "material_details": [
-              "synthetic leather",
-              "rubber sole"
+              "mesh",
+              "synthetic"
             ],
             "distinctive_features": [
-              "white sole",
-              "perforated side panels",
-              "bold side branding",
-              "tonal stitching"
+              "flyknit upper",
+              "flexible sole"
             ],
             "primary_colors": [
-              "white"
+              "red",
+              "black"
             ],
             "accent_colors": [
-              "black text accents"
+              "white"
             ],
             "brand_elements": [
-              "Puma logo",
-              "embossed PUMA text on heel and sole"
+              "Nike logo",
+              "branding on tongue"
             ],
             "advertising_keywords": [
-              "timeless",
-              "versatile",
-              "urban",
-              "streetwear",
-              "everyday",
-              "comfortable",
-              "clean"
+              "performance",
+              "running",
+              "dynamic"
             ],
-            "overall_aesthetic": "urban minimalist"
-          },
-          "logprobs": []
+            "overall_aesthetic": "sporty modern"
+          }
         }
       ],
       "role": "assistant",
@@ -70,12 +63,16 @@
   "top_p": 1.0,
   "background": false,
   "max_output_tokens": null,
+  "max_tool_calls": null,
   "previous_response_id": null,
+  "prompt": null,
+  "prompt_cache_key": null,
   "reasoning": {
     "effort": null,
     "generate_summary": null,
     "summary": null
   },
+  "safety_identifier": null,
   "service_tier": "default",
   "status": "completed",
   "text": {
@@ -171,24 +168,22 @@
       "type": "json_schema",
       "description": null,
       "strict": true
-    }
+    },
+    "verbosity": "medium"
   },
+  "top_logprobs": 0,
   "truncation": "disabled",
   "usage": {
-    "input_tokens": 1267,
+    "input_tokens": 37337,
     "input_tokens_details": {
       "cached_tokens": 0
     },
-    "output_tokens": 166,
+    "output_tokens": 93,
     "output_tokens_details": {
       "reasoning_tokens": 0
     },
-    "total_tokens": 1433
+    "total_tokens": 37430
   },
   "user": null,
-  "max_tool_calls": null,
-  "prompt_cache_key": null,
-  "safety_identifier": null,
-  "store": true,
-  "top_logprobs": 0
+  "store": true
 }
