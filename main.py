@@ -6,6 +6,12 @@ FastAPI app wiring:
 - Provides AdGeneratorService via Depends for endpoints
 """
 
+"""
+NOTE TO MYSELF for better organizing code in separate files:
+see https://fastapi.tiangolo.com/tutorial/bigger-applications/#import-apirouter
+>>> "Multiple Files/APIRouter"
+"""
+
 import os  # stdlib
 
 from dotenv import load_dotenv  # third-party
