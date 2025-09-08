@@ -165,11 +165,16 @@ class Agents:
             "Return only the structured JSON, no explanation."
         )
         
-        result = await self.product_image_agent.run([
+        content = [
             prompt_text,
-            BinaryContent(data=image_bytes, media_type='image/jpeg'),
-            f"User feedback: {feedback}" if feedback else None
-        ])
+            BinaryContent(data=image_bytes, media_type='image/jpeg')
+        ]
+
+        # Only add feedback if it exists
+        if feedback:
+            content.append(f"User feedback: {feedback}")
+
+        result = await self.product_image_agent.run(content)
         return result.output
 
 
