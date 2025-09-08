@@ -140,12 +140,13 @@ class Agents:
         # Note: image generation is handled via OpenAI Responses API directly (see api/image_generator.py)
 
 
-    async def analyze_product_image(self, image_bytes: bytes) -> ImageAnalysis:
+    async def analyze_product_image(self, image_bytes: bytes, feedback: str = None) -> ImageAnalysis:
         """
         Analyze a product image using the product_image_agent and return structured analysis.
 
         Args:
             image_bytes (bytes): Raw product image data.
+            feedback (str, optional): Refinement feedback for iterative improvement.
         Returns:
             ImageAnalysis: Structured analysis of the product image.
         """
@@ -166,7 +167,8 @@ class Agents:
         
         result = await self.product_image_agent.run([
             prompt_text,
-            BinaryContent(data=image_bytes, media_type='image/jpeg')
+            BinaryContent(data=image_bytes, media_type='image/jpeg'),
+            f"User feedback: {feedback}" if feedback else None
         ])
         return result.output
 

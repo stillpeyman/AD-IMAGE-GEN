@@ -34,13 +34,62 @@ class AdGeneratorService:
             session: Database session for persistence
             img_api_key: API key for image generation (MY_OPENAI_API_KEY)
             img_model: Model name for image generation (e.g., "gpt-image-1")
+        
+        Attributes:
+            session_memory: Dictionary storing session data for refinement logic
         """
         self.agents = agents
         self.session = session
         self.img_api_key = img_api_key
         self.img_model = img_model
+        self.session_memory = {}
 
 
+    def _store_session_data(self, session_id: str, step: str, data: dict) -> None:
+        """
+        Store analysis data in session memory for refinement logic.
+        
+        Private method - internal use only, not part of public API.
+        Creates session structure if it doesn't exist, then stores step data.
+        
+        Args:
+            session_id: Unique session identifier
+            step: Analysis step name (e.g., "product_analysis", "moodboard_analysis")
+            data: Dictionary containing id, analysis, and refinement_count
+        """
+        if session_id not in self.session_memory:
+            self.session_memory[session_id] = {}
+        self.session_memory[session_id][step] = data
+
+
+    def _get_session_data(self, session_id: str, step: str = None) -> dict | None:
+        """
+        Retrieve analysis data from session memory.
+        
+        Private method - internal use only, not part of public API.
+        Can return entire session or specific step data.
+        
+        Args:
+            session_id: Unique session identifier
+            step: Analysis step name (optional, defaults to None)
+                - None: returns entire session data
+                - "product_analysis": returns only that step's data
+        
+        Returns:
+            dict | None: Session data, step data, or None if not found
+        """
+        if session_id not in self.session_memory:
+            return None
+        
+        if step is None:
+            return self.session_memory[session_id]
+
+        # .get(step) returns None if step doesn't exist
+        return self.session_memory[session_id].get(step)
+
+
+    # static methods = utility functions
+    # don't need instance data, work independently of the class, don't access <self>
     @staticmethod
     def _save_image(image_bytes: bytes, dir_name: str, filename_prefix: str) -> str:
         """
@@ -55,13 +104,14 @@ class AdGeneratorService:
         return path
 
 
-    async def analyze_product_image(self, image_bytes: bytes, session_id: str) -> ImageAnalysis:
+    async def analyze_product_image(self, image_bytes: bytes, session_id: str, refinement_feedback: str = None) -> ImageAnalysis:
         """
         Analyze a product image and store results in database.
-        
+
         Args:
             image_bytes: Raw product image data
             session_id: Session identifier for linking related records
+            refinement_feedback: Optional feedback for refinement (defaults to None)
             
         Returns:
             ImageAnalysis: Database record with analysis results
@@ -71,8 +121,20 @@ class AdGeneratorService:
             RuntimeError: If database operation fails
         """
         try:
-            image_path = self._save_image(image_bytes, "product", "product")
-            analysis = await self.agents.analyze_product_image(image_bytes)
+            if refinement_feedback:
+                # Get original image path from session memory
+                session_data = self._get_session_data(session_id, "product_analysis")
+                image_path = session_data["analysis"].image_path
+
+                # Read original image from disk for refinement analysis
+                with open(image_path, "rb") as f:
+                    original_image_bytes = f.read()
+
+                analysis = await self.agents.analyze_product_image(original_image_bytes, refinement_feedback)
+
+            else:
+                image_path = self._save_image(image_bytes, "product", "product")
+                analysis = await self.agents.analyze_product_image(image_bytes)
             
             db_analysis = ImageAnalysis(
                 product_type=analysis.product_type,
@@ -92,6 +154,16 @@ class AdGeneratorService:
             self.session.add(db_analysis)
             self.session.commit()
             self.session.refresh(db_analysis)
+
+            self._store_session_data(
+                session_id, 
+                "product_analysis", 
+                {
+                "id": db_analysis.id,
+                "analysis": db_analysis,
+                "refinement_count": 0 if not refinement_feedback else session_data["refinement_count"] + 1
+                }
+                )
             
             logger.info(f"Product image analysis completed: {db_analysis.id}")
             return db_analysis
