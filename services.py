@@ -25,15 +25,22 @@ class AdGeneratorService:
     including database operations and error handling.
     """
     
-    def __init__(self, agents: Agents, session: Session, img_api_key: str | None, img_model: str):
+    def __init__(
+        self, 
+        agents: Agents, 
+        session: Session, 
+        img_model: str,
+        img_api_key: str | None = None
+    ):
         """
         Initialize the service with agents, database session, and image generation config.
         
         Args:
             agents: The AI agents for text analysis tasks
             session: Database session for persistence
-            img_api_key: API key for image generation (MY_OPENAI_API_KEY)
             img_model: Model name for image generation (e.g., "gpt-image-1")
+            img_api_key: API key for image generation (MY_OPENAI_API_KEY).
+                        Optional to allow dependency injection and testing scenarios.
         
         Attributes:
             session_memory: Dictionary storing session data for refinement logic
@@ -45,47 +52,47 @@ class AdGeneratorService:
         self.session_memory = {}
 
 
-    def _store_session_data(self, session_id: str, step: str, data: dict) -> None:
-        """
-        Store analysis data in session memory for refinement logic.
+    # def _store_session_data(self, session_id: str, step: str, data: dict) -> None:
+    #     """
+    #     Store analysis data in session memory for refinement logic.
         
-        Private method - internal use only, not part of public API.
-        Creates session structure if it doesn't exist, then stores step data.
+    #     Private method - internal use only, not part of public API.
+    #     Creates session structure if it doesn't exist, then stores step data.
         
-        Args:
-            session_id: Unique session identifier
-            step: Analysis step name (e.g., "product_analysis", "moodboard_analysis")
-            data: Dictionary containing id, analysis, and refinement_count
-        """
-        if session_id not in self.session_memory:
-            self.session_memory[session_id] = {}
-        self.session_memory[session_id][step] = data
+    #     Args:
+    #         session_id: Unique session identifier
+    #         step: Analysis step name (e.g., "product_analysis", "moodboard_analysis")
+    #         data: Dictionary containing id, analysis, and refinement_count
+    #     """
+    #     if session_id not in self.session_memory:
+    #         self.session_memory[session_id] = {}
+    #     self.session_memory[session_id][step] = data
 
 
-    def _get_session_data(self, session_id: str, step: str = None) -> dict | None:
-        """
-        Retrieve analysis data from session memory.
+    # def _get_session_data(self, session_id: str, step: str = None) -> dict | None:
+    #     """
+    #     Retrieve analysis data from session memory.
         
-        Private method - internal use only, not part of public API.
-        Can return entire session or specific step data.
+    #     Private method - internal use only, not part of public API.
+    #     Can return entire session or specific step data.
         
-        Args:
-            session_id: Unique session identifier
-            step: Analysis step name (optional, defaults to None)
-                - None: returns entire session data
-                - "product_analysis": returns only that step's data
+    #     Args:
+    #         session_id: Unique session identifier
+    #         step: Analysis step name (optional, defaults to None)
+    #             - None: returns entire session data
+    #             - "product_analysis": returns only that step's data
         
-        Returns:
-            dict | None: Session data, step data, or None if not found
-        """
-        if session_id not in self.session_memory:
-            return None
+    #     Returns:
+    #         dict | None: Session data, step data, or None if not found
+    #     """
+    #     if session_id not in self.session_memory:
+    #         return None
         
-        if step is None:
-            return self.session_memory[session_id]
+    #     if step is None:
+    #         return self.session_memory[session_id]
 
-        # .get(step) returns None if step doesn't exist
-        return self.session_memory[session_id].get(step)
+    #     # .get(step) returns None if step doesn't exist
+    #     return self.session_memory[session_id].get(step)
 
 
     # static methods = utility functions
@@ -104,14 +111,13 @@ class AdGeneratorService:
         return path
 
 
-    async def analyze_product_image(self, image_bytes: bytes, session_id: str, refinement_feedback: str = None) -> ImageAnalysis:
+    async def analyze_product_image(self, image_bytes: bytes, session_id: str) -> ImageAnalysis:
         """
         Analyze a product image and store results in database.
 
         Args:
             image_bytes: Raw product image data
             session_id: Session identifier for linking related records
-            refinement_feedback: Optional feedback for refinement (defaults to None)
             
         Returns:
             ImageAnalysis: Database record with analysis results
@@ -120,21 +126,9 @@ class AdGeneratorService:
             ValueError: If image analysis fails
             RuntimeError: If database operation fails
         """
-        try:
-            if refinement_feedback:
-                # Get original image path from session memory
-                session_data = self._get_session_data(session_id, "product_analysis")
-                image_path = session_data["analysis"].image_path
-
-                # Read original image from disk for refinement analysis
-                with open(image_path, "rb") as f:
-                    original_image_bytes = f.read()
-
-                analysis = await self.agents.analyze_product_image(original_image_bytes, refinement_feedback)
-
-            else:
-                image_path = self._save_image(image_bytes, "product", "product")
-                analysis = await self.agents.analyze_product_image(image_bytes)
+        try:   
+            image_path = self._save_image(image_bytes, "product", "product")
+            analysis = await self.agents.analyze_product_image(image_bytes)
             
             db_analysis = ImageAnalysis(
                 product_type=analysis.product_type,
@@ -154,16 +148,6 @@ class AdGeneratorService:
             self.session.add(db_analysis)
             self.session.commit()
             self.session.refresh(db_analysis)
-
-            self._store_session_data(
-                session_id, 
-                "product_analysis", 
-                {
-                "id": db_analysis.id,
-                "analysis": db_analysis,
-                "refinement_count": 0 if not refinement_feedback else session_data["refinement_count"] + 1
-                }
-                )
             
             logger.info(f"Product image analysis completed: {db_analysis.id}")
             return db_analysis
@@ -174,7 +158,11 @@ class AdGeneratorService:
             raise ValueError(f"Product image analysis failed: {str(e)}")
 
 
-    async def analyze_moodboard_images(self, image_bytes_list: list[bytes] | None, session_id: str) -> list[MoodboardAnalysis]:
+    async def analyze_moodboard_images(
+        self, 
+        session_id: str, 
+        image_bytes_list: list[bytes] | None = None
+    ) -> list[MoodboardAnalysis]:
         """
         Analyze multiple moodboard images and store results in database.
         
@@ -235,7 +223,7 @@ class AdGeneratorService:
             raise ValueError(f"Moodboard analysis failed: {str(e)}")
 
 
-    async def parse_user_vision(self, user_text: str | None, session_id: str) -> UserVision | None:
+    async def parse_user_vision(self, user_text: str, session_id: str) -> UserVision:
         """
         Parse user vision text and store results in database.
         
@@ -251,7 +239,7 @@ class AdGeneratorService:
             RuntimeError: If database operation fails
         """
         if not user_text or not user_text.strip():
-            return None
+            raise ValueError("User vision text is required and cannot be empty")
         
         try:
             analysis = await self.agents.parse_user_vision(user_text)
@@ -281,21 +269,29 @@ class AdGeneratorService:
 
     async def build_advertising_prompt(
         self,
+        # required params first
         image_analysis_id: int,
-        moodboard_analysis_ids: list[int],
-        user_vision_id: int | None,
+        user_vision_id: int,
         focus_slider: int,
-        session_id: str
+        session_id: str,
+        # optional params last
+        moodboard_analysis_ids: list[int] | None = None,
+        is_refinement: bool = False,
+        previous_prompt_id: int | None = None,
+        user_feedback: str | None = None
     ) -> Prompt:
         """
         Build advertising prompt using analysis results and store in database.
         
         Args:
             image_analysis_id: ID of product image analysis
-            moodboard_analysis_ids: List of moodboard analysis IDs
             user_vision_id: ID of user vision analysis
             focus_slider: Focus level (0-10)
             session_id: Session identifier for linking related records
+            moodboard_analysis_ids: List of moodboard analysis IDs (optional, defaults to None for no moodboards)
+            is_refinement: Whether this is a refinement of a previous prompt (default: False)
+            previous_prompt_id: ID of previous prompt for refinement context (optional)
+            user_feedback: User feedback for refinement (optional)
             
         Returns:
             Prompt: Database record with generated prompt
@@ -309,37 +305,39 @@ class AdGeneratorService:
         
         try:
             # Get all required analyses
-            image_analysis = self.session.get(ImageAnalysis, image_analysis_id)
-            if not image_analysis:
+            product_analysis = self.session.get(ImageAnalysis, image_analysis_id)
+            if not product_analysis:
                 raise ValueError(f"Image analysis with ID {image_analysis_id} not found")
             
             moodboard_analyses = []
-            for moodboard_id in moodboard_analysis_ids:
-                analysis = self.session.get(MoodboardAnalysis, moodboard_id)
-                if not analysis:
-                    raise ValueError(f"Moodboard analysis with ID {moodboard_id} not found")
-                moodboard_analyses.append(analysis)
+            if moodboard_analysis_ids:  # Handle None or empty list
+                for moodboard_id in moodboard_analysis_ids:
+                    analysis = self.session.get(MoodboardAnalysis, moodboard_id)
+                    if not analysis:
+                        raise ValueError(f"Moodboard analysis with ID {moodboard_id} not found")
+                    moodboard_analyses.append(analysis)
             
-            user_vision = None
-            if user_vision_id is not None:
-                user_vision = self.session.get(UserVision, user_vision_id)
-                if not user_vision:
-                    raise ValueError(f"User vision with ID {user_vision_id} not found")
+            user_vision = self.session.get(UserVision, user_vision_id)
+            if not user_vision:
+                raise ValueError(f"User vision with ID {user_vision_id} not found")
             
             # Use all moodboard analyses for prompt building
             prompt = await self.agents.build_advertising_prompt(
-                image_analysis, 
-                moodboard_analyses,  # Pass all moodboard analyses
+                product_analysis, 
                 user_vision, 
-                focus_slider
+                focus_slider,
+                moodboard_analyses  # Pass all moodboard analyses (now optional)
             )
             
             db_prompt = Prompt(
                 prompt_text=prompt.prompt_text,
                 image_analysis_id=image_analysis_id,
-                moodboard_analysis_ids=moodboard_analysis_ids,  # Store all moodboard IDs
+                moodboard_analysis_ids=moodboard_analysis_ids or [],  # Store all moodboard IDs
                 user_vision_id=user_vision_id,
                 focus_slider=focus_slider,
+                refinement_count=1 if is_refinement else 0,
+                user_feedback=user_feedback,
+                previous_prompt_id=previous_prompt_id,
                 session_id=session_id
             )
             
@@ -356,7 +354,12 @@ class AdGeneratorService:
             raise ValueError(f"Prompt building failed: {str(e)}")
 
 
-    async def generate_image(self, prompt_id: int, reference_image_bytes_list: list[bytes] | None = None, session_id: str | None = None) -> GeneratedImage:
+    async def generate_image(
+        self, 
+        prompt_id: int, 
+        reference_image_bytes_list: list[bytes] | None = None, 
+        session_id: str | None = None
+    ) -> GeneratedImage:
         """
         Generate final ad image using prompt and input images.
         
@@ -400,9 +403,9 @@ class AdGeneratorService:
             data_url = await generate_image_data_url(
                 prompt=prompt.prompt_text,
                 product_image_bytes=product_image_bytes,
-                reference_images_bytes=reference_image_bytes_list,
                 model=self.img_model,
                 api_key=self.img_api_key,
+                reference_images_bytes=reference_image_bytes_list,
             )
 
             # Persist generated image locally and expose it via /static
@@ -461,13 +464,60 @@ class AdGeneratorService:
             raise ValueError(f"Image generation failed: {str(e)}")
 
 
+    async def create_final_prompt(
+        self,
+        product_image_bytes: bytes,
+        user_vision_text: str,
+        focus_slider: int,
+        session_id: str,
+        moodboard_image_bytes_list: list[bytes] | None = None
+    ) -> Prompt:
+        try:
+            # Step 1: Analyze product image
+            product_analysis = await self.analyze_product_image(product_image_bytes, session_id)
+            
+            # Step 2: Analyze moodboard images
+            moodboard_ids: list[int] = []
+            if moodboard_image_bytes_list:
+                moodboard_analyses = await self.analyze_moodboard_images(session_id, moodboard_image_bytes_list)
+                moodboard_ids = [analysis.id for analysis in moodboard_analyses]
+            
+            # Step 3: Parse user vision
+            user_vision = await self.parse_user_vision(user_vision_text, session_id)
+            
+            # Step 4: Build advertising prompt
+            prompt = await self.build_advertising_prompt(
+                product_analysis.id,
+                user_vision.id,
+                focus_slider,
+                session_id,
+                moodboard_ids
+            )
+
+            return prompt
+
+        except Exception as e:
+            logger.error(f"Complete ad prompt generation workflow failed: {str(e)}")
+            raise ValueError(f"Ad prompt generation workflow failed: {str(e)}")
+    
+
+    async def refine_prompt(
+        self,
+        previous_prompt_id: int,
+        session_id: str,
+        focus_slider: int | None = None,
+        user_feedback: str | None = None
+    ) -> Prompt:
+        pass
+
+
     async def create_complete_ad(
         self,
         product_image_bytes: bytes,
-        moodboard_image_bytes_list: list[bytes] | None,
-        user_vision_text: str | None,
+        user_vision_text: str,
         focus_slider: int,
         session_id: str,
+        moodboard_image_bytes_list: list[bytes] | None = None,
         reference_image_bytes_list: list[bytes] | None = None,
     ) -> GeneratedImage:
         """
@@ -495,19 +545,19 @@ class AdGeneratorService:
             # Step 2: Analyze moodboard images
             moodboard_ids: list[int] = []
             if moodboard_image_bytes_list:
-                moodboard_analyses = await self.analyze_moodboard_images(moodboard_image_bytes_list, session_id)
+                moodboard_analyses = await self.analyze_moodboard_images(session_id, moodboard_image_bytes_list)
                 moodboard_ids = [analysis.id for analysis in moodboard_analyses]
             
-            # Step 3: Parse user vision (optional)
+            # Step 3: Parse user vision
             user_vision = await self.parse_user_vision(user_vision_text, session_id)
             
             # Step 4: Build advertising prompt
             prompt = await self.build_advertising_prompt(
                 product_analysis.id,
-                moodboard_ids,
-                (user_vision.id if user_vision else None),
+                user_vision.id,
                 focus_slider,
-                session_id
+                session_id,
+                moodboard_ids
             )
             
             # Step 5: Generate final image using product + optional references

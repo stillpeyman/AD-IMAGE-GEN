@@ -140,13 +140,13 @@ class Agents:
         # Note: image generation is handled via OpenAI Responses API directly (see api/image_generator.py)
 
 
-    async def analyze_product_image(self, image_bytes: bytes, feedback: str = None) -> ImageAnalysis:
+    async def analyze_product_image(self, image_bytes: bytes) -> ImageAnalysis:
         """
         Analyze a product image using the product_image_agent and return structured analysis.
 
         Args:
             image_bytes (bytes): Raw product image data.
-            feedback (str, optional): Refinement feedback for iterative improvement.
+
         Returns:
             ImageAnalysis: Structured analysis of the product image.
         """
@@ -170,10 +170,6 @@ class Agents:
             BinaryContent(data=image_bytes, media_type='image/jpeg')
         ]
 
-        # Only add feedback if it exists
-        if feedback:
-            content.append(f"User feedback: {feedback}")
-
         result = await self.product_image_agent.run(content)
         return result.output
 
@@ -184,10 +180,12 @@ class Agents:
 
         Args:
             image_bytes_list (list[bytes]): List of raw moodboard image data.
+
         Returns:
             list[MoodboardAnalysis]: List of structured analyses for each moodboard image.
         """
         results = []
+
         for image_bytes in image_bytes_list:
             prompt_text = (
                 "Analyze this moodboard image and provide:\n"
@@ -199,12 +197,15 @@ class Agents:
                 "6. 5-7 relevant keywords (e.g., ['weekend', 'friendship', 'comfort', 'home', 'laughter'])\n"
                 "Return only the structured JSON, no explanation."
             )
-            
-            result = await self.moodboard_agent.run([
+
+            content = [
                 prompt_text,
                 BinaryContent(data=image_bytes, media_type='image/jpeg')
-            ])
+            ]
+            
+            result = await self.moodboard_agent.run(content)
             results.append(result.output)
+
         return results
 
 
@@ -229,6 +230,7 @@ class Agents:
             "If any category is not mentioned or unclear, leave it empty or mark as 'not specified'.\n"
             "Return only the structured JSON, no explanation."
         )
+        
         result = await self.user_vision_agent.run(prompt)
         return result.output
 
@@ -236,9 +238,9 @@ class Agents:
     async def build_advertising_prompt(
         self,
         image_analysis: ImageAnalysis,
-        moodboard_analyses: list[MoodboardAnalysis],
-        user_vision: UserVision | None,
-        focus_slider: int
+        user_vision: UserVision,
+        focus_slider: int,
+        moodboard_analyses: list[MoodboardAnalysis] | None = None
     ) -> Prompt:
         """
         Build a single, cohesive prompt for OpenAI's image generation tool using the provided analysis data and focus instruction.
@@ -246,11 +248,12 @@ class Agents:
         Args:
             image_analysis (ImageAnalysis): Structured product image analysis.
 
-            moodboard_analyses (list[MoodboardAnalysis]): List of structured moodboard analyses.
-
             user_vision (UserVision): Structured user vision information.
 
             focus_slider (int): Value (0-10) indicating the desired product/scene focus.
+            
+            moodboard_analyses (list[MoodboardAnalysis] | None): List of structured moodboard analyses.
+                                                               Optional - can be None for no moodboards.
             
         Returns:
             Prompt: The generated advertising prompt.
@@ -272,17 +275,15 @@ class Agents:
         
         # Combine all moodboard analyses into a single description
         moodboard_descriptions = []
-        for i, moodboard in enumerate(moodboard_analyses, 1):
-            moodboard_descriptions.append(
-                f"MOODBOARD {i}: {moodboard.model_dump_json(indent=2)}"
-            )
-        combined_moodboards = "\n".join(moodboard_descriptions)
+        if moodboard_analyses:  # Handle None case
+            for i, moodboard in enumerate(moodboard_analyses, 1):
+                moodboard_descriptions.append(
+                    f"MOODBOARD {i}: {moodboard.model_dump_json(indent=2)}"
+                )
+
+        combined_moodboards = "\n".join(moodboard_descriptions) if moodboard_descriptions else "<no moodboards provided>"
         
-        user_vision_block = (
-            user_vision.model_dump_json(indent=2)
-            if user_vision is not None
-            else "<not provided>"
-        )
+        user_vision_block = user_vision.model_dump_json(indent=2)
 
         prompt = (
             "Create a single, cohesive prompt for OpenAI's image generation tool using the following data:\n"
@@ -297,6 +298,7 @@ class Agents:
             "- Use photography/cinematography terms when appropriate.\n"
             "- Return only the prompt text, no explanation."
         )
+
         result = await self.prompt_agent.run(prompt)
         return result.output
 

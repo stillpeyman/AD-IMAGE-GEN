@@ -71,6 +71,9 @@ class Prompt(SQLModel, table=True):
     moodboard_analysis_ids: list[int] = Field(sa_column=Column(JSON))  # Changed to list of IDs
     user_vision_id: int | None = Field(default=None, foreign_key="uservision.id")
     focus_slider: int
+    refinement_count: int = 0
+    user_feedback: str | None = None 
+    previous_prompt_id: int | None = Field(default=None, foreign_key="prompt.id")
     session_id: str | None = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 

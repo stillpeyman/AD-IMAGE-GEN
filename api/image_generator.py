@@ -14,9 +14,9 @@ from openai import AsyncOpenAI
 async def generate_image_data_url(
     prompt: str,
     product_image_bytes: bytes,
-    reference_images_bytes: list[bytes] | None,
     model: str,
     api_key: str,
+    reference_images_bytes: list[bytes] | None = None,
 ) -> str:
     """
     Generate an advertising image using OpenAI's Responses API (image_generation tool).
@@ -27,9 +27,9 @@ async def generate_image_data_url(
     Args:
         prompt (str): The advertising prompt text describing the desired image.
         product_image_bytes (bytes): Raw bytes of the product image to include.
-        reference_images_bytes (list[bytes] | None): Optional list of reference image bytes.
         model (str): The OpenAI model name for image generation (e.g., "gpt-image-1").
         api_key (str): The OpenAI API key for image generation (MY_OPENAI_API_KEY).
+        reference_images_bytes (list[bytes] | None): Optional list of reference image bytes.
         
     Returns:
         str: A base64 encoded data URL (e.g., "data:image/png;base64,...")

@@ -88,8 +88,8 @@ def get_service(session: Session = Depends(get_session)) -> AdGeneratorService:
     return AdGeneratorService(
         agents=agents, 
         session=session,
-        img_api_key=IMG_API_KEY,
-        img_model=IMG_MODEL
+        img_model=IMG_MODEL,
+        img_api_key=IMG_API_KEY
     )
 
 
@@ -115,8 +115,10 @@ async def start_session():
 
 @app.post("/analyze/product-image", response_model=ImageAnalysis)
 async def analyze_product_image(
-    file: UploadFile = File(...),
+    # Required user parameters first
+    file: UploadFile,
     session_id: str = TEST_SESSION_ID,
+    # Dependency injection last
     service: AdGeneratorService = Depends(get_service)
 ):
     try:
@@ -129,8 +131,11 @@ async def analyze_product_image(
 
 @app.post("/analyze/moodboard", response_model=list[MoodboardAnalysis])
 async def analyze_moodboard_images(
-    files: list[UploadFile] | None = File(default=None),
+    # Required user parameters first
     session_id: str = TEST_SESSION_ID,
+    # Optional user parameters
+    files: list[UploadFile] | None = File(default=None),
+    # Dependency injection last
     service: AdGeneratorService = Depends(get_service)
 ):
     try:
@@ -140,16 +145,18 @@ async def analyze_moodboard_images(
             for file in files:
                 image_bytes = await file.read()
                 image_bytes_list.append(image_bytes)
-        result = await service.analyze_moodboard_images(image_bytes_list, session_id)
+        result = await service.analyze_moodboard_images(session_id, image_bytes_list)
         return result
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@app.post("/vision/parse", response_model=UserVision | None)
+@app.post("/vision/parse", response_model=UserVision)
 async def parse_user_vision(
-    text: str | None,
+    # Required user parameters first
+    text: str,
     session_id: str = TEST_SESSION_ID,
+    # Dependency injection last
     service: AdGeneratorService = Depends(get_service)
 ):
     try:
@@ -161,8 +168,10 @@ async def parse_user_vision(
 
 @app.post("/prompt/build", response_model=Prompt)
 async def build_advertising_prompt(
+    # Required user parameters first
     focus_slider: int,
     session_id: str = TEST_SESSION_ID,
+    # Dependency injection last
     service: AdGeneratorService = Depends(get_service)
 ):
     try:
@@ -173,15 +182,18 @@ async def build_advertising_prompt(
         if not image_analysis:
             raise HTTPException(status_code=404, detail="No product image analysis found for this session")
         
+        # When no moodboard analyses exist, service.session.exec(...) returns an empty list [].
+        # SQLModel/SQLAlchemy automatically returns an empty list when no records match the query,
+        # rather than raising an error or returning None. This makes moodboard truly optional.
         moodboard_analyses = service.session.exec(
             select(MoodboardAnalysis).where(MoodboardAnalysis.session_id == session_id)
         ).all()
-        if not moodboard_analyses:
-            raise HTTPException(status_code=404, detail="No moodboard analyses found for this session")
         
         user_vision = service.session.exec(
             select(UserVision).where(UserVision.session_id == session_id)
         ).first()
+        if not user_vision:
+            raise HTTPException(status_code=404, detail="No user vision found for this session")
         
         # Extract IDs
         moodboard_ids = [analysis.id for analysis in moodboard_analyses]
@@ -189,20 +201,24 @@ async def build_advertising_prompt(
         # Build prompt
         result = await service.build_advertising_prompt(
             image_analysis.id,
-            moodboard_ids,
-            (user_vision.id if user_vision else None),
+            user_vision.id,
             focus_slider,
-            session_id
+            session_id,
+            moodboard_ids
         )
         return result
+
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
 
 @app.post("/images/generate", response_model=GeneratedImage)
 async def generate_image(
+    # Required user parameters first
     session_id: str = TEST_SESSION_ID,
+    # Optional user parameters
     reference_files: list[UploadFile] | None = File(default=None),
+    # Dependency injection last
     service: AdGeneratorService = Depends(get_service)
 ):
     try:
@@ -228,12 +244,15 @@ async def generate_image(
 
 @app.post("/ad/complete", response_model=GeneratedImage)
 async def create_complete_ad(
-    user_vision_text: str | None,
+    # Required user parameters first
+    user_vision_text: str,
     focus_slider: int,
+    product_file: UploadFile,
     session_id: str = TEST_SESSION_ID,
-    product_file: UploadFile = File(...),
+    # Optional user parameters
     moodboard_files: list[UploadFile] | None = File(default=None),
     reference_files: list[UploadFile] | None = File(default=None),
+    # Dependency injection last
     service: AdGeneratorService = Depends(get_service)
 ):
     try:
@@ -264,21 +283,26 @@ async def create_complete_ad(
             session_id,
             reference_image_bytes_list
         )
+
         return result
+
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
 
 @app.post("/test/text-only")
 async def test_text_only(
+    # Required user parameters first
     text: str,
     session_id: str = TEST_SESSION_ID,
+    # Dependency injection last
     service: AdGeneratorService = Depends(get_service)
 ):
     try:
         # Simple test - just parse user vision text (no images)
         result = await service.parse_user_vision(text, session_id)
         return result
+
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
