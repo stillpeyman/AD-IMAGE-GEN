@@ -11,6 +11,7 @@ from sqlmodel import Session, select
 # local imports
 from agents import Agents
 from api.image_generator import generate_image_data_url
+from main import build_advertising_prompt
 from models import ImageAnalysis, MoodboardAnalysis, UserVision, Prompt, GeneratedImage
 
 
@@ -300,13 +301,18 @@ class AdGeneratorService:
             ValueError: If prompt building fails
             RuntimeError: If database operation fails
         """
+        # Outside try-block: input validation failures are user errors, not system errors
+        # Fail fast: catch bad inputs before any processing
         if not (0 <= focus_slider <= 10):
             raise ValueError("Focus slider must be between 0 and 10")
         
         try:
-            # Get all required analyses
+            # Get all required analyses, if not found SQLModel returns None
             product_analysis = self.session.get(ImageAnalysis, image_analysis_id)
             if not product_analysis:
+                # Returning None not good for user experience, give clear error message
+                # Basically business error if product analydsis is missing
+                # FastAPI converts ValueError to HTTP 400 (Bad Request)
                 raise ValueError(f"Image analysis with ID {image_analysis_id} not found")
             
             moodboard_analyses = []
@@ -321,12 +327,26 @@ class AdGeneratorService:
             if not user_vision:
                 raise ValueError(f"User vision with ID {user_vision_id} not found")
             
+            # Calculate refinement count
+            refinement_count = 0
+            previous_prompt_text = None
+            if is_refinement and previous_prompt_id:
+                previous_prompt = self.session.get(Prompt, previous_prompt_id)
+                if previous_prompt:
+                    refinement_count = previous_prompt.refinement_count + 1
+                    previous_prompt_text = previous_prompt.prompt_text
+                    if refinement_count > 2:
+                        raise ValueError("Maximum of 2 refinements allowed per prompt")
+
             # Use all moodboard analyses for prompt building
             prompt = await self.agents.build_advertising_prompt(
                 product_analysis, 
                 user_vision, 
                 focus_slider,
-                moodboard_analyses  # Pass all moodboard analyses (now optional)
+                is_refinement,
+                moodboard_analyses,  # Pass all moodboard analyses (now optional)
+                previous_prompt_text,
+                user_feedback
             )
             
             db_prompt = Prompt(
@@ -335,7 +355,7 @@ class AdGeneratorService:
                 moodboard_analysis_ids=moodboard_analysis_ids or [],  # Store all moodboard IDs
                 user_vision_id=user_vision_id,
                 focus_slider=focus_slider,
-                refinement_count=1 if is_refinement else 0,
+                refinement_count=refinement_count,
                 user_feedback=user_feedback,
                 previous_prompt_id=previous_prompt_id,
                 session_id=session_id
@@ -508,7 +528,71 @@ class AdGeneratorService:
         focus_slider: int | None = None,
         user_feedback: str | None = None
     ) -> Prompt:
-        pass
+        """
+        Refine an existing prompt by generating an improved version.
+        
+        This method reuses all existing analysis data (product, moodboard, user vision)
+        from the previous prompt, avoiding expensive re-analysis. It extracts the
+        analysis IDs from the previous prompt and calls build_advertising_prompt
+        with is_refinement=True, previous_prompt_text, and optional user_feedback
+        to generate a better prompt.
+        
+        Why this approach provides:
+        - Clean separation: refinement logic separate from core prompt building
+        - Separation of concerns: delegates to build_advertising_prompt rather than duplicating logic
+        - ID safety: prevents passing wrong analysis IDs by extracting from previous prompt
+        - Consistency: calls build_advertising_prompt where validation, error handling, and database operations happen
+        - Flexibility: enables focus_slider adjustments and user feedback without re-analysis
+        
+        Args:
+            previous_prompt_id: ID of the prompt to refine
+            session_id: Session identifier for linking the new prompt
+            focus_slider: New focus level (0-10). If None, uses previous prompt's focus_slider
+            user_feedback: Optional user feedback to guide the refinement
+            
+        Returns:
+            Prompt: New refined prompt with incremented refinement_count
+            
+        Raises:
+            ValueError: If previous prompt not found, focus_slider invalid, or max refinements exceeded
+        """
+        try:
+            # Get previous prompt and validate it exists
+            previous_prompt = self.session.get(Prompt, previous_prompt_id)
+            if not previous_prompt:
+                raise ValueError(f"Previous prompt with ID {previous_prompt_id} not found")
+            
+            # Use previous focus_slider if not provided
+            final_focus_slider = focus_slider if focus_slider is not None else previous_prompt.focus_slider
+            
+            # Inside try-block: validation depends on database data (previous_prompt.focus_slider)
+            # Must fetch previous_prompt first to calculate final_focus_slider before validating
+            if not (0 <= final_focus_slider <= 10):
+                raise ValueError("Focus slider must be between 0 and 10")
+            
+            # Extract data from previous prompt (reuse existing analyses)
+            image_analysis_id = previous_prompt.image_analysis_id
+            user_vision_id = previous_prompt.user_vision_id
+            moodboard_analysis_ids = previous_prompt.moodboard_analysis_ids
+
+            # Call service method with refinement parameters
+            refined_prompt = await self.build_advertising_prompt(
+                image_analysis_id, 
+                user_vision_id, 
+                final_focus_slider, 
+                session_id, 
+                moodboard_analysis_ids, 
+                is_refinement=True, 
+                previous_prompt_id=previous_prompt_id, 
+                user_feedback=user_feedback
+            )
+
+            return refined_prompt
+
+        except Exception as e:
+            self.session.rollback()
+            logger.error(f"Prompt refinement failed: {str(e)}")
+            raise ValueError(f"Prompt refinement failed: {str(e)}")
 
 
     async def create_complete_ad(

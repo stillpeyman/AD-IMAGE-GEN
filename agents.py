@@ -240,21 +240,24 @@ class Agents:
         image_analysis: ImageAnalysis,
         user_vision: UserVision,
         focus_slider: int,
-        moodboard_analyses: list[MoodboardAnalysis] | None = None
+        is_refinement: bool = False,
+        moodboard_analyses: list[MoodboardAnalysis] | None = None,
+        previous_prompt_text: str | None = None,
+        user_feedback: str | None = None
     ) -> Prompt:
         """
         Build a single, cohesive prompt for OpenAI's image generation tool using the provided analysis data and focus instruction.
 
         Args:
             image_analysis (ImageAnalysis): Structured product image analysis.
-
             user_vision (UserVision): Structured user vision information.
-
             focus_slider (int): Value (0-10) indicating the desired product/scene focus.
-            
+            is_refinement: Whether this is a refinement of a previous prompt (default: False)
             moodboard_analyses (list[MoodboardAnalysis] | None): List of structured moodboard analyses.
                                                                Optional - can be None for no moodboards.
-            
+            previous_prompt_text: previous prompt for refinement context (optional)
+            user_feedback: User feedback for refinement (optional)
+
         Returns:
             Prompt: The generated advertising prompt.
         """
@@ -299,7 +302,27 @@ class Agents:
             "- Return only the prompt text, no explanation."
         )
 
-        result = await self.prompt_agent.run(prompt)
+        if is_refinement == True:
+            if user_feedback:
+                refinement_instruction = (
+                    f"This is a refinement iteration for the previous prompt: {previous_prompt_text}.\n"
+                    f"Address this feedback: {user_feedback}."
+                )
+            
+            else:
+                refinement_instruction = (
+                    f"This is a refinement iteration for the previous prompt: {previous_prompt_text}.\n"
+                    "Generate a different creative interpretation."
+                )
+            
+            result = await self.prompt_agent.run([
+                prompt,
+                refinement_instruction
+            ])
+        
+        else:
+            result = await self.prompt_agent.run(prompt)
+        
         return result.output
 
 
