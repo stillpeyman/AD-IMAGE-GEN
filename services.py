@@ -301,11 +301,6 @@ class AdGeneratorService:
             ValueError: If prompt building fails
             RuntimeError: If database operation fails
         """
-        # Outside try-block: input validation failures are user errors, not system errors
-        # Fail fast: catch bad inputs before any processing
-        if not (0 <= focus_slider <= 10):
-            raise ValueError("Focus slider must be between 0 and 10")
-        
         try:
             # Get all required analyses, if not found SQLModel returns None
             product_analysis = self.session.get(ImageAnalysis, image_analysis_id)

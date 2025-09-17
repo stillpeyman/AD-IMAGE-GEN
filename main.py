@@ -17,6 +17,7 @@ import os  # stdlib
 from dotenv import load_dotenv  # third-party
 from fastapi import FastAPI, Depends, File, UploadFile, HTTPException
 from fastapi.staticfiles import StaticFiles
+from pydantic_core.core_schema import NoneSchema
 from sqlmodel import SQLModel, Session, create_engine, select
 
 from agents import Agents  # local
@@ -115,7 +116,7 @@ async def start_session():
 
 @app.post("/analyze/product-image", response_model=ImageAnalysis)
 async def analyze_product_image(
-    # Required user parameters first
+    # Required parameters first
     file: UploadFile,
     session_id: str = TEST_SESSION_ID,
     # Dependency injection last
@@ -131,9 +132,9 @@ async def analyze_product_image(
 
 @app.post("/analyze/moodboard", response_model=list[MoodboardAnalysis])
 async def analyze_moodboard_images(
-    # Required user parameters first
+    # Required parameters first
     session_id: str = TEST_SESSION_ID,
-    # Optional user parameters
+    # Optional parameters
     files: list[UploadFile] | None = File(default=None),
     # Dependency injection last
     service: AdGeneratorService = Depends(get_service)
@@ -153,7 +154,7 @@ async def analyze_moodboard_images(
 
 @app.post("/vision/parse", response_model=UserVision)
 async def parse_user_vision(
-    # Required user parameters first
+    # Required parameters first
     text: str,
     session_id: str = TEST_SESSION_ID,
     # Dependency injection last
@@ -174,6 +175,13 @@ async def build_advertising_prompt(
     # Dependency injection last
     service: AdGeneratorService = Depends(get_service)
 ):
+    # Endpoint-level validation: Input validation failures are user errors, not system errors
+    # "Fail fast, Fail clear": catch bad inputs before any processing
+    if not (0 <= focus_slider <= 10):
+        # In FastAPI endpoints: direct user input validation should raise HTTPException immediately
+        # ValueError gets caught and converted, but it's cleaner to be explicit
+        raise HTTPException(status_code=400, detail="Focus slider must be between 0 and 10")
+
     try:
         # Find records for this session
         image_analysis = service.session.exec(
@@ -193,7 +201,7 @@ async def build_advertising_prompt(
             select(UserVision).where(UserVision.session_id == session_id)
         ).first()
         if not user_vision:
-            raise HTTPException(status_code=404, detail="No user vision found for this session")
+            raise HTTPException(status_code=404, detail="User vision is required before generating prompts.")
         
         # Extract IDs
         moodboard_ids = [analysis.id for analysis in moodboard_analyses]
@@ -204,7 +212,10 @@ async def build_advertising_prompt(
             user_vision.id,
             focus_slider,
             session_id,
-            moodboard_ids
+            moodboard_ids,
+            is_refinement=False,
+            previous_prompt_id=None,
+            user_feedback=None
         )
         return result
 
