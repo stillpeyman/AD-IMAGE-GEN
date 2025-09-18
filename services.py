@@ -520,8 +520,8 @@ class AdGeneratorService:
         self,
         previous_prompt_id: int,
         session_id: str,
-        focus_slider: int | None = None,
-        user_feedback: str | None = None
+        user_feedback: str | None = None,
+        focus_slider: int | None = None
     ) -> Prompt:
         """
         Refine an existing prompt by generating an improved version.
@@ -563,7 +563,7 @@ class AdGeneratorService:
             # Inside try-block: validation depends on database data (previous_prompt.focus_slider)
             # Must fetch previous_prompt first to calculate final_focus_slider before validating
             if not (0 <= final_focus_slider <= 10):
-                raise ValueError("Focus slider must be between 0 and 10")
+                raise ValueError("Focus slider must be between 0 and 10.")
             
             # Extract data from previous prompt (reuse existing analyses)
             image_analysis_id = previous_prompt.image_analysis_id
