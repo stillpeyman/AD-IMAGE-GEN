@@ -2,793 +2,789 @@
   {
     "trend": [
       {
-        "time": 1749945600,
-        "value": 0.35
-      },
-      {
-        "time": 1750032000,
-        "value": 0.33
-      },
-      {
-        "time": 1750118400,
-        "value": 0.61
-      },
-      {
-        "time": 1750204800,
-        "value": 0.75
-      },
-      {
-        "time": 1750291200,
-        "value": 0.84
-      },
-      {
-        "time": 1750377600,
-        "value": 0.9
-      },
-      {
-        "time": 1750464000,
-        "value": 1
-      }
-    ],
-    "video_views": 1714858713,
-    "rank_diff": 2,
-    "country_code": "WORLD",
-    "country_name": "World",
-    "hashtag": "war",
-    "publish_count": 120319,
-    "trend_type": "up"
-  },
-  {
-    "trend": [
-      {
-        "time": 1749945600,
-        "value": 0.06
-      },
-      {
-        "time": 1750032000,
-        "value": 0.07
-      },
-      {
-        "time": 1750118400,
-        "value": 0.3
-      },
-      {
-        "time": 1750204800,
-        "value": 0.47
-      },
-      {
-        "time": 1750291200,
-        "value": 0.66
-      },
-      {
-        "time": 1750377600,
-        "value": 0.78
-      },
-      {
-        "time": 1750464000,
-        "value": 1
-      }
-    ],
-    "video_views": 645455785,
-    "rank_diff": 3,
-    "country_code": "WORLD",
-    "country_name": "World",
-    "industry": "News & Entertainment",
-    "hashtag": "ww3",
-    "publish_count": 31977,
-    "trend_type": "up"
-  },
-  {
-    "trend": [
-      {
-        "time": 1749945600,
-        "value": 0.28
-      },
-      {
-        "time": 1750032000,
-        "value": 0.36
-      },
-      {
-        "time": 1750118400,
-        "value": 0.44
-      },
-      {
-        "time": 1750204800,
-        "value": 0.68
-      },
-      {
-        "time": 1750291200,
-        "value": 0.93
-      },
-      {
-        "time": 1750377600,
-        "value": 0.93
-      },
-      {
-        "time": 1750464000,
-        "value": 1
-      }
-    ],
-    "video_views": 1077008081,
-    "country_code": "WORLD",
-    "country_name": "World",
-    "industry": "Sports & Outdoor",
-    "hashtag": "mundialdeclubes",
-    "publish_count": 62998,
-    "trend_type": "flat",
-    "is_new": true
-  },
-  {
-    "trend": [
-      {
-        "time": 1749945600,
-        "value": 0.33
-      },
-      {
-        "time": 1750032000,
-        "value": 0.21
-      },
-      {
-        "time": 1750118400,
-        "value": 0.41
-      },
-      {
-        "time": 1750204800,
-        "value": 0.44
-      },
-      {
-        "time": 1750291200,
-        "value": 0.34
-      },
-      {
-        "time": 1750377600,
-        "value": 0.83
-      },
-      {
-        "time": 1750464000,
-        "value": 1
-      }
-    ],
-    "video_views": 925884903,
-    "rank_diff": 0,
-    "country_code": "WORLD",
-    "country_name": "World",
-    "industry": "Beauty & Personal Care",
-    "hashtag": "huda",
-    "publish_count": 30165,
-    "trend_type": "flat"
-  },
-  {
-    "trend": [
-      {
-        "time": 1749945600,
-        "value": 0.43
-      },
-      {
-        "time": 1750032000,
-        "value": 0.45
-      },
-      {
-        "time": 1750118400,
-        "value": 0.46
-      },
-      {
-        "time": 1750204800,
-        "value": 0.54
-      },
-      {
-        "time": 1750291200,
-        "value": 0.61
-      },
-      {
-        "time": 1750377600,
-        "value": 0.7
-      },
-      {
-        "time": 1750464000,
-        "value": 1
-      }
-    ],
-    "video_views": 560917359,
-    "country_code": "WORLD",
-    "country_name": "World",
-    "industry": "News & Entertainment",
-    "hashtag": "travisscott",
-    "publish_count": 29975,
-    "trend_type": "flat",
-    "is_new": true
-  },
-  {
-    "trend": [
-      {
-        "time": 1749945600,
-        "value": 0.09
-      },
-      {
-        "time": 1750032000,
-        "value": 0.09
-      },
-      {
-        "time": 1750118400,
-        "value": 0.1
-      },
-      {
-        "time": 1750204800,
-        "value": 0.13
-      },
-      {
-        "time": 1750291200,
-        "value": 0.17
-      },
-      {
-        "time": 1750377600,
-        "value": 0.3
-      },
-      {
-        "time": 1750464000,
-        "value": 1
-      }
-    ],
-    "video_views": 473274902,
-    "country_code": "WORLD",
-    "country_name": "World",
-    "hashtag": "dorisjocelyn",
-    "publish_count": 6476,
-    "trend_type": "flat",
-    "is_new": true
-  },
-  {
-    "trend": [
-      {
-        "time": 1749945600,
-        "value": 0.14
-      },
-      {
-        "time": 1750032000,
+        "time": 1754784000,
         "value": 0.18
       },
       {
-        "time": 1750118400,
-        "value": 0.22
+        "time": 1754870400,
+        "value": 0.2
       },
       {
-        "time": 1750204800,
-        "value": 0.32
+        "time": 1754956800,
+        "value": 0.23
       },
       {
-        "time": 1750291200,
-        "value": 0.43
-      },
-      {
-        "time": 1750377600,
-        "value": 0.57
-      },
-      {
-        "time": 1750464000,
-        "value": 1
-      }
-    ],
-    "video_views": 366091030,
-    "rank_diff": 4,
-    "country_code": "WORLD",
-    "country_name": "World",
-    "industry": "News & Entertainment",
-    "hashtag": "astroworld",
-    "publish_count": 12513,
-    "trend_type": "up"
-  },
-  {
-    "trend": [
-      {
-        "time": 1749945600,
-        "value": 0.29
-      },
-      {
-        "time": 1750032000,
-        "value": 0.33
-      },
-      {
-        "time": 1750118400,
-        "value": 0.35
-      },
-      {
-        "time": 1750204800,
-        "value": 0.39
-      },
-      {
-        "time": 1750291200,
-        "value": 0.48
-      },
-      {
-        "time": 1750377600,
-        "value": 0.74
-      },
-      {
-        "time": 1750464000,
-        "value": 1
-      }
-    ],
-    "video_views": 407236068,
-    "rank_diff": 0,
-    "country_code": "WORLD",
-    "country_name": "World",
-    "industry": "Sports & Outdoor",
-    "hashtag": "bocajuniors",
-    "publish_count": 19114,
-    "trend_type": "flat"
-  },
-  {
-    "trend": [
-      {
-        "time": 1749945600,
-        "value": 0.27
-      },
-      {
-        "time": 1750032000,
-        "value": 0.27
-      },
-      {
-        "time": 1750118400,
-        "value": 0.57
-      },
-      {
-        "time": 1750204800,
-        "value": 0.78
-      },
-      {
-        "time": 1750291200,
-        "value": 0.79
-      },
-      {
-        "time": 1750377600,
-        "value": 0.84
-      },
-      {
-        "time": 1750464000,
-        "value": 1
-      }
-    ],
-    "video_views": 494988872,
-    "rank_diff": 47,
-    "country_code": "WORLD",
-    "country_name": "World",
-    "hashtag": "guerra",
-    "publish_count": 25440,
-    "trend_type": "up"
-  },
-  {
-    "trend": [
-      {
-        "time": 1749945600,
-        "value": 0.17
-      },
-      {
-        "time": 1750032000,
-        "value": 0.17
-      },
-      {
-        "time": 1750118400,
-        "value": 0.19
-      },
-      {
-        "time": 1750204800,
-        "value": 0.22
-      },
-      {
-        "time": 1750291200,
+        "time": 1755043200,
         "value": 0.25
       },
       {
-        "time": 1750377600,
-        "value": 0.54
+        "time": 1755129600,
+        "value": 0.3
       },
       {
-        "time": 1750464000,
+        "time": 1755216000,
+        "value": 0.69
+      },
+      {
+        "time": 1755302400,
         "value": 1
       }
     ],
-    "video_views": 199496511,
+    "video_views": 1716313366,
+    "rank_diff": 0,
     "country_code": "WORLD",
     "country_name": "World",
-    "industry": "Sports & Outdoor",
-    "hashtag": "benfica",
-    "publish_count": 11002,
-    "trend_type": "flat",
-    "is_new": true
-  },
-  {
-    "trend": [
-      {
-        "time": 1749945600,
-        "value": 0.41
-      },
-      {
-        "time": 1750032000,
-        "value": 0.43
-      },
-      {
-        "time": 1750118400,
-        "value": 0.44
-      },
-      {
-        "time": 1750204800,
-        "value": 0.45
-      },
-      {
-        "time": 1750291200,
-        "value": 0.56
-      },
-      {
-        "time": 1750377600,
-        "value": 0.78
-      },
-      {
-        "time": 1750464000,
-        "value": 1
-      }
-    ],
-    "video_views": 444390151,
-    "rank_diff": 60,
-    "country_code": "WORLD",
-    "country_name": "World",
-    "industry": "Sports & Outdoor",
-    "hashtag": "boca",
-    "publish_count": 17003,
-    "trend_type": "up"
-  },
-  {
-    "trend": [
-      {
-        "time": 1749945600,
-        "value": 0.42
-      },
-      {
-        "time": 1750032000,
-        "value": 0.35
-      },
-      {
-        "time": 1750118400,
-        "value": 0.52
-      },
-      {
-        "time": 1750204800,
-        "value": 0.57
-      },
-      {
-        "time": 1750291200,
-        "value": 0.43
-      },
-      {
-        "time": 1750377600,
-        "value": 0.88
-      },
-      {
-        "time": 1750464000,
-        "value": 1
-      }
-    ],
-    "video_views": 422331644,
-    "rank_diff": 2,
-    "country_code": "WORLD",
-    "country_name": "World",
-    "industry": "News & Entertainment",
-    "hashtag": "jeremiah",
-    "publish_count": 14073,
+    "hashtag": "14august",
+    "publish_count": 562100,
     "trend_type": "flat"
   },
   {
     "trend": [
       {
-        "time": 1749945600,
-        "value": 0.46
+        "time": 1754784000,
+        "value": 0.16
       },
       {
-        "time": 1750032000,
-        "value": 0.13
+        "time": 1754870400,
+        "value": 0.16
       },
       {
-        "time": 1750118400,
-        "value": 0.1
+        "time": 1754956800,
+        "value": 0.17
       },
       {
-        "time": 1750204800,
-        "value": 0.09
+        "time": 1755043200,
+        "value": 0.19
       },
       {
-        "time": 1750291200,
-        "value": 0.08
+        "time": 1755129600,
+        "value": 0.23
       },
       {
-        "time": 1750377600,
-        "value": 0.14
+        "time": 1755216000,
+        "value": 0.62
       },
       {
-        "time": 1750464000,
+        "time": 1755302400,
         "value": 1
       }
     ],
-    "video_views": 61753460,
+    "video_views": 680131475,
+    "rank_diff": 1,
     "country_code": "WORLD",
     "country_name": "World",
-    "hashtag": "martes",
-    "publish_count": 13244,
-    "trend_type": "flat",
-    "is_new": true
+    "hashtag": "independenceday",
+    "publish_count": 222331,
+    "trend_type": "flat"
   },
   {
     "trend": [
       {
-        "time": 1749945600,
-        "value": 0.47
+        "time": 1754784000,
+        "value": 0.08
       },
       {
-        "time": 1750032000,
+        "time": 1754870400,
+        "value": 0.09
+      },
+      {
+        "time": 1754956800,
+        "value": 0.11
+      },
+      {
+        "time": 1755043200,
+        "value": 0.12
+      },
+      {
+        "time": 1755129600,
+        "value": 0.14
+      },
+      {
+        "time": 1755216000,
         "value": 0.57
       },
       {
-        "time": 1750118400,
-        "value": 0.73
-      },
-      {
-        "time": 1750204800,
-        "value": 0.73
-      },
-      {
-        "time": 1750291200,
-        "value": 0.8
-      },
-      {
-        "time": 1750377600,
-        "value": 0.9
-      },
-      {
-        "time": 1750464000,
+        "time": 1755302400,
         "value": 1
       }
     ],
-    "video_views": 158020527,
+    "video_views": 287490460,
+    "rank_diff": 5,
+    "country_code": "WORLD",
+    "country_name": "World",
+    "hashtag": "happyindependenceday",
+    "publish_count": 104311,
+    "trend_type": "up"
+  },
+  {
+    "trend": [
+      {
+        "time": 1754784000,
+        "value": 0.52
+      },
+      {
+        "time": 1754870400,
+        "value": 0.67
+      },
+      {
+        "time": 1754956800,
+        "value": 0.68
+      },
+      {
+        "time": 1755043200,
+        "value": 0.78
+      },
+      {
+        "time": 1755129600,
+        "value": 0.82
+      },
+      {
+        "time": 1755216000,
+        "value": 0.89
+      },
+      {
+        "time": 1755302400,
+        "value": 1
+      }
+    ],
+    "video_views": 4729072988,
     "rank_diff": 1,
     "country_code": "WORLD",
     "country_name": "World",
     "industry": "Sports & Outdoor",
-    "hashtag": "lamarjackson",
-    "publish_count": 17292,
+    "hashtag": "jhoanduran",
+    "publish_count": 174946,
     "trend_type": "flat"
   },
   {
     "trend": [
       {
-        "time": 1749945600,
-        "value": 0.24
+        "time": 1754784000,
+        "value": 0.53
       },
       {
-        "time": 1750032000,
-        "value": 0.17
+        "time": 1754870400,
+        "value": 0.68
       },
       {
-        "time": 1750118400,
-        "value": 0.3
-      },
-      {
-        "time": 1750204800,
-        "value": 0.32
-      },
-      {
-        "time": 1750291200,
-        "value": 0.28
-      },
-      {
-        "time": 1750377600,
-        "value": 0.78
-      },
-      {
-        "time": 1750464000,
-        "value": 1
-      }
-    ],
-    "video_views": 261718141,
-    "rank_diff": 4,
-    "country_code": "WORLD",
-    "country_name": "World",
-    "industry": "News & Entertainment",
-    "hashtag": "hudaloveisland",
-    "publish_count": 7422,
-    "trend_type": "up"
-  },
-  {
-    "trend": [
-      {
-        "time": 1749945600,
-        "value": 0.26
-      },
-      {
-        "time": 1750032000,
-        "value": 0.24
-      },
-      {
-        "time": 1750118400,
-        "value": 0.21
-      },
-      {
-        "time": 1750204800,
-        "value": 0.2
-      },
-      {
-        "time": 1750291200,
-        "value": 0.2
-      },
-      {
-        "time": 1750377600,
-        "value": 0.22
-      },
-      {
-        "time": 1750464000,
-        "value": 1
-      }
-    ],
-    "video_views": 223834375,
-    "country_code": "WORLD",
-    "country_name": "World",
-    "hashtag": "cleopatratrend",
-    "publish_count": 2607,
-    "trend_type": "flat",
-    "is_new": true
-  },
-  {
-    "trend": [
-      {
-        "time": 1749945600,
-        "value": 0.51
-      },
-      {
-        "time": 1750032000,
-        "value": 0.32
-      },
-      {
-        "time": 1750118400,
-        "value": 0.29
-      },
-      {
-        "time": 1750204800,
-        "value": 0.25
-      },
-      {
-        "time": 1750291200,
-        "value": 0.22
-      },
-      {
-        "time": 1750377600,
-        "value": 0.33
-      },
-      {
-        "time": 1750464000,
-        "value": 1
-      }
-    ],
-    "video_views": 57395921,
-    "country_code": "WORLD",
-    "country_name": "World",
-    "hashtag": "tiktokremixcontest",
-    "publish_count": 14007,
-    "trend_type": "flat",
-    "is_new": true
-  },
-  {
-    "trend": [
-      {
-        "time": 1749945600,
-        "value": 0.16
-      },
-      {
-        "time": 1750032000,
-        "value": 0.18
-      },
-      {
-        "time": 1750118400,
-        "value": 0.77
-      },
-      {
-        "time": 1750204800,
-        "value": 0.7
-      },
-      {
-        "time": 1750291200,
-        "value": 0.72
-      },
-      {
-        "time": 1750377600,
-        "value": 0.78
-      },
-      {
-        "time": 1750464000,
-        "value": 1
-      }
-    ],
-    "video_views": 263018855,
-    "country_code": "WORLD",
-    "country_name": "World",
-    "hashtag": "tehran",
-    "publish_count": 11208,
-    "trend_type": "flat",
-    "is_new": true
-  },
-  {
-    "trend": [
-      {
-        "time": 1749945600,
-        "value": 0.52
-      },
-      {
-        "time": 1750032000,
-        "value": 0.57
-      },
-      {
-        "time": 1750118400,
-        "value": 0.61
-      },
-      {
-        "time": 1750204800,
-        "value": 0.61
-      },
-      {
-        "time": 1750291200,
+        "time": 1754956800,
         "value": 0.69
       },
       {
-        "time": 1750377600,
-        "value": 0.84
+        "time": 1755043200,
+        "value": 0.8
       },
       {
-        "time": 1750464000,
+        "time": 1755129600,
+        "value": 0.83
+      },
+      {
+        "time": 1755216000,
+        "value": 0.9
+      },
+      {
+        "time": 1755302400,
         "value": 1
       }
     ],
-    "video_views": 92689267,
+    "video_views": 4755156950,
+    "rank_diff": 3,
     "country_code": "WORLD",
     "country_name": "World",
-    "industry": "Vehicle & Transportation",
-    "hashtag": "yacht",
-    "publish_count": 15826,
+    "industry": "Sports & Outdoor",
+    "hashtag": "phillies",
+    "publish_count": 178182,
+    "trend_type": "flat"
+  },
+  {
+    "trend": [
+      {
+        "time": 1754784000,
+        "value": 0.52
+      },
+      {
+        "time": 1754870400,
+        "value": 0.67
+      },
+      {
+        "time": 1754956800,
+        "value": 0.68
+      },
+      {
+        "time": 1755043200,
+        "value": 0.79
+      },
+      {
+        "time": 1755129600,
+        "value": 0.82
+      },
+      {
+        "time": 1755216000,
+        "value": 0.89
+      },
+      {
+        "time": 1755302400,
+        "value": 1
+      }
+    ],
+    "video_views": 4703463573,
+    "rank_diff": 1,
+    "country_code": "WORLD",
+    "country_name": "World",
+    "industry": "Sports & Outdoor",
+    "hashtag": "mlbtradedeadline",
+    "publish_count": 173689,
+    "trend_type": "flat"
+  },
+  {
+    "trend": [
+      {
+        "time": 1754784000,
+        "value": 0.52
+      },
+      {
+        "time": 1754870400,
+        "value": 0.67
+      },
+      {
+        "time": 1754956800,
+        "value": 0.68
+      },
+      {
+        "time": 1755043200,
+        "value": 0.79
+      },
+      {
+        "time": 1755129600,
+        "value": 0.82
+      },
+      {
+        "time": 1755216000,
+        "value": 0.9
+      },
+      {
+        "time": 1755302400,
+        "value": 1
+      }
+    ],
+    "video_views": 4701813622,
+    "rank_diff": 1,
+    "country_code": "WORLD",
+    "country_name": "World",
+    "industry": "Sports & Outdoor",
+    "hashtag": "baseballupdates",
+    "publish_count": 171623,
+    "trend_type": "flat"
+  },
+  {
+    "trend": [
+      {
+        "time": 1754784000,
+        "value": 0.54
+      },
+      {
+        "time": 1754870400,
+        "value": 0.68
+      },
+      {
+        "time": 1754956800,
+        "value": 0.7
+      },
+      {
+        "time": 1755043200,
+        "value": 0.8
+      },
+      {
+        "time": 1755129600,
+        "value": 0.84
+      },
+      {
+        "time": 1755216000,
+        "value": 0.9
+      },
+      {
+        "time": 1755302400,
+        "value": 1
+      }
+    ],
+    "video_views": 4729119517,
+    "rank_diff": 4,
+    "country_code": "WORLD",
+    "country_name": "World",
+    "industry": "Sports & Outdoor",
+    "hashtag": "sportsnews",
+    "publish_count": 174912,
+    "trend_type": "flat"
+  },
+  {
+    "trend": [
+      {
+        "time": 1754784000,
+        "value": 0.21
+      },
+      {
+        "time": 1754870400,
+        "value": 0.22
+      },
+      {
+        "time": 1754956800,
+        "value": 0.26
+      },
+      {
+        "time": 1755043200,
+        "value": 0.27
+      },
+      {
+        "time": 1755129600,
+        "value": 0.32
+      },
+      {
+        "time": 1755216000,
+        "value": 0.67
+      },
+      {
+        "time": 1755302400,
+        "value": 1
+      }
+    ],
+    "video_views": 170701119,
+    "rank_diff": 33,
+    "country_code": "WORLD",
+    "country_name": "World",
+    "hashtag": "azadi",
+    "publish_count": 51291,
+    "trend_type": "up"
+  },
+  {
+    "trend": [
+      {
+        "time": 1754784000,
+        "value": 0.18
+      },
+      {
+        "time": 1754870400,
+        "value": 0.19
+      },
+      {
+        "time": 1754956800,
+        "value": 0.21
+      },
+      {
+        "time": 1755043200,
+        "value": 0.23
+      },
+      {
+        "time": 1755129600,
+        "value": 0.28
+      },
+      {
+        "time": 1755216000,
+        "value": 0.75
+      },
+      {
+        "time": 1755302400,
+        "value": 1
+      }
+    ],
+    "video_views": 270266784,
+    "rank_diff": 31,
+    "country_code": "WORLD",
+    "country_name": "World",
+    "hashtag": "14august2025",
+    "publish_count": 38656,
+    "trend_type": "up"
+  },
+  {
+    "trend": [
+      {
+        "time": 1754784000,
+        "value": 0.18
+      },
+      {
+        "time": 1754870400,
+        "value": 0.18
+      },
+      {
+        "time": 1754956800,
+        "value": 0.21
+      },
+      {
+        "time": 1755043200,
+        "value": 0.24
+      },
+      {
+        "time": 1755129600,
+        "value": 0.3
+      },
+      {
+        "time": 1755216000,
+        "value": 0.69
+      },
+      {
+        "time": 1755302400,
+        "value": 1
+      }
+    ],
+    "video_views": 177101240,
+    "rank_diff": 38,
+    "country_code": "WORLD",
+    "country_name": "World",
+    "hashtag": "azadimubarak",
+    "publish_count": 29845,
+    "trend_type": "up"
+  },
+  {
+    "trend": [
+      {
+        "time": 1754784000,
+        "value": 0.55
+      },
+      {
+        "time": 1754870400,
+        "value": 0.55
+      },
+      {
+        "time": 1754956800,
+        "value": 0.47
+      },
+      {
+        "time": 1755043200,
+        "value": 0.55
+      },
+      {
+        "time": 1755129600,
+        "value": 0.59
+      },
+      {
+        "time": 1755216000,
+        "value": 0.79
+      },
+      {
+        "time": 1755302400,
+        "value": 1
+      }
+    ],
+    "video_views": 803849388,
+    "country_code": "WORLD",
+    "country_name": "World",
+    "hashtag": "capcutpioneer",
+    "publish_count": 54502,
     "trend_type": "flat",
     "is_new": true
   },
   {
     "trend": [
       {
-        "time": 1749945600,
-        "value": 0.17
+        "time": 1754784000,
+        "value": 0.44
       },
       {
-        "time": 1750032000,
-        "value": 0.19
+        "time": 1754870400,
+        "value": 0.43
       },
       {
-        "time": 1750118400,
-        "value": 0.19
+        "time": 1754956800,
+        "value": 0.44
       },
       {
-        "time": 1750204800,
-        "value": 0.2
+        "time": 1755043200,
+        "value": 0.42
       },
       {
-        "time": 1750291200,
-        "value": 0.25
+        "time": 1755129600,
+        "value": 0.43
       },
       {
-        "time": 1750377600,
-        "value": 0.58
+        "time": 1755216000,
+        "value": 0.71
       },
       {
-        "time": 1750464000,
+        "time": 1755302400,
         "value": 1
       }
     ],
-    "video_views": 91204688,
-    "rank_diff": 17,
+    "video_views": 97329301,
+    "rank_diff": 47,
     "country_code": "WORLD",
     "country_name": "World",
-    "hashtag": "g7",
-    "publish_count": 5084,
+    "hashtag": "🇵🇰",
+    "publish_count": 43986,
     "trend_type": "up"
+  },
+  {
+    "trend": [
+      {
+        "time": 1754784000,
+        "value": 0.15
+      },
+      {
+        "time": 1754870400,
+        "value": 0.18
+      },
+      {
+        "time": 1754956800,
+        "value": 0.19
+      },
+      {
+        "time": 1755043200,
+        "value": 0.21
+      },
+      {
+        "time": 1755129600,
+        "value": 0.28
+      },
+      {
+        "time": 1755216000,
+        "value": 0.64
+      },
+      {
+        "time": 1755302400,
+        "value": 1
+      }
+    ],
+    "video_views": 85308457,
+    "rank_diff": 66,
+    "country_code": "WORLD",
+    "country_name": "World",
+    "hashtag": "14thaugust",
+    "publish_count": 21823,
+    "trend_type": "up"
+  },
+  {
+    "trend": [
+      {
+        "time": 1754784000,
+        "value": 0.39
+      },
+      {
+        "time": 1754870400,
+        "value": 0.4
+      },
+      {
+        "time": 1754956800,
+        "value": 0.4
+      },
+      {
+        "time": 1755043200,
+        "value": 0.47
+      },
+      {
+        "time": 1755129600,
+        "value": 0.54
+      },
+      {
+        "time": 1755216000,
+        "value": 0.58
+      },
+      {
+        "time": 1755302400,
+        "value": 1
+      }
+    ],
+    "video_views": 469299216,
+    "country_code": "WORLD",
+    "country_name": "World",
+    "hashtag": "cazzu",
+    "publish_count": 16903,
+    "trend_type": "flat",
+    "is_new": true
+  },
+  {
+    "trend": [
+      {
+        "time": 1754784000,
+        "value": 0.19
+      },
+      {
+        "time": 1754870400,
+        "value": 0.18
+      },
+      {
+        "time": 1754956800,
+        "value": 0.21
+      },
+      {
+        "time": 1755043200,
+        "value": 0.24
+      },
+      {
+        "time": 1755129600,
+        "value": 0.26
+      },
+      {
+        "time": 1755216000,
+        "value": 0.59
+      },
+      {
+        "time": 1755302400,
+        "value": 1
+      }
+    ],
+    "video_views": 53851647,
+    "rank_diff": 74,
+    "country_code": "WORLD",
+    "country_name": "World",
+    "hashtag": "independence",
+    "publish_count": 21929,
+    "trend_type": "up"
+  },
+  {
+    "trend": [
+      {
+        "time": 1754784000,
+        "value": 0.01
+      },
+      {
+        "time": 1754870400,
+        "value": 0.02
+      },
+      {
+        "time": 1754956800,
+        "value": 0.03
+      },
+      {
+        "time": 1755043200,
+        "value": 0.09
+      },
+      {
+        "time": 1755129600,
+        "value": 0.7
+      },
+      {
+        "time": 1755216000,
+        "value": 0.9
+      },
+      {
+        "time": 1755302400,
+        "value": 1
+      }
+    ],
+    "video_views": 179582422,
+    "rank_diff": 1,
+    "country_code": "WORLD",
+    "country_name": "World",
+    "industry": "News & Entertainment",
+    "hashtag": "lacasadealofoke",
+    "publish_count": 20961,
+    "trend_type": "up"
+  },
+  {
+    "trend": [
+      {
+        "time": 1754784000,
+        "value": 0.19
+      },
+      {
+        "time": 1754870400,
+        "value": 0.17
+      },
+      {
+        "time": 1754956800,
+        "value": 0.19
+      },
+      {
+        "time": 1755043200,
+        "value": 0.27
+      },
+      {
+        "time": 1755129600,
+        "value": 0.31
+      },
+      {
+        "time": 1755216000,
+        "value": 0.53
+      },
+      {
+        "time": 1755302400,
+        "value": 1
+      }
+    ],
+    "video_views": 140479676,
+    "country_code": "WORLD",
+    "country_name": "World",
+    "hashtag": "resultsday",
+    "publish_count": 10028,
+    "trend_type": "flat",
+    "is_new": true
+  },
+  {
+    "trend": [
+      {
+        "time": 1754784000,
+        "value": 0.31
+      },
+      {
+        "time": 1754870400,
+        "value": 0.3
+      },
+      {
+        "time": 1754956800,
+        "value": 0.3
+      },
+      {
+        "time": 1755043200,
+        "value": 0.29
+      },
+      {
+        "time": 1755129600,
+        "value": 0.33
+      },
+      {
+        "time": 1755216000,
+        "value": 0.36
+      },
+      {
+        "time": 1755302400,
+        "value": 1
+      }
+    ],
+    "video_views": 372502502,
+    "country_code": "WORLD",
+    "country_name": "World",
+    "industry": "News & Entertainment",
+    "hashtag": "nodal",
+    "publish_count": 9463,
+    "trend_type": "flat",
+    "is_new": true
+  },
+  {
+    "trend": [
+      {
+        "time": 1754784000,
+        "value": 0.43
+      },
+      {
+        "time": 1754870400,
+        "value": 0.46
+      },
+      {
+        "time": 1754956800,
+        "value": 0.39
+      },
+      {
+        "time": 1755043200,
+        "value": 0.37
+      },
+      {
+        "time": 1755129600,
+        "value": 0.36
+      },
+      {
+        "time": 1755216000,
+        "value": 0.43
+      },
+      {
+        "time": 1755302400,
+        "value": 1
+      }
+    ],
+    "video_views": 529716777,
+    "country_code": "WORLD",
+    "country_name": "World",
+    "industry": "News & Entertainment",
+    "hashtag": "angelaaguilar",
+    "publish_count": 9818,
+    "trend_type": "flat",
+    "is_new": true
   }
 ]

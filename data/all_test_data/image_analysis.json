@@ -3,30 +3,38 @@
   "product_category": "footwear",
   "style_descriptors": [
     "minimalist",
-    "low-top"
+    "classic",
+    "low-top",
+    "clean design"
   ],
   "material_details": [
-    "leather",
-    "synthetic"
+    "synthetic leather",
+    "rubber sole"
   ],
   "distinctive_features": [
-    "perforated design",
-    "embroidered logo"
+    "white sole",
+    "perforated side panels",
+    "bold side branding",
+    "tonal stitching"
   ],
   "primary_colors": [
     "white"
   ],
   "accent_colors": [
-    "black detailing"
+    "black text accents"
   ],
   "brand_elements": [
     "Puma logo",
-    "embossed text"
+    "embossed PUMA text on heel and sole"
   ],
   "advertising_keywords": [
+    "timeless",
+    "versatile",
     "urban",
-    "casual",
-    "comfortable"
+    "streetwear",
+    "everyday",
+    "comfortable",
+    "clean"
   ],
-  "overall_aesthetic": "modern minimalist"
+  "overall_aesthetic": "urban minimalist"
 }

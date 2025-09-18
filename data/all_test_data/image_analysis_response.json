@@ -1,6 +1,6 @@
 {
-  "id": "resp_687e777d6300819894b376dafc1e7f12035b094f217ca857",
-  "created_at": 1753118590.0,
+  "id": "resp_68a49d873a408190932994a77c23a78b01039bbd0b09e110",
+  "created_at": 1755618695.0,
   "error": null,
   "incomplete_details": null,
   "instructions": null,
@@ -9,45 +9,46 @@
   "object": "response",
   "output": [
     {
-      "id": "msg_687e778185e881988c9451c7d9f3dbff035b094f217ca857",
+      "id": "msg_68a49d892c848190a7dcc656d43b12a701039bbd0b09e110",
       "content": [
         {
           "annotations": [],
-          "text": "{\"product_type\":\"sneakers\",\"product_category\":\"footwear\",\"style_descriptors\":[\"minimalist\",\"low-top\"],\"material_details\":[\"leather\",\"synthetic\"],\"distinctive_features\":[\"perforated design\",\"embroidered logo\"],\"primary_colors\":[\"white\"],\"accent_colors\":[\"black detailing\"],\"brand_elements\":[\"Puma logo\",\"embossed text\"],\"advertising_keywords\":[\"urban\",\"casual\",\"comfortable\"],\"overall_aesthetic\":\"modern minimalist\"}",
+          "text": "{\"product_type\":\"sneakers\",\"product_category\":\"footwear\",\"style_descriptors\":[\"athletic\",\"lightweight\"],\"material_details\":[\"mesh\",\"synthetic\"],\"distinctive_features\":[\"flyknit upper\",\"flexible sole\"],\"primary_colors\":[\"red\",\"black\"],\"accent_colors\":[\"white\"],\"brand_elements\":[\"Nike logo\",\"branding on tongue\"],\"advertising_keywords\":[\"performance\",\"running\",\"dynamic\"],\"overall_aesthetic\":\"sporty modern\"}",
           "type": "output_text",
+          "logprobs": [],
           "parsed": {
             "product_type": "sneakers",
             "product_category": "footwear",
             "style_descriptors": [
-              "minimalist",
-              "low-top"
+              "athletic",
+              "lightweight"
             ],
             "material_details": [
-              "leather",
+              "mesh",
               "synthetic"
             ],
             "distinctive_features": [
-              "perforated design",
-              "embroidered logo"
+              "flyknit upper",
+              "flexible sole"
             ],
             "primary_colors": [
-              "white"
+              "red",
+              "black"
             ],
             "accent_colors": [
-              "black detailing"
+              "white"
             ],
             "brand_elements": [
-              "Puma logo",
-              "embossed text"
+              "Nike logo",
+              "branding on tongue"
             ],
             "advertising_keywords": [
-              "urban",
-              "casual",
-              "comfortable"
+              "performance",
+              "running",
+              "dynamic"
             ],
-            "overall_aesthetic": "modern minimalist"
-          },
-          "logprobs": []
+            "overall_aesthetic": "sporty modern"
+          }
         }
       ],
       "role": "assistant",
@@ -62,12 +63,16 @@
   "top_p": 1.0,
   "background": false,
   "max_output_tokens": null,
+  "max_tool_calls": null,
   "previous_response_id": null,
+  "prompt": null,
+  "prompt_cache_key": null,
   "reasoning": {
     "effort": null,
     "generate_summary": null,
     "summary": null
   },
+  "safety_identifier": null,
   "service_tier": "default",
   "status": "completed",
   "text": {
@@ -163,24 +168,22 @@
       "type": "json_schema",
       "description": null,
       "strict": true
-    }
+    },
+    "verbosity": "medium"
   },
+  "top_logprobs": 0,
   "truncation": "disabled",
   "usage": {
-    "input_tokens": 26003,
+    "input_tokens": 37337,
     "input_tokens_details": {
       "cached_tokens": 0
     },
-    "output_tokens": 95,
+    "output_tokens": 93,
     "output_tokens_details": {
       "reasoning_tokens": 0
     },
-    "total_tokens": 26098
+    "total_tokens": 37430
   },
   "user": null,
-  "max_tool_calls": null,
-  "prompt_cache_key": null,
-  "safety_identifier": null,
-  "store": true,
-  "top_logprobs": 0
+  "store": true
 }
