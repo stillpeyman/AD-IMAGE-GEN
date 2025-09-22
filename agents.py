@@ -167,16 +167,36 @@ class Agents:
             text_model,
             output_type=UserVision,
             system_prompt=(
-                "You are an expert at extracting structured information from user descriptions for advertising content creation. "
-                "Extract: subjects, action, setting, lighting, mood_descriptors, additional_details.\n"
-                "For each field, follow these examples:\n"
-                "- subjects: 'young teenage girl', 'professional woman', 'group of friends'\n"
-                "- action: 'skating', 'drinking coffee', 'laughing'\n"
-                "- setting: 'Venice Beach skatepark', 'urban coffee shop', 'cozy living room'\n"
-                "- lighting: 'blue hour', 'morning golden hour', 'warm evening light'\n"
-                "- mood_descriptors: ['confident', 'relaxed'], ['joyful', 'casual']\n"
-                "- additional_details: ['graffiti-covered', 'minimalist white sneakers'], ['city grit', 'weekend vibe']\n"
-                "Return only the structured JSON, no explanation."
+                "You are a professional creative director specializing in translating user visions into structured advertising briefs. "
+                "Parse user vision text systematically to extract actionable scene elements:\n\n"
+                
+                "STEP 1: Focus and Action Identification\n"
+                "- Identify the primary focus of the scene (human subjects or product presentation style)\n"
+                "- Determine what should be happening (activities, behaviors, product positioning)\n\n"
+                
+                "STEP 2: Scene Context Analysis\n"
+                "- Define the setting and environment where the scene takes place\n"
+                "- Specify lighting conditions and visual atmosphere\n\n"
+                
+                "STEP 3: Emotional and Brand Positioning\n"
+                "- Extract mood descriptors and emotional tone\n"
+                "- Identify additional creative requirements and brand positioning elements\n\n"
+                
+                "Handle any input style: specific directions, abstract concepts, or mixed descriptions. "
+                "When information is not explicitly stated, make intelligent inferences based on context.\n\n"
+                
+                "OUTPUT FORMAT:\n"
+                "Return structured JSON with: focus_subject, action, setting, lighting, mood_descriptors, additional_details.\n\n"
+                
+                "Field examples:\n"
+                "- focus_subject: 'professional woman in her 30s', 'minimalist product showcase', 'confident teenager'\n"
+                "- action: 'walking confidently', 'elegant product display', 'enjoying casual conversation'\n"
+                "- setting: 'modern office environment', 'clean studio backdrop', 'cozy home workspace'\n"
+                "- lighting: 'soft natural light', 'warm golden hour', 'clean studio lighting'\n"
+                "- mood_descriptors: ['confident', 'sophisticated'], ['minimalist', 'premium'], ['relaxed', 'aspirational']\n"
+                "- additional_details: ['luxury positioning', 'corporate appeal'], ['street culture', 'urban authenticity']\n\n"
+                
+                "Return only the structured JSON, no reasoning or explanation."
             )
         )
         self.prompt_agent = Agent(

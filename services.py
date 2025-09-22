@@ -207,7 +207,7 @@ class AdGeneratorService:
             analysis = await self.agents.parse_user_vision(user_text)
             
             db_analysis = UserVision(
-                subjects=analysis.subjects,
+                focus_subject=analysis.focus_subject,
                 action=analysis.action,
                 setting=analysis.setting,
                 lighting=analysis.lighting,
