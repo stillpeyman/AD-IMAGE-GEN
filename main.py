@@ -7,6 +7,29 @@ FastAPI app wiring:
 """
 
 """
+ARCHITECTURE NOTE TO MYSELF:
+
+Single API Key, Dual Model System:
+- MY_OPENAI_API_KEY used for all OpenAI operations
+- Two different models for different tasks:
+  
+Text Analysis (via Agents class):
+- Model: gpt-4o-mini (smart, cheap, fast)
+- Jobs: Product analysis, moodboard analysis, user vision parsing, prompt building
+- Validation: API key checked once at Agents.__init__()
+
+Image Generation (via image_generator module):  
+- Model: gpt-image-1 (specialized for images, only supported model)
+- Jobs: Generate final ad images
+- Validation: Same API key validated at AdGeneratorService.__init__()
+
+Why this design:
+- Single API key simplifies configuration and billing
+- Two models optimized for their specific tasks
+- Fail-fast validation prevents runtime errors
+"""
+
+"""
 NOTE TO MYSELF for better organizing code in separate files:
 see https://fastapi.tiangolo.com/tutorial/bigger-applications/#import-apirouter
 >>> "Multiple Files/APIRouter"
@@ -34,8 +57,7 @@ TEST_SESSION_ID = "test-session-123"
 
 # 1) env
 load_dotenv()
-TEXT_API_KEY = os.getenv("MS_OPENAI_API_KEY")
-IMG_API_KEY = os.getenv("MY_OPENAI_API_KEY")
+OPENAI_API_KEY = os.getenv("MY_OPENAI_API_KEY")  # Single API key for all OpenAI operations
 IMG_MODEL = "gpt-image-1"  # The only supported model for image generation
 
 # Enable debug endpoint only when ENABLE_DB_PING=true in .env
@@ -75,9 +97,10 @@ app = FastAPI()
 # Serve generated images from local disk under /static
 app.mount("/static", StaticFiles(directory="output_images"), name="static")
 
+# Text analysis agents using gpt-4o-mini model
 agents = Agents(
-    text_openai_api_key=TEXT_API_KEY,
-    text_model_name="gpt-4o-mini",
+    openai_api_key=OPENAI_API_KEY,
+    model_name="gpt-4o-mini",
 )
 
 
@@ -89,10 +112,10 @@ def get_service(session: Session = Depends(get_session)) -> AdGeneratorService:
     and give me its returned Session."
     """
     return AdGeneratorService(
-        agents=agents, 
+        agents=agents,                 # Text analysis (gpt-4o-mini)
         session=session,
-        img_model=IMG_MODEL,
-        img_api_key=IMG_API_KEY
+        img_model=IMG_MODEL,          # Image generation (gpt-image-1) 
+        openai_api_key=OPENAI_API_KEY # Same key, different models
     )
 
 

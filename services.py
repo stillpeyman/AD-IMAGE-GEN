@@ -31,73 +31,32 @@ class AdGeneratorService:
         agents: Agents, 
         session: Session, 
         img_model: str,
-        img_api_key: str | None = None
+        openai_api_key: str
     ):
         """
         Initialize the service with agents, database session, and image generation config.
         
         Args:
-            agents: The AI agents for text analysis tasks
+            agents: The AI agents for text analysis tasks (uses 'gpt-4o-mini' model with single API key)
             session: Database session for persistence
-            img_model: Model name for image generation (e.g., "gpt-image-1")
-            img_api_key: API key for image generation (MY_OPENAI_API_KEY).
-                        Optional to allow dependency injection and testing scenarios.
+            img_model: Image generation model name (must be "gpt-image-1" - the only supported model)
+            openai_api_key: OpenAI API key for image generation (MY_OPENAI_API_KEY).
+                           Same key used by agents, required for all operations.
         
         Attributes:
             session_memory: Dictionary storing session data for refinement logic
         """
+        # Validate injected API key at initialization
+        if not openai_api_key:
+            raise ValueError("OpenAI API key is required. Please set MY_OPENAI_API_KEY environment variable.")
+        
         self.agents = agents
         self.session = session
-        self.img_api_key = img_api_key
+        self.openai_api_key = openai_api_key
         self.img_model = img_model
         self.session_memory = {}
 
 
-    # def _store_session_data(self, session_id: str, step: str, data: dict) -> None:
-    #     """
-    #     Store analysis data in session memory for refinement logic.
-        
-    #     Private method - internal use only, not part of public API.
-    #     Creates session structure if it doesn't exist, then stores step data.
-        
-    #     Args:
-    #         session_id: Unique session identifier
-    #         step: Analysis step name (e.g., "product_analysis", "moodboard_analysis")
-    #         data: Dictionary containing id, analysis, and refinement_count
-    #     """
-    #     if session_id not in self.session_memory:
-    #         self.session_memory[session_id] = {}
-    #     self.session_memory[session_id][step] = data
-
-
-    # def _get_session_data(self, session_id: str, step: str = None) -> dict | None:
-    #     """
-    #     Retrieve analysis data from session memory.
-        
-    #     Private method - internal use only, not part of public API.
-    #     Can return entire session or specific step data.
-        
-    #     Args:
-    #         session_id: Unique session identifier
-    #         step: Analysis step name (optional, defaults to None)
-    #             - None: returns entire session data
-    #             - "product_analysis": returns only that step's data
-        
-    #     Returns:
-    #         dict | None: Session data, step data, or None if not found
-    #     """
-    #     if session_id not in self.session_memory:
-    #         return None
-        
-    #     if step is None:
-    #         return self.session_memory[session_id]
-
-    #     # .get(step) returns None if step doesn't exist
-    #     return self.session_memory[session_id].get(step)
-
-
-    # static methods = utility functions
-    # don't need instance data, work independently of the class, don't access <self>
     @staticmethod
     def _save_image(image_bytes: bytes, dir_name: str, filename_prefix: str) -> str:
         """
@@ -115,6 +74,8 @@ class AdGeneratorService:
     async def analyze_product_image(self, image_bytes: bytes, session_id: str) -> ImageAnalysis:
         """
         Analyze a product image and store results in database.
+        
+        Note: Uses self.agents (with pre-validated API key) for text analysis via gpt-4o-mini model.
 
         Args:
             image_bytes: Raw product image data
@@ -412,14 +373,12 @@ class AdGeneratorService:
                     saved_reference_paths.append(saved_ref)
             
             # Generate image using the dedicated image generator module
-            if not self.img_api_key:
-                raise ValueError("Image generation API key not configured. Please set MY_OPENAI_API_KEY environment variable.")
-            
+            # Note: API key already validated in __init__, so self.openai_api_key is guaranteed to exist
             data_url = await generate_image_data_url(
                 prompt=prompt.prompt_text,
                 product_image_bytes=product_image_bytes,
                 model=self.img_model,
-                api_key=self.img_api_key,
+                api_key=self.openai_api_key,
                 reference_images_bytes=reference_image_bytes_list,
             )
 

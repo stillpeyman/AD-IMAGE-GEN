@@ -17,41 +17,54 @@ NOTE TO MYSELF:
 -> async:
 In computer programming, asynchronous (async) operation means that a process operates independent of other processes ("non-blocking"). Synchronous (sync) operation means that the process runs only as a result of some other completed or handed-off processes ("blocking").
 
--> How to read base64.b64encode(image_file.read()).decode("utf-8")? (same for "image_bytes" as param):
+-> HOW TO READ base64.b64encode(image_file.read()).decode("utf-8")? (same for "image_bytes" as param):
 Plain English: "Take these image bytes or open this image file and read its content as bytes, then convert them to base64 format, then turn the base64 bytes into a readable string. But we need a string for the API, so decode the bytes to UTF-8 (Unicode Transformation Format 8-bit) string."
+
+-> UNDERSTANDING THE TWO TYPES OF PROMPTS:
+    - System Prompts (in __init__): Set the agent's role, expertise, and output format. Enhanced with CoT reasoning steps.
+    - Method Prompts (in each method): Task-specific instructions sent with actual data. Enhanced with Few-Shot examples.
 """
 
 
 class Agents:
     """
-    Handles text-based AI tasks for the ad generation workflow:
-    - Product image analysis
-    - Moodboard analysis  
-    - User vision parsing
-    - Prompt building
+    Handles AI text analysis tasks for the ad generation workflow:
+    - Product image analysis (vision + text)
+    - Moodboard analysis (vision + text)
+    - User vision parsing (text)
+    - Advertising prompt building (text)
     
+    Uses a single OpenAI API key for all operations.
     Note: Image generation is handled separately in api/image_generator.py
     """
     def __init__(
         self,
-        text_openai_api_key: str | None = None,
-        text_model_name: str = "gpt-4o-mini",
+        openai_api_key: str,
+        model_name: str = "gpt-4o-mini",
     ):
         """
-        Initialize the Agents class with API key and model name for text operations.
+        Initialize the Agents class with API key and model name for all OpenAI operations.
         
         Args:
-            text_openai_api_key (str | None): API key for OpenAI text models (MS_OPENAI_API_KEY).
-            text_model_name (str): The model name for text operations (default: 'gpt-4o-mini').
+            openai_api_key (str): OpenAI API key for all operations (MY_OPENAI_API_KEY).
+            model_name (str): Text analysis model (default: 'gpt-4o-mini'). 
+                             Note: Image generation uses separate 'gpt-image-1' model.
+        
+        Raises:
+            ValueError: If openai_api_key is None or empty.
         """
-        self.text_openai_api_key = text_openai_api_key
-        self.text_model_name = text_model_name
+        # Validate injected API key at initialization (fail-fast approach)
+        if not openai_api_key:
+            raise ValueError("OpenAI API key is required. Please set MY_OPENAI_API_KEY environment variable.")
+        
+        self.openai_api_key = openai_api_key
+        self.model_name = model_name
         
         # Initialize the OpenAI model for pydantic-ai
         # We need AsyncOpenAI client because pydantic-ai's OpenAIModel requires it
-        client = AsyncOpenAI(api_key=self.text_openai_api_key)
+        client = AsyncOpenAI(api_key=self.openai_api_key)
         text_model = OpenAIModel(
-            self.text_model_name, 
+            self.model_name, 
             provider=OpenAIProvider(openai_client=client)
         )
         
@@ -71,12 +84,35 @@ class Agents:
             text_model,
             output_type=ImageAnalysis,
             system_prompt=(
-                "You are an expert visual analyst for advertising and social media. "
-                "Analyze the product image and return a structured JSON with the following fields: "
-                "product_type, product_category, style_descriptors, material_details, distinctive_features, "
-                "primary_colors, accent_colors, brand_elements, advertising_keywords, overall_aesthetic.\n"
-                "For each field, follow these examples:\n"
-                "- product_type: 'sneakers', 'dress shirt', 'backpack'\n"
+                "You are a professional visual analyst specializing in advertising and social media. "
+                "Analyze product images systematically using this methodology:\n\n"
+                
+                "STEP 1: Product Classification\n"
+                "- Identify the specific product type and its market category\n\n"
+
+                "STEP 2: Physical Analysis\n" 
+                "- Document style elements (silhouette, design philosophy, aesthetic approach)\n"
+                "- Identify materials and textures visible in the image\n"
+                "- Note distinctive features that differentiate this from similar products\n\n"
+
+                "STEP 3: Color Analysis\n"
+                "- Identify dominant colors that define the product\n"
+                "- Note accent colors used for details, trim, or highlights\n\n"
+
+                "STEP 4: Brand Elements\n"
+                "- Locate all visible logos, brand marks, text, and symbols\n\n"
+
+                "STEP 5: Advertising Positioning\n"
+                "- Generate keywords based on visual appeal and target market signals\n"
+                "- Define the overall aesthetic that would resonate with consumers\n\n"
+                
+                "OUTPUT FORMAT:\n"
+                "Return structured JSON with: product_type, product_category, style_descriptors, "
+                "material_details, distinctive_features, primary_colors, accent_colors, "
+                "brand_elements, advertising_keywords, overall_aesthetic.\n\n"
+                
+                "Field examples:\n"
+                "- product_type: 'running sneakers', 'dress shirt', 'gaming backpack'\n"
                 "- product_category: 'footwear', 'apparel', 'accessories', 'electronics'\n"
                 "- style_descriptors: ['minimalist', 'low-top'], ['vintage', 'elegant']\n"
                 "- material_details: ['leather', 'mesh'], ['cotton', 'denim']\n"
@@ -85,25 +121,46 @@ class Agents:
                 "- accent_colors: ['red accents', 'silver details']\n"
                 "- brand_elements: ['Puma logo', 'embossed text'], ['Nike logo', 'swoosh']\n"
                 "- advertising_keywords: ['urban', 'athletic', 'versatile']\n"
-                "- overall_aesthetic: 'luxury minimalist', 'urban casual'\n"
-                "Return only the structured JSON, no explanation."
+                "- overall_aesthetic: 'luxury minimalist', 'urban casual'\n\n"
+                
+                "Return only the structured JSON, no reasoning or explanation."
             )
         )
         self.moodboard_agent = Agent(
             text_model,
             output_type=MoodboardAnalysis,
             system_prompt=(
-                "You are an expert moodboard analyst for advertising and social media. "
-                "Analyze the moodboard image and return a structured JSON with the following fields: "
-                "scene_description, visual_style, mood_atmosphere, color_theme, composition_patterns, suggested_keywords.\n"
-                "For each field, follow these examples:\n"
-                "- scene_description: 'A group of friends laughing in a cozy living room'\n"
-                "- visual_style: 'warm, inviting, casual'\n"
-                "- mood_atmosphere: 'relaxed, joyful'\n"
-                "- color_theme: ['beige', 'soft blue', 'warm yellow']\n"
-                "- composition_patterns: 'central focus, natural light'\n"
-                "- suggested_keywords: ['weekend', 'friendship', 'comfort', 'home', 'laughter']\n"
-                "Return only the structured JSON, no explanation."
+                "You are a professional moodboard analyst specializing in advertising and social media campaigns. "
+                "Analyze moodboard images systematically to extract inspiration for advertising content:\n\n"
+
+                "STEP 1: Scene Analysis\n"
+                "- Describe what is happening in the image and who is present\n"
+                "- Identify the primary setting, environment, and context\n\n"
+
+                "STEP 2: Style and Mood Assessment\n"
+                "- Define the visual style (aesthetic approach, design elements)\n"
+                "- Capture the emotional atmosphere and overall mood\n\n"
+
+                "STEP 3: Technical Analysis\n"
+                "- Extract the color palette and dominant color themes\n"
+                "- Identify composition techniques and lighting patterns\n\n"
+
+                "STEP 4: Advertising Inspiration\n"
+                "- Generate keywords that capture what brand messages this mood supports\n"
+                "- Consider the campaign potential of this visual inspiration\n\n"
+
+                "OUTPUT FORMAT:\n"
+                "Return structured JSON with: scene_description, visual_style, mood_atmosphere, color_theme, composition_patterns, suggested_keywords.\n\n"
+
+                "Field examples:\n"
+                "- scene_description: 'Three young friends skateboarding at sunset in an urban plaza'\n"
+                "- visual_style: 'gritty urban, authentic street culture'\n"
+                "- mood_atmosphere: 'energetic, rebellious, freedom'\n"
+                "- color_theme: ['warm orange', 'deep purple', 'concrete gray']\n"
+                "- composition_patterns: 'dynamic angles, golden hour lighting, leading lines'\n"
+                "- suggested_keywords: ['youth', 'rebellion', 'urban', 'authentic', 'energy', 'friendship']\n\n"
+
+                "Return only the structured JSON, no reasoning or explanation."
             )
         )
         self.user_vision_agent = Agent(

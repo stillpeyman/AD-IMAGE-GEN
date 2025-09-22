@@ -9,7 +9,7 @@ import json
 
 # Load API key & initialize client
 load_dotenv()
-api_key = os.getenv("MS_OPENAI_API_KEY")
+api_key = os.getenv("MY_OPENAI_API_KEY")  # Unified API key
 client = OpenAI(api_key=api_key)
 
 

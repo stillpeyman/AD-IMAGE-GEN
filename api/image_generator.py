@@ -1,6 +1,6 @@
 """
 Image generation module using OpenAI's Responses API.
-Handles the actual image generation with the image generation tool.
+Handles the actual image generation using the same OpenAI API key as text operations.
 """
 
 # stdlib imports
@@ -28,7 +28,7 @@ async def generate_image_data_url(
         prompt (str): The advertising prompt text describing the desired image.
         product_image_bytes (bytes): Raw bytes of the product image to include.
         model (str): The OpenAI model name for image generation (e.g., "gpt-image-1").
-        api_key (str): The OpenAI API key for image generation (MY_OPENAI_API_KEY).
+        api_key (str): The OpenAI API key (MY_OPENAI_API_KEY) - same key used for all operations.
         reference_images_bytes (list[bytes] | None): Optional list of reference image bytes.
         
     Returns:
@@ -68,7 +68,7 @@ async def generate_image_data_url(
                 "image_url": f"data:image/jpeg;base64,{base64.b64encode(img_bytes).decode('utf-8')}",
             })
     
-    # Initialize OpenAI client with the image generation API key
+    # Initialize OpenAI client with the unified API key
     client = AsyncOpenAI(api_key=api_key)
     
     # Make the single API call to OpenAI's Responses API for image generation
