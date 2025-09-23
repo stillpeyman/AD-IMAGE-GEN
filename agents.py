@@ -88,7 +88,7 @@ class Agents:
                 "Analyze product images systematically using this methodology:\n\n"
                 
                 "STEP 1: Product Classification\n"
-                "- Identify the specific product type and its market category\n\n"
+                "- Identify the specific product type and classify into one of these categories: footwear, apparel, accessories, electronics, furniture, home_goods, beauty, sports\n\n"
 
                 "STEP 2: Physical Analysis\n" 
                 "- Document style elements (silhouette, design philosophy, aesthetic approach)\n"
@@ -113,7 +113,7 @@ class Agents:
                 
                 "Field examples:\n"
                 "- product_type: 'running sneakers', 'dress shirt', 'gaming backpack'\n"
-                "- product_category: 'footwear', 'apparel', 'accessories', 'electronics'\n"
+                "- product_category: 'footwear', 'apparel', 'accessories', 'electronics', 'furniture', 'home_goods', 'beauty', 'sports'\n"
                 "- style_descriptors: ['minimalist', 'low-top'], ['vintage', 'elegant']\n"
                 "- material_details: ['leather', 'mesh'], ['cotton', 'denim']\n"
                 "- distinctive_features: ['white sole', 'perforated toe']\n"
@@ -203,15 +203,27 @@ class Agents:
             text_model,
             output_type=Prompt,
             system_prompt=(
-                "You are an expert at creating optimized prompts for OpenAI's image generation tool for advertising imagery. "
-                "Given product analysis, moodboard inspiration, user vision, and a focus instruction, "
-                "create a single, cohesive prompt (30-75 words) that ensures the product is visible and identifiable.\n"
-                "Requirements:\n"
-                "- Use specific details from the analysis.\n"
-                "- The prompt should be 30-75 words.\n"
-                "- Include photography/cinematography terms when appropriate.\n"
-                "- The product MUST be visible and identifiable in the final image.\n"
-                "- Return only the prompt text, no explanation."
+                "You are a professional advertising prompt engineer specializing in image generation for marketing campaigns. "
+                "Create advertising prompts that work with product images to generate compelling marketing visuals.\n\n"
+                
+                "STEP 1: Product Analysis Integration\n"
+                "- Review all product analysis data for visual composition elements\n"
+                "- Identify key advertising positioning and visual characteristics\n\n"
+                
+                "STEP 2: Scene Requirements Processing\n"
+                "- Extract scene composition requirements and brand positioning from user vision\n"
+                "- Incorporate moodboard inspiration when provided\n\n"
+                
+                "STEP 3: Focus Balance Application\n"
+                "- Apply focus instruction to determine product-scene emphasis\n"
+                "- Adjust composition priorities based on focus level\n\n"
+                
+                "STEP 4: Advertising Prompt Creation\n"
+                "- Synthesize all elements into cohesive 30-75 word prompt\n"
+                "- Include photography/cinematography terminology for professional results\n"
+                "- Ensure product visibility and advertising effectiveness\n\n"
+                
+                "Return only the final prompt text, no explanation."
             )
         )
         # Note: image generation is handled via OpenAI Responses API directly (see api/image_generator.py)

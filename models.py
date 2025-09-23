@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 # third-party imports
 from sqlalchemy import Column
 from sqlalchemy.dialects.sqlite import JSON
-from sqlmodel import SQLModel, Field
+from sqlmodel import SQLModel, Field, table
 
 
 """
@@ -68,7 +68,9 @@ class Prompt(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     prompt_text: str
     image_analysis_id: int | None = Field(default=None, foreign_key="imageanalysis.id")
-    moodboard_analysis_ids: list[int] = Field(sa_column=Column(JSON))  # Changed to list of IDs
+    # No foreign key. Ddatabases don't support FKs to lists 
+    # We query each ID individually when needed
+    moodboard_analysis_ids: list[int] = Field(sa_column=Column(JSON))
     user_vision_id: int | None = Field(default=None, foreign_key="uservision.id")
     focus_slider: int
     refinement_count: int = 0
@@ -85,4 +87,14 @@ class GeneratedImage(SQLModel, table=True):
     image_url: str  # This is the final generated ad image
     input_images: list[str] = Field(sa_column=Column(JSON))  # All input images used for generation
     session_id: str | None = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class PromptExample(SQLModel, table=True):
+    """Stores ad prompt examples by category for RAG"""
+    id: int | None = Field(default=None, primary_key=True)
+    prompt_id: int | None = Field(default=None, foreign_key="prompt.id")
+    prompt_text: str
+    # matches ImageAnalysis.product_category for retrieval
+    product_category: str
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
