@@ -8,7 +8,7 @@ from pydantic_ai.models.openai import OpenAIModel
 from pydantic_ai.providers.openai import OpenAIProvider
 
 # local imports
-from models import ImageAnalysis, MoodboardAnalysis, UserVision, Prompt
+from models import ImageAnalysis, MoodboardAnalysis, UserVision, Prompt, PromptExample
 
 
 """
@@ -239,20 +239,51 @@ class Agents:
         Returns:
             ImageAnalysis: Structured analysis of the product image.
         """
-        prompt_text = (
-            "Analyze this product image for advertising purposes and provide:\n"
-            "1. Product type (e.g., 'sneakers', 'dress shirt', 'backpack')\n"
-            "2. Product category (e.g., 'footwear', 'apparel', 'accessories', 'electronics')\n"
-            "3. Style descriptors as list (e.g., ['minimalist', 'low-top'], ['vintage', 'elegant'])\n"
-            "4. Material details as list (e.g., ['leather', 'mesh'], ['cotton', 'denim'])\n"
-            "5. Distinctive features as list (e.g., ['white sole', 'perforated toe'])\n"
-            "6. Primary colors as list (e.g., ['black', 'white'], ['navy blue', 'gray'])\n"
-            "7. Accent colors as list (e.g., ['red accents', 'silver details'])\n"
-            "8. Brand elements as list (e.g., ['Puma logo', 'embossed text'], ['Nike logo', 'swoosh'])\n"
-            "9. Advertising keywords as list (e.g., ['urban', 'athletic', 'versatile'])\n"
-            "10. Overall aesthetic (optional) (e.g., 'luxury minimalist', 'urban casual')\n"
-            "Return only the structured JSON, no explanation."
-        )
+        prompt_text = """
+            EXAMPLES OF EFFECTIVE PRODUCT ANALYSIS:
+
+            Example 1:
+            {
+                "product_type": "running sneakers",
+                "product_category": "footwear",
+                "style_descriptors": ["athletic", "low-top"],
+                "material_details": ["mesh", "rubber"],
+                "distinctive_features": ["air cushioning", "reflective strips"],
+                "primary_colors": ["black", "white"],
+                "accent_colors": ["neon green"],
+                "brand_elements": ["Nike swoosh", "Air Max logo"],
+                "advertising_keywords": ["performance", "urban", "versatile"],
+                "overall_aesthetic": "sporty minimalist"
+            }
+
+            Example 2:
+            {
+                "product_type": "leather jacket",
+                "product_category": "apparel",
+                "style_descriptors": ["vintage", "biker"],
+                "material_details": ["genuine leather", "metal hardware"],
+                "distinctive_features": ["asymmetrical zipper", "studded details"],
+                "primary_colors": ["black"],
+                "accent_colors": ["silver hardware"],
+                "brand_elements": ["brand patch", "metal studs"],
+                "advertising_keywords": ["rebellious", "classic", "edgy"],
+                "overall_aesthetic": "rock vintage"
+            }
+
+            Analyze this product image for advertising purposes and provide:
+            1. Product type (e.g., 'sneakers', 'dress shirt', 'backpack')
+            2. Product category (e.g., 'footwear', 'apparel', 'accessories', 'electronics')
+            3. Style descriptors as list (e.g., ['minimalist', 'low-top'], ['vintage', 'elegant'])
+            4. Material details as list (e.g., ['leather', 'mesh'], ['cotton', 'denim'])
+            5. Distinctive features as list (e.g., ['white sole', 'perforated toe'])
+            6. Primary colors as list (e.g., ['black', 'white'], ['navy blue', 'gray'])
+            7. Accent colors as list (e.g., ['red accents', 'silver details'])
+            8. Brand elements as list (e.g., ['Puma logo', 'embossed text'], ['Nike logo', 'swoosh'])
+            9. Advertising keywords as list (e.g., ['urban', 'athletic', 'versatile'])
+            10. Overall aesthetic (optional) (e.g., 'luxury minimalist', 'urban casual')
+            Follow the format and quality shown in the examples above.
+            Return only the structured JSON, no explanation.
+            """
         
         content = [
             prompt_text,
@@ -276,16 +307,39 @@ class Agents:
         results = []
 
         for image_bytes in image_bytes_list:
-            prompt_text = (
-                "Analyze this moodboard image and provide:\n"
-                "1. Brief scene description (e.g., 'A group of friends laughing in a cozy living room')\n"
-                "2. Visual style (e.g., 'warm, inviting, casual')\n"
-                "3. Mood/atmosphere (e.g., 'relaxed, joyful')\n"
-                "4. Color theme (e.g., ['beige', 'soft blue', 'warm yellow'])\n"
-                "5. Composition patterns (e.g., 'central focus, natural light')\n"
-                "6. 5-7 relevant keywords (e.g., ['weekend', 'friendship', 'comfort', 'home', 'laughter'])\n"
-                "Return only the structured JSON, no explanation."
-            )
+            prompt_text = """
+                EXAMPLES OF EFFECTIVE MOODBOARD ANALYSIS:
+
+                Example 1:
+                {
+                    "scene_description": "Three young skaters practicing tricks at golden hour in an urban plaza",
+                    "visual_style": "gritty street photography, authentic youth culture",
+                    "mood_atmosphere": "energetic, rebellious, freedom",
+                    "color_theme": ["warm orange", "deep shadows", "concrete gray"],
+                    "composition_patterns": "dynamic angles, natural lighting, motion blur",
+                    "suggested_keywords": ["youth", "rebellion", "urban", "authentic", "energy", "friendship"]
+                }
+
+                Example 2:
+                {
+                    "scene_description": "Professional woman enjoying morning coffee in a minimalist cafe",
+                    "visual_style": "clean modern aesthetic, soft natural lighting",
+                    "mood_atmosphere": "calm, sophisticated, aspirational",
+                    "color_theme": ["soft whites", "warm beige", "muted gold"],
+                    "composition_patterns": "clean lines, negative space, soft focus background",
+                    "suggested_keywords": ["professional", "morning", "luxury", "calm", "sophisticated", "lifestyle"]
+                }
+
+                Analyze this moodboard image and provide:
+                1. Brief scene description (e.g., 'A group of friends laughing in a cozy living room')
+                2. Visual style (e.g., 'warm, inviting, casual')
+                3. Mood/atmosphere (e.g., 'relaxed, joyful')
+                4. Color theme (e.g., ['beige', 'soft blue', 'warm yellow'])
+                5. Composition patterns (e.g., 'central focus, natural light')
+                6. 5-7 relevant keywords (e.g., ['weekend', 'friendship', 'comfort', 'home', 'laughter'])
+                Follow the format and quality shown in the examples above.
+                Return only the structured JSON, no explanation.
+                """
 
             content = [
                 prompt_text,
@@ -307,18 +361,47 @@ class Agents:
         Returns:
             UserVision: Structured user vision information.
         """
-        prompt = (
-            f"Extract structured information from this user description: '{user_text}'\n"
-            "Please identify and extract:\n"
-            "1. Who: People/subjects described (e.g., 'young teenage girl', 'professional woman', 'group of friends')\n"
-            "2. What: Activities, actions, or behaviors mentioned (e.g., 'skating', 'drinking coffee', 'laughing')\n"
-            "3. Where: Locations, settings, or environments described (e.g., 'Venice Beach skatepark', 'urban coffee shop', 'cozy living room')\n"
-            "4. When: Time of day, season, or temporal context (e.g., 'blue hour', 'morning golden hour', 'warm evening light')\n"
-            "5. Mood descriptors: Any mood, style, or atmosphere words (e.g., ['confident', 'relaxed'], ['joyful', 'casual'])\n"
-            "6. Additional details: Any other specific requests or requirements (e.g., ['graffiti-covered', 'minimalist white sneakers'], ['city grit', 'weekend vibe'])\n"
-            "If any category is not mentioned or unclear, leave it empty or mark as 'not specified'.\n"
-            "Return only the structured JSON, no explanation."
-        )
+        # Double {{}}: Literal curly braces in f-strings
+        # Single {}: Variable interpolation in f-strings
+        prompt = f"""
+            EXAMPLES OF EFFECTIVE USER VISION PARSING:
+
+            Example 1:
+            Input: 'Professional woman in her 30s walking confidently through modern office space during golden hour'
+            Output:
+            {{
+                "focus_subject": "professional woman in her 30s",
+                "action": "walking confidently",
+                "setting": "modern office space",
+                "lighting": "golden hour",
+                "mood_descriptors": ["confident", "professional"],
+                "additional_details": ["corporate environment", "aspirational"]
+            }}
+
+            Example 2:
+            Input: 'Minimalist product showcase with clean studio lighting'
+            Output:
+            {{
+                "focus_subject": "minimalist product showcase",
+                "action": "elegant product display",
+                "setting": "clean studio backdrop",
+                "lighting": "clean studio lighting",
+                "mood_descriptors": ["minimalist", "premium"],
+                "additional_details": ["luxury positioning", "product focus"]
+            }}
+
+            Extract structured information from this user description: '{user_text}'
+            Please identify and extract:
+            1. Who: People/subjects described (e.g., 'young teenage girl', 'professional woman', 'group of friends')
+            2. What: Activities, actions, or behaviors mentioned (e.g., 'skating', 'drinking coffee', 'laughing')
+            3. Where: Locations, settings, or environments described (e.g., 'Venice Beach skatepark', 'urban coffee shop', 'cozy living room')
+            4. When: Time of day, season, or temporal context (e.g., 'blue hour', 'morning golden hour', 'warm evening light')
+            5. Mood descriptors: Any mood, style, or atmosphere words (e.g., ['confident', 'relaxed'], ['joyful', 'casual'])
+            6. Additional details: Any other specific requests or requirements (e.g., ['graffiti-covered', 'minimalist white sneakers'], ['city grit', 'weekend vibe'])
+            If any category is not mentioned or unclear, leave it empty or mark as 'not specified'.
+            Follow the format and quality shown in the examples above.
+            Return only the structured JSON, no explanation.
+            """
         
         result = await self.user_vision_agent.run(prompt)
         return result.output
@@ -332,20 +415,25 @@ class Agents:
         is_refinement: bool = False,
         moodboard_analyses: list[MoodboardAnalysis] | None = None,
         previous_prompt_text: str | None = None,
-        user_feedback: str | None = None
+        user_feedback: str | None = None,
+        prompt_examples: list[PromptExample] | None = None
     ) -> Prompt:
         """
         Build a single, cohesive prompt for OpenAI's image generation tool using the provided analysis data and focus instruction.
+
+        Integrates RAG-retrieved examples for Few-Shot prompting when available, improving prompt quality through category-specific examples from the PromptExample database.
 
         Args:
             image_analysis (ImageAnalysis): Structured product image analysis.
             user_vision (UserVision): Structured user vision information.
             focus_slider (int): Value (0-10) indicating the desired product/scene focus.
-            is_refinement: Whether this is a refinement of a previous prompt (default: False)
+            is_refinement (bool): Whether this is a refinement of a previous prompt (default: False).
             moodboard_analyses (list[MoodboardAnalysis] | None): List of structured moodboard analyses.
                                                                Optional - can be None for no moodboards.
-            previous_prompt_text: previous prompt for refinement context (optional)
-            user_feedback: User feedback for refinement (optional)
+            previous_prompt_text (str | None): Previous prompt for refinement context (optional).
+            user_feedback (str | None): User feedback for refinement (optional).
+            prompt_examples (list[PromptExample] | None): RAG-retrieved examples for Few-Shot prompting.
+                                                        Optional - can be None for no examples.
 
         Returns:
             Prompt: The generated advertising prompt.
@@ -367,27 +455,36 @@ class Agents:
         
         # Combine all moodboard analyses into a single description
         moodboard_descriptions = []
-        if moodboard_analyses:  # Handle None case
+        if moodboard_analyses:
             for i, moodboard in enumerate(moodboard_analyses, 1):
                 moodboard_descriptions.append(
                     f"MOODBOARD {i}: {moodboard.model_dump_json(indent=2)}"
                 )
 
         combined_moodboards = "\n".join(moodboard_descriptions) if moodboard_descriptions else "<no moodboards provided>"
-        
-        user_vision_block = user_vision.model_dump_json(indent=2)
 
+        # Build Few-Shot examples section
+        examples_section = ""
+        if prompt_examples:
+            examples_section = "EXAMPLES OF EFFECTIVE ADVERTISING PROMPTS:\n"
+            for i, example in enumerate(prompt_examples, 1):
+                # \" escapes the quote character inside the f-string
+                examples_section += f"Example {i}: \"{example.prompt_text}\"\n"
+                examples_section += "\n"
+        
         prompt = (
+            f"{examples_section}"
             "Create a single, cohesive prompt for OpenAI's image generation tool using the following data:\n"
             f"PRODUCT ANALYSIS: {image_analysis.model_dump_json(indent=2)}\n"
             f"MOODBOARD INSPIRATIONS:\n{combined_moodboards}\n"
-            f"USER VISION: {user_vision_block}\n"
+            f"USER VISION: {user_vision.model_dump_json(indent=2)}\n"
             f"FOCUS INSTRUCTION: {focus_instruction}\n"
             "Requirements:\n"
             "- The prompt should be 30-75 words.\n"
             "- Use specific details from the analysis.\n"
             "- Ensure the product is visible and identifiable.\n"
             "- Use photography/cinematography terms when appropriate.\n"
+            "- Follow the style shown in the examples above.\n"
             "- Return only the prompt text, no explanation."
         )
 

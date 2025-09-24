@@ -7,12 +7,12 @@ import uuid
 # third-party imports
 import requests
 from sqlmodel import Session, select
+from sqlalchemy import func
 
 # local imports
 from agents import Agents
 from api.image_generator import generate_image_data_url
-from main import build_advertising_prompt
-from models import ImageAnalysis, MoodboardAnalysis, UserVision, Prompt, GeneratedImage
+from models import ImageAnalysis, MoodboardAnalysis, UserVision, Prompt, GeneratedImage, PromptExample
 
 
 logger = logging.getLogger(__name__)
@@ -243,11 +243,14 @@ class AdGeneratorService:
         user_feedback: str | None = None
     ) -> Prompt:
         """
-        Build advertising prompt using analysis results and store in database.
-        
+        Build advertising prompt using analysis results, RAG examples, and store in database.
+
+        This method retrieves relevant prompt examples from the same product category
+        and passes them to the AI agent for Few-Shot learning, improving prompt quality.
+
         Args:
             image_analysis_id: ID of product image analysis
-            user_vision_id: ID of user vision analysis
+            user_vision_id: ID of user vision analysis  
             focus_slider: Focus level (0-10)
             session_id: Session identifier for linking related records
             moodboard_analysis_ids: List of moodboard analysis IDs (optional, defaults to None for no moodboards)
@@ -259,7 +262,7 @@ class AdGeneratorService:
             Prompt: Database record with generated prompt
             
         Raises:
-            ValueError: If prompt building fails
+            ValueError: If prompt building fails or required analyses not found
             RuntimeError: If database operation fails
         """
         try:
@@ -272,7 +275,7 @@ class AdGeneratorService:
                 raise ValueError(f"Image analysis with ID {image_analysis_id} not found")
             
             moodboard_analyses = []
-            if moodboard_analysis_ids:  # Handle None or empty list
+            if moodboard_analysis_ids:
                 for moodboard_id in moodboard_analysis_ids:
                     analysis = self.session.get(MoodboardAnalysis, moodboard_id)
                     if not analysis:
@@ -293,6 +296,17 @@ class AdGeneratorService:
                     previous_prompt_text = previous_prompt.prompt_text
                     if refinement_count > 2:
                         raise ValueError("Maximum of 2 refinements allowed per prompt")
+            
+            # RAG: Retrieve random examples from same product category 
+            # for Few-Shot prompting. If no examples returns empty list []
+            stmt = select(PromptExample)\
+                .where(PromptExample.product_category == product_analysis.product_category)\
+                    .order_by(func.random())\
+                        .limit(2)
+            
+            # Execute query and get up to 2 examples
+            # Returns empty list [] if no examples
+            prompt_examples = self.session.exec(stmt).all()
 
             # Use all moodboard analyses for prompt building
             prompt = await self.agents.build_advertising_prompt(
@@ -300,15 +314,16 @@ class AdGeneratorService:
                 user_vision, 
                 focus_slider,
                 is_refinement,
-                moodboard_analyses,  # Pass all moodboard analyses (now optional)
+                moodboard_analyses,
                 previous_prompt_text,
-                user_feedback
+                user_feedback,
+                prompt_examples
             )
             
             db_prompt = Prompt(
                 prompt_text=prompt.prompt_text,
                 image_analysis_id=image_analysis_id,
-                moodboard_analysis_ids=moodboard_analysis_ids or [],  # Store all moodboard IDs
+                moodboard_analysis_ids=moodboard_analysis_ids or [],
                 user_vision_id=user_vision_id,
                 focus_slider=focus_slider,
                 refinement_count=refinement_count,
