@@ -2,30 +2,32 @@
 FastAPI app wiring:
 - Loads env keys for two OpenAI clients
 - Sets up SQLite engine and table creation on startup
-- Provides per-request DB Session via Depends
+- Provides per-HTTP-request DB Session via Depends
 - Provides AdGeneratorService via Depends for endpoints
 """
 
 """
 ARCHITECTURE NOTE TO MYSELF:
 
-Single API Key, Dual Model System:
-- MY_OPENAI_API_KEY used for all OpenAI operations
-- Two different models for different tasks:
+Dual Provider, Multi-Model System:
+- MY_OPENAI_API_KEY for OpenAI operations (gpt-4o-mini for text, gpt-image-1 for images)
+- GEMINI_API_KEY for Google operations (gemini-1.5-flash for text)
+- User chooses model provider at session start (no defaults)
   
 Text Analysis (via Agents class):
-- Model: gpt-4o-mini (smart, cheap, fast)
+- OpenAI: gpt-4o-mini (smart, cheap, fast)
+- Google: gemini-1.5-flash (alternative provider)
 - Jobs: Product analysis, moodboard analysis, user vision parsing, prompt building
-- Validation: API key checked once at Agents.__init__()
+- Validation: API keys checked at Agents.__init__() based on provider
 
 Image Generation (via image_generator module):  
-- Model: gpt-image-1 (specialized for images, only supported model)
+- Model: gpt-image-1 (OpenAI only - specialized for images)
 - Jobs: Generate final ad images
-- Validation: Same API key validated at AdGeneratorService.__init__()
+- Validation: API key validated at AdGeneratorService.__init__()
 
 Why this design:
-- Single API key simplifies configuration and billing
-- Two models optimized for their specific tasks
+- User choice between providers for text analysis
+- Single image generation provider (OpenAI)
 - Fail-fast validation prevents runtime errors
 """
 
@@ -41,12 +43,11 @@ import os
 from dotenv import load_dotenv
 from fastapi import FastAPI, Depends, File, UploadFile, HTTPException
 from fastapi.staticfiles import StaticFiles
-from pydantic_core.core_schema import NoneSchema
 from sqlmodel import SQLModel, Session, create_engine, select
 
 # local
 from agents import Agents
-from models import ImageAnalysis, MoodboardAnalysis, UserVision, Prompt, GeneratedImage
+from models import ImageAnalysis, MoodboardAnalysis, UserVision, Prompt, GeneratedImage, UserSession
 from services import AdGeneratorService
 import uuid
 
@@ -57,8 +58,11 @@ TEST_SESSION_ID = "test-session-123"
 
 # 1) env
 load_dotenv()
-OPENAI_API_KEY = os.getenv("MY_OPENAI_API_KEY")  # Single API key for all OpenAI operations
-IMG_MODEL = "gpt-image-1"  # The only supported model for image generation
+OPENAI_API_KEY = os.getenv("MY_OPENAI_API_KEY")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+
+# Image generation models (separate from text models)
+OPENAI_IMG_MODEL = "gpt-image-1" 
 
 # Enable debug endpoint only when ENABLE_DB_PING=true in .env
 ENABLE_DB_PING = os.getenv("ENABLE_DB_PING", "false").lower() == "true"
@@ -78,44 +82,57 @@ def create_db_and_tables() -> None:
     SQLModel.metadata.create_all(engine)
 
 
-def get_session():
-    """
-    Provide a database Session for the current request.
-
-    Plain English: “Open a fresh Session for this request, hand it to the endpoint,
-    and after the response is sent, close it.”
-    The `yield` hands control back to FastAPI; after the endpoint completes,
-    FastAPI runs the code after `yield` (which closes the Session).
-    """
-    with Session(engine) as session:
-        yield session  # FastAPI will close the session after the response
-
-
-# 3) app + agents
+# 3) App creation
 app = FastAPI()
 
 # Serve generated images from local disk under /static
 app.mount("/static", StaticFiles(directory="output_images"), name="static")
 
-# Text analysis agents using gpt-4o-mini model
-agents = Agents(
-    openai_api_key=OPENAI_API_KEY,
-    model_name="gpt-4o-mini",
-)
 
-
-def get_service(session: Session = Depends(get_session)) -> AdGeneratorService:
+# 4) Dependency and Service functions
+def get_db_session():
     """
-    Build an AdGeneratorService bound to this request's Session.
-
-    Depends(get_session) means: "Before calling this, first call get_session()
-    and give me its returned Session."
+    Provide a database connection for the current request.
+    
+    This is a SQLAlchemy database session - it's just a connection to the database.
+    It's NOT a user session. It allows us to query/insert/update records.
     """
+    with Session(engine) as db_session:
+        # yield -> FastAPI will close the session after the response
+        yield db_session
+
+
+def get_service(user_session_id: str, db_session: Session = Depends(get_db_session)) -> AdGeneratorService:
+    """
+    Create AdGeneratorService with the model provider from the user session.
+
+    Depends(get_db_session) means: "Before calling this, first call get_db_session()
+    and give me its returned database connection."
+    
+    Args:
+        user_session_id: The user session ID to get model provider from
+        db_session: Database connection for querying user session
+        
+    Returns:
+        AdGeneratorService: Configured with user session's model provider
+    """
+    # Get session record from database
+    session_record = db_session.get(UserSession, user_session_id)
+    if not session_record:
+        raise HTTPException(status_code=404, detail="Session not found. Please create a session first.")
+    
+    # Create agents with session's model provider
+    agents = Agents(
+        openai_api_key=OPENAI_API_KEY,
+        gemini_api_key=GEMINI_API_KEY,
+        model_provider=session_record.model_provider
+    )
+    
     return AdGeneratorService(
-        agents=agents,                 # Text analysis (gpt-4o-mini)
-        session=session,
-        img_model=IMG_MODEL,          # Image generation (gpt-image-1) 
-        openai_api_key=OPENAI_API_KEY # Same key, different models
+        agents=agents,                 
+        session=db_session,
+        img_model=OPENAI_IMG_MODEL,         
+        openai_api_key=OPENAI_API_KEY 
     )
 
 
@@ -126,24 +143,49 @@ def on_startup() -> None:
 
 if ENABLE_DB_PING:
     @app.get("/db/ping")
-    def db_ping(service: AdGeneratorService = Depends(get_service)):
-        # Executes a harmless SQL statement using the injected service + session
-        service.session.exec(select(1)).first()
+    def db_ping(db_session: Session = Depends(get_db_session)):
+        # Simple health check - just test database connection
+        db_session.exec(select(1)).first()
         return {"status": "ok"}
 
 
-@app.post("/session/start")
-async def start_session():
-    """Start a new session and return session_id for use in subsequent API calls."""
-    session_id = str(uuid.uuid4())
-    return {"session_id": session_id}
+@app.post("/session/create")
+async def create_session(model_provider: str, db_session: Session = Depends(get_db_session)):
+    """
+    Create a new user session with the chosen model provider.
+    
+    This creates a user session (not a database session) that stores
+    which AI model the user wants to use for their workflow.
+    
+    Args:
+        model_provider: "openai" or "google" 
+        db_session: Database connection for storing user session
+        
+    Returns:
+        dict: user_session_id and model_provider
+    """
+    if model_provider not in ["openai", "google"]:
+        raise HTTPException(status_code=400, detail="model_provider must be 'openai' or 'google'")
+    
+    try:
+        user_session_id = str(uuid.uuid4())
+        session_record = UserSession(id=user_session_id, model_provider=model_provider)
+        db_session.add(session_record)
+        db_session.commit()
+        db_session.refresh(session_record)
+        
+        return {"user_session_id": user_session_id, "model_provider": model_provider}
+        
+    except Exception as e:
+        db_session.rollback()
+        raise HTTPException(status_code=500, detail=f"Failed to create session: {str(e)}")
 
 
 @app.post("/analyze/product-image", response_model=ImageAnalysis)
 async def analyze_product_image(
     # Required parameters first
     file: UploadFile,
-    session_id: str = TEST_SESSION_ID,
+    user_session_id: str,
     # Dependency injection last
     service: AdGeneratorService = Depends(get_service)
 ):
@@ -158,7 +200,7 @@ async def analyze_product_image(
 
     try:
         # Service layer might raise generic ValueError
-        result = await service.analyze_product_image(image_bytes, session_id)
+        result = await service.analyze_product_image(image_bytes, user_session_id)
         return result
 
     # Endpoint layer catches service's ValueError and converts to HTTP responce
@@ -169,7 +211,7 @@ async def analyze_product_image(
 @app.post("/analyze/moodboard", response_model=list[MoodboardAnalysis])
 async def analyze_moodboard_images(
     # Required parameters first
-    session_id: str = TEST_SESSION_ID,
+    user_session_id: str,
     # Optional parameters
     files: list[UploadFile] | None = File(default=None),
     # Dependency injection last
@@ -187,7 +229,7 @@ async def analyze_moodboard_images(
         raise HTTPException(status_code=400, detail=f"File processing failed {str(e)}.")
 
     try:
-        result = await service.analyze_moodboard_images(session_id, image_bytes_list)
+        result = await service.analyze_moodboard_images(user_session_id, image_bytes_list)
         return result
 
     except ValueError as e:
@@ -198,12 +240,12 @@ async def analyze_moodboard_images(
 async def parse_user_vision(
     # Required parameters first
     text: str,
-    session_id: str = TEST_SESSION_ID,
+    user_session_id: str,
     # Dependency injection last
     service: AdGeneratorService = Depends(get_service)
 ):
     try:
-        result = await service.parse_user_vision(text, session_id)
+        result = await service.parse_user_vision(text, user_session_id)
         return result
 
     except ValueError as e:
@@ -214,7 +256,7 @@ async def parse_user_vision(
 async def build_advertising_prompt(
     # Required parameters first
     focus_slider: int,
-    session_id: str = TEST_SESSION_ID,
+    user_session_id: str,
     # Dependency injection last
     service: AdGeneratorService = Depends(get_service)
 ):
@@ -229,7 +271,7 @@ async def build_advertising_prompt(
     try:
         # Find records for this session
         image_analysis = service.session.exec(
-            select(ImageAnalysis).where(ImageAnalysis.session_id == session_id)
+            select(ImageAnalysis).where(ImageAnalysis.user_session_id == user_session_id)
         ).first()
         if not image_analysis:
             raise HTTPException(status_code=404, detail="No product image analysis found for this session")
@@ -238,11 +280,11 @@ async def build_advertising_prompt(
         # SQLModel/SQLAlchemy automatically returns an empty list when no records match the query,
         # rather than raising an error or returning None. This makes moodboard truly optional.
         moodboard_analyses = service.session.exec(
-            select(MoodboardAnalysis).where(MoodboardAnalysis.session_id == session_id)
+            select(MoodboardAnalysis).where(MoodboardAnalysis.user_session_id == user_session_id)
         ).all()
         
         user_vision = service.session.exec(
-            select(UserVision).where(UserVision.session_id == session_id)
+            select(UserVision).where(UserVision.user_session_id == user_session_id)
         ).first()
         if not user_vision:
             raise HTTPException(status_code=404, detail="No user vision found for this session.")
@@ -255,7 +297,7 @@ async def build_advertising_prompt(
             image_analysis.id,
             user_vision.id,
             focus_slider,
-            session_id,
+            user_session_id,
             moodboard_ids,
             is_refinement=False,
             previous_prompt_id=None,
@@ -273,7 +315,7 @@ async def create_final_prompt(
     product_file: UploadFile,
     text: str,
     focus_slider: int,
-    session_id: str = TEST_SESSION_ID,
+    user_session_id: str,
     # Optional parameters
     moodboard_files: list[UploadFile] | None = File(default=None),
     # Dependency injection
@@ -308,7 +350,7 @@ async def create_final_prompt(
             product_image_bytes,
             text,
             focus_slider,
-            session_id,
+            user_session_id,
             moodboard_image_bytes_list
         )
         return result
@@ -320,7 +362,7 @@ async def create_final_prompt(
 @app.post("/prompt/refine", response_model=Prompt)
 async def refine_prompt(
     # Required parameters
-    session_id: str = TEST_SESSION_ID,
+    user_session_id: str,
     # Optional parameters
     text: str | None = None,
     focus_slider: int | None = None,
@@ -335,14 +377,14 @@ async def refine_prompt(
     # Service operations
     try:
         prompt = service.session.exec(
-            select(Prompt).where(Prompt.session_id == session_id)
+            select(Prompt).where(Prompt.session_id == user_session_id)
         ).first()
         if not prompt:
             raise HTTPException(status_code=404, detail="No prompt found for this session.")
         
         result = await service.refine_prompt(
             prompt.id,
-            session_id,
+            user_session_id,
             focus_slider,
             text
         )
@@ -355,7 +397,7 @@ async def refine_prompt(
 @app.post("/images/generate", response_model=GeneratedImage)
 async def generate_image(
     # Required  parameters
-    session_id: str = TEST_SESSION_ID,
+    user_session_id: str,
     # Optional parameters
     reference_files: list[UploadFile] | None = File(default=None),
     # Dependency injection
@@ -377,12 +419,12 @@ async def generate_image(
     try:
         # Find the prompt for this session
         prompt = service.session.exec(
-            select(Prompt).where(Prompt.session_id == session_id)
+            select(Prompt).where(Prompt.session_id == user_session_id)
         ).first()
         if not prompt:
             raise HTTPException(status_code=404, detail="No prompt found for this session")
         
-        result = await service.generate_image(prompt.id, reference_image_bytes_list, session_id)
+        result = await service.generate_image(prompt.id, reference_image_bytes_list, user_session_id)
         return result
     
     except ValueError as e:
@@ -395,7 +437,7 @@ async def create_complete_ad(
     user_vision_text: str,
     focus_slider: int,
     product_file: UploadFile,
-    session_id: str = TEST_SESSION_ID,
+    user_session_id: str,
     # Optional parameters
     moodboard_files: list[UploadFile] | None = File(default=None),
     reference_files: list[UploadFile] | None = File(default=None),
@@ -440,7 +482,7 @@ async def create_complete_ad(
             moodboard_image_bytes_list,
             user_vision_text,
             focus_slider,
-            session_id,
+            user_session_id,
             reference_image_bytes_list
         )
         return result
@@ -453,13 +495,13 @@ async def create_complete_ad(
 async def test_text_only(
     # Required user parameters first
     text: str,
-    session_id: str = TEST_SESSION_ID,
+    user_session_id: str,
     # Dependency injection last
     service: AdGeneratorService = Depends(get_service)
 ):
     try:
         # Simple test - just parse user vision text (no images)
-        result = await service.parse_user_vision(text, session_id)
+        result = await service.parse_user_vision(text, user_session_id)
         return result
 
     except ValueError as e:

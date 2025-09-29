@@ -5,7 +5,6 @@ import os
 import uuid
 
 # third-party imports
-import requests
 from sqlmodel import Session, select
 from sqlalchemy import func
 
@@ -44,7 +43,10 @@ class AdGeneratorService:
                            Same key used by agents, required for all operations.
         
         Attributes:
-            session_memory: Dictionary storing session data for refinement logic
+            agents: AI agents configured with the session's model provider
+            session: Database session for persistence
+            openai_api_key: OpenAI API key for image generation
+            img_model: Image generation model name
         """
         # Validate injected API key at initialization
         if not openai_api_key:
@@ -54,7 +56,6 @@ class AdGeneratorService:
         self.session = session
         self.openai_api_key = openai_api_key
         self.img_model = img_model
-        self.session_memory = {}
 
 
     @staticmethod
@@ -71,7 +72,7 @@ class AdGeneratorService:
         return path
 
 
-    async def analyze_product_image(self, image_bytes: bytes, session_id: str) -> ImageAnalysis:
+    async def analyze_product_image(self, image_bytes: bytes, user_session_id: str) -> ImageAnalysis:
         """
         Analyze a product image and store results in database.
         
@@ -79,7 +80,7 @@ class AdGeneratorService:
 
         Args:
             image_bytes: Raw product image data
-            session_id: Session identifier for linking related records
+            user_session_id: User session identifier for linking related records
             
         Returns:
             ImageAnalysis: Database record with analysis results
@@ -104,7 +105,8 @@ class AdGeneratorService:
                 advertising_keywords=analysis.advertising_keywords,
                 overall_aesthetic=analysis.overall_aesthetic,
                 image_path=image_path,
-                session_id=session_id
+                session_id=user_session_id,
+                model_provider=self.agents.model_provider  
             )
             
             self.session.add(db_analysis)
@@ -122,7 +124,7 @@ class AdGeneratorService:
 
     async def analyze_moodboard_images(
         self, 
-        session_id: str, 
+        user_session_id: str, 
         image_bytes_list: list[bytes] | None = None
     ) -> list[MoodboardAnalysis]:
         """
@@ -130,7 +132,7 @@ class AdGeneratorService:
         
         Args:
             image_bytes_list: List of raw moodboard image data
-            session_id: Session identifier for linking related records
+            user_session_id: User session identifier for linking related records
             
         Returns:
             List[MoodboardAnalysis]: Database records with analysis results
@@ -164,7 +166,8 @@ class AdGeneratorService:
                     composition_patterns=analysis.composition_patterns,
                     suggested_keywords=analysis.suggested_keywords,
                     image_path=saved_path,
-                    session_id=session_id
+                    session_id=user_session_id,
+                    model_provider=self.agents.model_provider  
                 )
                 
                 self.session.add(db_analysis)
@@ -185,13 +188,13 @@ class AdGeneratorService:
             raise ValueError(f"Moodboard analysis failed: {str(e)}")
 
 
-    async def parse_user_vision(self, user_text: str, session_id: str) -> UserVision:
+    async def parse_user_vision(self, user_text: str, user_session_id: str) -> UserVision:
         """
         Parse user vision text and store results in database.
         
         Args:
             user_text: User's vision description
-            session_id: Session identifier for linking related records
+            user_session_id: User session identifier for linking related records
             
         Returns:
             UserVision: Database record with parsed vision
@@ -213,7 +216,8 @@ class AdGeneratorService:
                 lighting=analysis.lighting,
                 mood_descriptors=analysis.mood_descriptors,
                 additional_details=analysis.additional_details,
-                session_id=session_id
+                session_id=user_session_id,
+                model_provider=self.agents.model_provider 
             )
             
             self.session.add(db_analysis)
@@ -235,7 +239,7 @@ class AdGeneratorService:
         image_analysis_id: int,
         user_vision_id: int,
         focus_slider: int,
-        session_id: str,
+        user_session_id: str,
         # optional params last
         moodboard_analysis_ids: list[int] | None = None,
         is_refinement: bool = False,
@@ -252,7 +256,7 @@ class AdGeneratorService:
             image_analysis_id: ID of product image analysis
             user_vision_id: ID of user vision analysis  
             focus_slider: Focus level (0-10)
-            session_id: Session identifier for linking related records
+            user_session_id: Session identifier for linking related records
             moodboard_analysis_ids: List of moodboard analysis IDs (optional, defaults to None for no moodboards)
             is_refinement: Whether this is a refinement of a previous prompt (default: False)
             previous_prompt_id: ID of previous prompt for refinement context (optional)
@@ -329,7 +333,8 @@ class AdGeneratorService:
                 refinement_count=refinement_count,
                 user_feedback=user_feedback,
                 previous_prompt_id=previous_prompt_id,
-                session_id=session_id
+                session_id=user_session_id,
+                model_provider=self.agents.model_provider 
             )
             
             self.session.add(db_prompt)
@@ -349,7 +354,7 @@ class AdGeneratorService:
         self, 
         prompt_id: int, 
         reference_image_bytes_list: list[bytes] | None = None, 
-        session_id: str | None = None
+        user_session_id: str | None = None
     ) -> GeneratedImage:
         """
         Generate final ad image using prompt and input images.
@@ -357,7 +362,7 @@ class AdGeneratorService:
         Args:
             prompt_id: ID of the advertising prompt
             reference_image_bytes_list: Optional reference images for generation
-            session_id: Session identifier (optional, will use prompt's session_id if not provided)
+            user_session_id: Session identifier (optional, will use prompt's session_id if not provided)
             
         Returns:
             GeneratedImage: Database record with generated image
@@ -400,7 +405,7 @@ class AdGeneratorService:
             # Persist generated image locally and expose it via /static
             os.makedirs("output_images", exist_ok=True)
             # Create a unique filename that associates the file with this session
-            filename = f"generated_{session_id or 'session'}_{uuid.uuid4().hex}.png"
+            filename = f"generated_{user_session_id or 'session'}_{uuid.uuid4().hex}.png"
             output_path = os.path.join("output_images", filename)
 
             # Since generate_image_data_url always returns a data URL format,
@@ -431,13 +436,15 @@ class AdGeneratorService:
             used_paths.extend(saved_reference_paths)
             
             # Use provided session_id or get it from the prompt
-            final_session_id = session_id or prompt.session_id
+            final_session_id = user_session_id or prompt.session_id
             
             db_ad_img = GeneratedImage(
                 prompt_id=prompt_id,
                 image_url=final_local_url,
                 input_images=used_paths,
-                session_id=final_session_id
+                session_id=final_session_id,
+                # Image generation always uses OpenAI (gpt-image-1 model)
+                model_provider="openai"  
             )
             
             self.session.add(db_ad_img)
@@ -458,28 +465,28 @@ class AdGeneratorService:
         product_image_bytes: bytes,
         user_vision_text: str,
         focus_slider: int,
-        session_id: str,
+        user_session_id: str,
         moodboard_image_bytes_list: list[bytes] | None = None
     ) -> Prompt:
         try:
             # Step 1: Analyze product image
-            product_analysis = await self.analyze_product_image(product_image_bytes, session_id)
+            product_analysis = await self.analyze_product_image(product_image_bytes, user_session_id)
             
             # Step 2: Analyze moodboard images
             moodboard_ids: list[int] = []
             if moodboard_image_bytes_list:
-                moodboard_analyses = await self.analyze_moodboard_images(session_id, moodboard_image_bytes_list)
+                moodboard_analyses = await self.analyze_moodboard_images(user_session_id, moodboard_image_bytes_list)
                 moodboard_ids = [analysis.id for analysis in moodboard_analyses]
             
             # Step 3: Parse user vision
-            user_vision = await self.parse_user_vision(user_vision_text, session_id)
+            user_vision = await self.parse_user_vision(user_vision_text, user_session_id)
             
             # Step 4: Build advertising prompt
             prompt = await self.build_advertising_prompt(
                 product_analysis.id,
                 user_vision.id,
                 focus_slider,
-                session_id,
+                user_session_id,
                 moodboard_ids
             )
 
@@ -493,7 +500,7 @@ class AdGeneratorService:
     async def refine_prompt(
         self,
         previous_prompt_id: int,
-        session_id: str,
+        user_session_id: str,
         user_feedback: str | None = None,
         focus_slider: int | None = None
     ) -> Prompt:
@@ -515,7 +522,7 @@ class AdGeneratorService:
         
         Args:
             previous_prompt_id: ID of the prompt to refine
-            session_id: Session identifier for linking the new prompt
+            user_session_id: Session identifier for linking the new prompt
             focus_slider: New focus level (0-10). If None, uses previous prompt's focus_slider
             user_feedback: Optional user feedback to guide the refinement
             
@@ -549,7 +556,7 @@ class AdGeneratorService:
                 image_analysis_id, 
                 user_vision_id, 
                 final_focus_slider, 
-                session_id, 
+                user_session_id, 
                 moodboard_analysis_ids, 
                 is_refinement=True, 
                 previous_prompt_id=previous_prompt_id, 
@@ -569,7 +576,7 @@ class AdGeneratorService:
         product_image_bytes: bytes,
         user_vision_text: str,
         focus_slider: int,
-        session_id: str,
+        user_session_id: str,
         moodboard_image_bytes_list: list[bytes] | None = None,
         reference_image_bytes_list: list[bytes] | None = None,
     ) -> GeneratedImage:
@@ -582,7 +589,7 @@ class AdGeneratorService:
             moodboard_image_bytes_list: List of moodboard image data
             user_vision_text: User's vision description
             focus_slider: Focus level (0-10)
-            session_id: Session identifier for linking all records
+            user_session_id: Session identifier for linking all records
             reference_image_bytes_list: Optional reference images for final generation
             
         Returns:
@@ -593,28 +600,28 @@ class AdGeneratorService:
         """
         try:
             # Step 1: Analyze product image
-            product_analysis = await self.analyze_product_image(product_image_bytes, session_id)
+            product_analysis = await self.analyze_product_image(product_image_bytes, user_session_id)
             
             # Step 2: Analyze moodboard images
             moodboard_ids: list[int] = []
             if moodboard_image_bytes_list:
-                moodboard_analyses = await self.analyze_moodboard_images(session_id, moodboard_image_bytes_list)
+                moodboard_analyses = await self.analyze_moodboard_images(user_session_id, moodboard_image_bytes_list)
                 moodboard_ids = [analysis.id for analysis in moodboard_analyses]
             
             # Step 3: Parse user vision
-            user_vision = await self.parse_user_vision(user_vision_text, session_id)
+            user_vision = await self.parse_user_vision(user_vision_text, user_session_id)
             
             # Step 4: Build advertising prompt
             prompt = await self.build_advertising_prompt(
                 product_analysis.id,
                 user_vision.id,
                 focus_slider,
-                session_id,
+                user_session_id,
                 moodboard_ids
             )
             
             # Step 5: Generate final image using product + optional references
-            final_image = await self.generate_image(prompt.id, reference_image_bytes_list, session_id)
+            final_image = await self.generate_image(prompt.id, reference_image_bytes_list, user_session_id)
             
             logger.info(f"Complete ad generation workflow finished: {final_image.id}")
             return final_image

@@ -1,11 +1,10 @@
-# stdlib imports first
-import base64
-
 # third-party imports
 from openai import AsyncOpenAI
 from pydantic_ai import Agent, BinaryContent
 from pydantic_ai.models.openai import OpenAIModel
 from pydantic_ai.providers.openai import OpenAIProvider
+from pydantic_ai.models.google import GoogleModel
+from pydantic_ai.providers.google import GoogleProvider
 
 # local imports
 from models import ImageAnalysis, MoodboardAnalysis, UserVision, Prompt, PromptExample
@@ -34,39 +33,54 @@ class Agents:
     - User vision parsing (text)
     - Advertising prompt building (text)
     
-    Uses a single OpenAI API key for all operations.
+    Supports both OpenAI and Google providers:
+    - OpenAI: gpt-4o-mini model
+    - Google: gemini-1.5-flash model
+    
     Note: Image generation is handled separately in api/image_generator.py
     """
     def __init__(
         self,
         openai_api_key: str,
-        model_name: str = "gpt-4o-mini",
+        gemini_api_key: str,
+        model_provider: str
     ):
         """
-        Initialize the Agents class with API key and model name for all OpenAI operations.
+        Initialize the Agents class with API keys and model provider selection.
         
         Args:
-            openai_api_key (str): OpenAI API key for all operations (MY_OPENAI_API_KEY).
-            model_name (str): Text analysis model (default: 'gpt-4o-mini'). 
-                             Note: Image generation uses separate 'gpt-image-1' model.
+            openai_api_key (str): OpenAI API key for OpenAI operations (MY_OPENAI_API_KEY).
+            gemini_api_key (str): Google API key for Google operations (GEMINI_API_KEY).
+            model_provider (str): Provider selection - "openai" or "google".
+                                 - OpenAI: uses gpt-4o-mini model
+                                 - Google: uses gemini-1.5-flash model
         
         Raises:
-            ValueError: If openai_api_key is None or empty.
+            ValueError: If required API key is None or empty for selected provider.
         """
-        # Validate injected API key at initialization (fail-fast approach)
-        if not openai_api_key:
-            raise ValueError("OpenAI API key is required. Please set MY_OPENAI_API_KEY environment variable.")
+        # Validate injected API keys based on provider at init (fail-fast-appraoch)
+        if model_provider == "openai" and not openai_api_key:
+            raise ValueError("OpenAI API key is required when using OpenAI provider.")
+        if model_provider == "google" and not gemini_api_key:
+            raise ValueError("Gemini API key is required when using Google provider.")
         
         self.openai_api_key = openai_api_key
-        self.model_name = model_name
+        self.gemini_api_key = gemini_api_key
+        self.model_provider = model_provider
         
-        # Initialize the OpenAI model for pydantic-ai
-        # We need AsyncOpenAI client because pydantic-ai's OpenAIModel requires it
-        client = AsyncOpenAI(api_key=self.openai_api_key)
-        text_model = OpenAIModel(
-            self.model_name, 
-            provider=OpenAIProvider(openai_client=client)
-        )
+        # Initialize the appropriate model based on provider
+        if model_provider == "openai":
+            # AsyncOpenAI client needed because pydantic-ai's OpenAIModel requires it
+            client = AsyncOpenAI(api_key=self.openai_api_key)
+            text_model = OpenAIModel(
+                "gpt-4o-mini", 
+                provider=OpenAIProvider(openai_client=client)
+            )
+        elif model_provider == "google":
+            provider = GoogleProvider(api_key=self.gemini_api_key)
+            text_model = GoogleModel("gemini-1.5-flash", provider=provider)
+        else:
+            raise ValueError(f"Unsupported model provider: {model_provider}")
         
         # Initialize all text-based agents
         self._initialize_agents(text_model)

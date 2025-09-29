@@ -5,7 +5,6 @@ Handles the actual image generation using the same OpenAI API key as text operat
 
 # stdlib imports
 import base64
-import os
 
 # third-party imports  
 from openai import AsyncOpenAI
