@@ -10,13 +10,13 @@ FastAPI app wiring:
 ARCHITECTURE NOTE TO MYSELF:
 
 Dual Provider, Multi-Model System:
-- MY_OPENAI_API_KEY for OpenAI operations (gpt-4o-mini for text, gpt-image-1 for images)
-- GEMINI_API_KEY for Google operations (gemini-1.5-flash for text)
+- MY_OPENAI_API_KEY for OpenAI operations (gpt-4.1 for text, gpt-image-1 for images)
+- GEMINI_API_KEY for Google operations (gemini-2.5-flash for text)
 - User chooses model provider at session start (no defaults)
   
 Text Analysis (via Agents class):
-- OpenAI: gpt-4o-mini (smart, cheap, fast)
-- Google: gemini-1.5-flash (alternative provider)
+- OpenAI: gpt-4.1 (fallback maybe to gpt-4.1-mini)
+- Google: gemini-2.5-flash (alternative provider)
 - Jobs: Product analysis, moodboard analysis, user vision parsing, prompt building
 - Validation: API keys checked at Agents.__init__() based on provider
 
@@ -29,6 +29,15 @@ Why this design:
 - User choice between providers for text analysis
 - Single image generation provider (OpenAI)
 - Fail-fast validation prevents runtime errors
+"""
+
+"""
+How DB connections and user sessions work:
+    - Each HTTP request is isolated and receives a fresh SQLAlchemy Session from get_db_session; FastAPI auto-closes it after the response.
+    - /session/create persists a UserSession and returns user_session_id to the frontend.
+    - Subsequent workflow endpoints include user_session_id. FastAPI injects get_service, which itself depends on get_db_session.
+    - get_service uses the per-request db_session to load the UserSession by user_session_id and constructs AdGeneratorService (and Agents) with the correct model_provider.
+    - Net effect: new DB connection per request, but every request is bound to the same logical user session created at the start of the workflow.
 """
 
 """
@@ -47,7 +56,7 @@ from sqlmodel import SQLModel, Session, create_engine, select
 
 # local
 from agents import Agents
-from models import ImageAnalysis, MoodboardAnalysis, UserVision, Prompt, GeneratedImage, UserSession
+from models import ImageAnalysis, MoodboardAnalysis, PromptExample, UserVision, Prompt, GeneratedImage, UserSession
 from services import AdGeneratorService
 import uuid
 
@@ -93,9 +102,9 @@ app.mount("/static", StaticFiles(directory="output_images"), name="static")
 def get_db_session():
     """
     Provide a database connection for the current request.
-    
-    This is a SQLAlchemy database session - it's just a connection to the database.
-    It's NOT a user session. It allows us to query/insert/update records.
+
+    This is a SQLAlchemy connection (not a logical user session). It enables
+    queries/inserts/updates and is auto-closed by FastAPI after the response.
     """
     with Session(engine) as db_session:
         # yield -> FastAPI will close the session after the response
@@ -106,12 +115,11 @@ def get_service(user_session_id: str, db_session: Session = Depends(get_db_sessi
     """
     Create AdGeneratorService with the model provider from the user session.
 
-    Depends(get_db_session) means: "Before calling this, first call get_db_session()
-    and give me its returned database connection."
+    Depends(get_db_session) means: "Before calling this, first call get_db_session() and give me its returned database connection."
     
     Args:
-        user_session_id: The user session ID to get model provider from
-        db_session: Database connection for querying user session
+        user_session_id: ID returned by /session/create, used to load the session's model provider
+        db_session: Database connection for looking up the UserSession
         
     Returns:
         AdGeneratorService: Configured with user session's model provider
@@ -144,6 +152,15 @@ def on_startup() -> None:
 if ENABLE_DB_PING:
     @app.get("/db/ping")
     def db_ping(db_session: Session = Depends(get_db_session)):
+        """
+        Lightweight health check for the database connection.
+
+        Executes a trivial SELECT to validate that the per-request db_session
+        is open and functional.
+
+        Returns:
+            {"status": "ok"} on success.
+        """
         # Simple health check - just test database connection
         db_session.exec(select(1)).first()
         return {"status": "ok"}
@@ -152,17 +169,18 @@ if ENABLE_DB_PING:
 @app.post("/session/create")
 async def create_session(model_provider: str, db_session: Session = Depends(get_db_session)):
     """
-    Create a new user session with the chosen model provider.
-    
-    This creates a user session (not a database session) that stores
-    which AI model the user wants to use for their workflow.
-    
+    Create and persist a UserSession bound to the chosen model provider.
+
+    Establishes the logical workflow session (separate from the DB connection),
+    records the selected provider, and returns a user_session_id that the
+    frontend must include with subsequent requests.
+
     Args:
-        model_provider: "openai" or "google" 
-        db_session: Database connection for storing user session
-        
+        model_provider: Provider to use for this user session ("openai" or "google").
+        db_session: Per-request database connection used to write the session.
+
     Returns:
-        dict: user_session_id and model_provider
+        {"user_session_id": str, "model_provider": str}
     """
     if model_provider not in ["openai", "google"]:
         raise HTTPException(status_code=400, detail="model_provider must be 'openai' or 'google'")
@@ -189,6 +207,16 @@ async def analyze_product_image(
     # Dependency injection last
     service: AdGeneratorService = Depends(get_service)
 ):
+    """
+    Analyze a single product image and persist structured analysis.
+
+    Args:
+        file: Product image file upload.
+        user_session_id: ID returned by /session/create.
+
+    Returns:
+        Persisted ImageAnalysis.
+    """
     try:
         # read() = async method from FastAPI's UploadFile class
         # Reads uploaded file's binary content into bytes
@@ -217,6 +245,16 @@ async def analyze_moodboard_images(
     # Dependency injection last
     service: AdGeneratorService = Depends(get_service)
 ):
+    """
+    Analyze one or more moodboard images and persist results.
+
+    Args:
+        user_session_id: ID returned by /session/create.
+        files: Optional list of moodboard images; empty/None returns [].
+
+    Returns:
+        List of persisted MoodboardAnalysis.
+    """
     try:
         image_bytes_list = None
         if files:
@@ -244,6 +282,16 @@ async def parse_user_vision(
     # Dependency injection last
     service: AdGeneratorService = Depends(get_service)
 ):
+    """
+    Parse user vision text into a structured brief and persist it.
+
+    Args:
+        text: User's scene/brand intent.
+        user_session_id: ID returned by /session/create.
+
+    Returns:
+        Persisted UserVision.
+    """
     try:
         result = await service.parse_user_vision(text, user_session_id)
         return result
@@ -260,6 +308,16 @@ async def build_advertising_prompt(
     # Dependency injection last
     service: AdGeneratorService = Depends(get_service)
 ):
+    """
+    Build and persist an advertising prompt using prior analyses.
+
+    Args:
+        focus_slider: Balance between product and scene (0–10).
+        user_session_id: ID returned by /session/create.
+
+    Returns:
+        Persisted Prompt.
+    """
     # Endpoint-level validation: Input validation failures are user errors, not system errors
     # "Fail fast, Fail clear": catch bad inputs before any processing
     if not (0 <= focus_slider <= 10):
@@ -321,6 +379,19 @@ async def create_final_prompt(
     # Dependency injection
     service: AdGeneratorService = Depends(get_service)
 ):
+    """
+    One-shot: analyze product, optional moodboards, parse vision, build prompt.
+
+    Args:
+        product_file: Product image file upload.
+        text: User's scene/brand intent.
+        focus_slider: Balance between product and scene (0–10).
+        user_session_id: ID returned by /session/create.
+        moodboard_files: Optional moodboard images.
+
+    Returns:
+        Persisted Prompt ready for image generation.
+    """
     # Input validation
     if not text:
         raise HTTPException(status_code=400, detail="User vision required.")
@@ -369,6 +440,17 @@ async def refine_prompt(
     # Dependency injection
     service: AdGeneratorService = Depends(get_service)
 ):
+    """
+    Refine the latest prompt for this user session and persist a new version.
+
+    Args:
+        user_session_id: ID returned by /session/create.
+        text: Optional feedback/instructions for refinement.
+        focus_slider: Optional updated focus.
+
+    Returns:
+        Persisted refined Prompt.
+    """
     # Input validation
     # focus_slider validation depends on database data, see service method in services.py
     if not text:
@@ -403,6 +485,16 @@ async def generate_image(
     # Dependency injection
     service: AdGeneratorService = Depends(get_service)
 ):
+    """
+    Generate the final ad image from the saved prompt and optional references.
+
+    Args:
+        user_session_id: ID returned by /session/create.
+        reference_files: Optional reference images.
+
+    Returns:
+        Persisted GeneratedImage (served via /static when saved locally).
+    """
     # File operations
     try:
         reference_image_bytes_list = None
@@ -444,6 +536,20 @@ async def create_complete_ad(
     # Dependency injection
     service: AdGeneratorService = Depends(get_service)
 ):
+    """
+    Full workflow: analyze, parse, build prompt, and generate final image.
+
+    Args:
+        user_vision_text: User's scene/brand intent.
+        focus_slider: Balance between product and scene (0–10).
+        product_file: Product image file upload.
+        user_session_id: ID returned by /session/create.
+        moodboard_files: Optional moodboard images.
+        reference_files: Optional reference images for generation.
+
+    Returns:
+        Persisted GeneratedImage.
+    """
     # Input validation
     if not user_vision_text:
         raise HTTPException(status_code=400, detail="User vision required.")
@@ -491,6 +597,35 @@ async def create_complete_ad(
         raise HTTPException(status_code=400, detail=str(e))
 
 
+@app.post("/examples/save", response_model=PromptExample)
+async def save_prompt_example(
+    prompt_id: int,
+    user_session_id: str,
+    service: AdGeneratorService = Depends(get_service)
+):
+    """
+    Persist a PromptExample from an existing Prompt for RAG retrieval.
+
+    Notes:
+        - This endpoint requires user_session_id because get_service depends on it to construct a session-scoped service. We also validate that the Prompt belongs to this session to prevent cross-session writes.
+
+    Args:
+        prompt_id: ID of the Prompt to convert into a PromptExample.
+        user_session_id: ID returned by /session/create (scopes the request and validation).
+
+    Returns:
+        PromptExample: Newly created example row linked to the prompt's category.
+
+    Raises:
+        HTTPException(400): If the prompt is missing, the session mismatches, or the linked analysis is not found.
+    """
+    try:
+        return await service.save_prompt_example(prompt_id, user_session_id)
+
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
 @app.post("/test/text-only")
 async def test_text_only(
     # Required user parameters first
@@ -499,6 +634,16 @@ async def test_text_only(
     # Dependency injection last
     service: AdGeneratorService = Depends(get_service)
 ):
+    """
+    Test-only: parse user vision text without images.
+
+    Args:
+        text: User-provided text.
+        user_session_id: ID returned by /session/create.
+
+    Returns:
+        Persisted UserVision.
+    """
     try:
         # Simple test - just parse user vision text (no images)
         result = await service.parse_user_vision(text, user_session_id)

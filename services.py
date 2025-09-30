@@ -10,6 +10,7 @@ from sqlalchemy import func
 
 # local imports
 from agents import Agents
+from api.api_scripts.google_cse import image_analysis
 from api.image_generator import generate_image_data_url
 from models import ImageAnalysis, MoodboardAnalysis, UserVision, Prompt, GeneratedImage, PromptExample
 
@@ -36,7 +37,8 @@ class AdGeneratorService:
         Initialize the service with agents, database session, and image generation config.
         
         Args:
-            agents: The AI agents for text analysis tasks (uses 'gpt-4o-mini' model with single API key)
+            agents: The AI agents for text analysis tasks (uses 'gpt-4.1' or
+                    'gemini-2.5-flash' depending on the session's provider)
             session: Database session for persistence
             img_model: Image generation model name (must be "gpt-image-1" - the only supported model)
             openai_api_key: OpenAI API key for image generation (MY_OPENAI_API_KEY).
@@ -74,20 +76,19 @@ class AdGeneratorService:
 
     async def analyze_product_image(self, image_bytes: bytes, user_session_id: str) -> ImageAnalysis:
         """
-        Analyze a product image and store results in database.
-        
-        Note: Uses self.agents (with pre-validated API key) for text analysis via gpt-4o-mini model.
+        Analyze a product image and store results.
+
+        Uses self.agents for analysis and persists the structured result linked to the user session.
 
         Args:
-            image_bytes: Raw product image data
-            user_session_id: User session identifier for linking related records
-            
+            image_bytes: Raw product image data.
+            user_session_id: User session identifier to link created records.
+
         Returns:
-            ImageAnalysis: Database record with analysis results
-            
+            Persisted ImageAnalysis.
+
         Raises:
-            ValueError: If image analysis fails
-            RuntimeError: If database operation fails
+            ValueError: If analysis or persistence fails.
         """
         try:   
             image_path = self._save_image(image_bytes, "product", "product")
@@ -128,18 +129,17 @@ class AdGeneratorService:
         image_bytes_list: list[bytes] | None = None
     ) -> list[MoodboardAnalysis]:
         """
-        Analyze multiple moodboard images and store results in database.
-        
+        Analyze moodboard images (if provided) and store results.
+
         Args:
-            image_bytes_list: List of raw moodboard image data
-            user_session_id: User session identifier for linking related records
-            
+            image_bytes_list: Moodboard images to analyze; if None/empty, returns [].
+            user_session_id: User session identifier to link created records.
+
         Returns:
-            List[MoodboardAnalysis]: Database records with analysis results
-            
+            List of persisted MoodboardAnalysis.
+
         Raises:
-            ValueError: If moodboard analysis fails
-            RuntimeError: If database operation fails
+            ValueError: If analysis or persistence fails.
         """
         if not image_bytes_list:
             return []
@@ -190,18 +190,17 @@ class AdGeneratorService:
 
     async def parse_user_vision(self, user_text: str, user_session_id: str) -> UserVision:
         """
-        Parse user vision text and store results in database.
-        
+        Parse user vision text and store structured results.
+
         Args:
-            user_text: User's vision description
-            user_session_id: User session identifier for linking related records
-            
+            user_text: User's vision description.
+            user_session_id: User session identifier to link created records.
+
         Returns:
-            UserVision: Database record with parsed vision
-            
+            Persisted UserVision.
+
         Raises:
-            ValueError: If user vision parsing fails
-            RuntimeError: If database operation fails
+            ValueError: If parsing or persistence fails.
         """
         if not user_text or not user_text.strip():
             raise ValueError("User vision text is required and cannot be empty")
@@ -247,27 +246,25 @@ class AdGeneratorService:
         user_feedback: str | None = None
     ) -> Prompt:
         """
-        Build advertising prompt using analysis results, RAG examples, and store in database.
+        Build and persist an advertising prompt using prior analyses.
 
-        This method retrieves relevant prompt examples from the same product category
-        and passes them to the AI agent for Few-Shot learning, improving prompt quality.
+        Optionally retrieves two category-matched PromptExample rows for Few-Shot prompting.
 
         Args:
-            image_analysis_id: ID of product image analysis
-            user_vision_id: ID of user vision analysis  
-            focus_slider: Focus level (0-10)
-            user_session_id: Session identifier for linking related records
-            moodboard_analysis_ids: List of moodboard analysis IDs (optional, defaults to None for no moodboards)
-            is_refinement: Whether this is a refinement of a previous prompt (default: False)
-            previous_prompt_id: ID of previous prompt for refinement context (optional)
-            user_feedback: User feedback for refinement (optional)
-            
+            image_analysis_id: Product image analysis to use.
+            user_vision_id: Parsed user vision to use.
+            focus_slider: Balance (0–10) between product and scene.
+            user_session_id: User session identifier to link the prompt.
+            moodboard_analysis_ids: Optional moodboard analysis IDs.
+            is_refinement: Whether this is a refinement iteration.
+            previous_prompt_id: Previous prompt ID for refinement context.
+            user_feedback: Optional feedback to steer refinement.
+
         Returns:
-            Prompt: Database record with generated prompt
-            
+            Persisted Prompt.
+
         Raises:
-            ValueError: If prompt building fails or required analyses not found
-            RuntimeError: If database operation fails
+            ValueError: If required analyses are missing or generation fails.
         """
         try:
             # Get all required analyses, if not found SQLModel returns None
@@ -357,19 +354,18 @@ class AdGeneratorService:
         user_session_id: str | None = None
     ) -> GeneratedImage:
         """
-        Generate final ad image using prompt and input images.
-        
+        Generate and persist the final ad image using a saved prompt.
+
         Args:
-            prompt_id: ID of the advertising prompt
-            reference_image_bytes_list: Optional reference images for generation
-            user_session_id: Session identifier (optional, will use prompt's session_id if not provided)
-            
+            prompt_id: Prompt to render.
+            reference_image_bytes_list: Optional reference images.
+            user_session_id: If omitted, falls back to the prompt's session.
+
         Returns:
-            GeneratedImage: Database record with generated image
-            
+            Persisted GeneratedImage (with local /static URL when possible).
+
         Raises:
-            ValueError: If image generation fails
-            RuntimeError: If database operation fails
+            ValueError: If generation or persistence fails.
         """
         try:
             prompt = self.session.get(Prompt, prompt_id)
@@ -443,7 +439,6 @@ class AdGeneratorService:
                 image_url=final_local_url,
                 input_images=used_paths,
                 session_id=final_session_id,
-                # Image generation always uses OpenAI (gpt-image-1 model)
                 model_provider="openai"  
             )
             
@@ -468,6 +463,29 @@ class AdGeneratorService:
         user_session_id: str,
         moodboard_image_bytes_list: list[bytes] | None = None
     ) -> Prompt:
+        """
+        Build a prompt in one call: analyze product, optionally analyze moodboards,
+        parse user vision, then synthesize and persist the advertising prompt.
+
+        The steps performed are equivalent to calling, in sequence:
+        - analyze_product_image
+        - analyze_moodboard_images (when moodboard images are provided)
+        - parse_user_vision
+        - build_advertising_prompt
+
+        Args:
+            product_image_bytes: Product image data to analyze
+            user_vision_text: User's vision description to parse
+            focus_slider: Focus balance (0-10) for product vs. scene
+            user_session_id: User session identifier linking all created records
+            moodboard_image_bytes_list: Optional moodboard images for additional context
+
+        Returns:
+            Prompt: Persisted prompt record ready for image generation
+
+        Raises:
+            ValueError: If any sub-step fails (analysis, parsing, or persistence)
+        """
         try:
             # Step 1: Analyze product image
             product_analysis = await self.analyze_product_image(product_image_bytes, user_session_id)
@@ -505,32 +523,21 @@ class AdGeneratorService:
         focus_slider: int | None = None
     ) -> Prompt:
         """
-        Refine an existing prompt by generating an improved version.
-        
-        This method reuses all existing analysis data (product, moodboard, user vision)
-        from the previous prompt, avoiding expensive re-analysis. It extracts the
-        analysis IDs from the previous prompt and calls build_advertising_prompt
-        with is_refinement=True, previous_prompt_text, and optional user_feedback
-        to generate a better prompt.
-        
-        Why this approach provides:
-        - Clean separation: refinement logic separate from core prompt building
-        - Separation of concerns: delegates to build_advertising_prompt rather than duplicating logic
-        - ID safety: prevents passing wrong analysis IDs by extracting from previous prompt
-        - Consistency: calls build_advertising_prompt where validation, error handling, and database operations happen
-        - Flexibility: enables focus_slider adjustments and user feedback without re-analysis
-        
+        Refine a saved prompt by generating a new iteration.
+
+        Reuses prior analyses (product, moodboard, user vision) referenced by the previous prompt to avoid re-analysis. Delegates to build_advertising_prompt.
+
         Args:
-            previous_prompt_id: ID of the prompt to refine
-            user_session_id: Session identifier for linking the new prompt
-            focus_slider: New focus level (0-10). If None, uses previous prompt's focus_slider
-            user_feedback: Optional user feedback to guide the refinement
-            
+            previous_prompt_id: Prompt to refine.
+            user_session_id: User session identifier to link the refined prompt.
+            focus_slider: Optional new focus value; defaults to previous value when None.
+            user_feedback: Optional feedback text to guide refinement.
+
         Returns:
-            Prompt: New refined prompt with incremented refinement_count
-            
+            Persisted refined Prompt.
+
         Raises:
-            ValueError: If previous prompt not found, focus_slider invalid, or max refinements exceeded
+            ValueError: If previous prompt is missing, focus invalid, or max refinements exceeded.
         """
         try:
             # Get previous prompt and validate it exists
@@ -581,22 +588,22 @@ class AdGeneratorService:
         reference_image_bytes_list: list[bytes] | None = None,
     ) -> GeneratedImage:
         """
-        Complete workflow: analyze product, analyze moodboard, parse vision,
-        build prompt, and generate final ad image.
-        
+        Full workflow: analyze product, optional moodboards, parse vision,
+        build prompt, then generate the final ad image.
+
         Args:
-            product_image_bytes: Product image data
-            moodboard_image_bytes_list: List of moodboard image data
-            user_vision_text: User's vision description
-            focus_slider: Focus level (0-10)
-            user_session_id: Session identifier for linking all records
-            reference_image_bytes_list: Optional reference images for final generation
-            
+            product_image_bytes: Product image to analyze.
+            user_vision_text: User's scene/brand intent.
+            focus_slider: Balance between product and scene (0–10).
+            user_session_id: User session identifier to link all records.
+            moodboard_image_bytes_list: Optional moodboard images.
+            reference_image_bytes_list: Optional reference images for final generation.
+
         Returns:
-            GeneratedImage: Final generated ad image
-            
+            Persisted GeneratedImage.
+
         Raises:
-            ValueError: If any step in the workflow fails
+            ValueError: If any step in the workflow fails.
         """
         try:
             # Step 1: Analyze product image
@@ -630,6 +637,53 @@ class AdGeneratorService:
             logger.error(f"Complete ad generation workflow failed: {str(e)}")
             raise ValueError(f"Ad generation workflow failed: {str(e)}")
 
+
+    async def save_prompt_example(self, prompt_id: int, user_session_id: str) -> PromptExample:
+        """
+        Persist a PromptExample derived from an existing Prompt.
+
+        Workflow:
+            - Load the Prompt by ID
+            - Validate the Prompt belongs to the provided user_session_id
+            - Load linked ImageAnalysis to obtain product_category
+            - Create and persist PromptExample with prompt_id, prompt_text, product_category
+
+        Args:
+            prompt_id: ID of the Prompt to save as an example.
+            user_session_id: The current workflow session ID; must match the Prompt.session_id.
+
+        Returns:
+            PromptExample: Newly persisted example row used by RAG retrieval.
+
+        Raises:
+            ValueError: If the Prompt does not exist, session mismatch occurs, or
+                        the linked ImageAnalysis is missing.
+        """
+        prompt = self.session.get(Prompt, prompt_id)
+        if not prompt:
+            raise ValueError(f"Prompt {prompt_id} not found")
+
+        # Stricter safety: ensure the prompt belongs to the active user session
+        if prompt.session_id != user_session_id:
+            raise ValueError("Session mismatch: prompt does not belong to this user_session_id")
+
+        image_analysis = self.session.get(ImageAnalysis, prompt.image_analysis_id)
+        if not image_analysis:
+            raise ValueError(
+                f"ImageAnalysis {prompt.image_analysis_id} not found for prompt {prompt_id}"
+            )
+
+        prompt_example = PromptExample(
+            prompt_id=prompt.id,
+            prompt_text=prompt.prompt_text,
+            product_category=image_analysis.product_category,
+        )
+
+        self.session.add(prompt_example)
+        self.session.commit()
+        self.session.refresh(prompt_example)
+
+        return prompt_example
 
 
 

@@ -34,8 +34,8 @@ class Agents:
     - Advertising prompt building (text)
     
     Supports both OpenAI and Google providers:
-    - OpenAI: gpt-4o-mini model
-    - Google: gemini-1.5-flash model
+    - OpenAI: gpt-4.1 model
+    - Google: gemini-2.5-flash model
     
     Note: Image generation is handled separately in api/image_generator.py
     """
@@ -46,17 +46,15 @@ class Agents:
         model_provider: str
     ):
         """
-        Initialize the Agents class with API keys and model provider selection.
-        
+        Initialize agents based on the selected provider.
+
         Args:
-            openai_api_key (str): OpenAI API key for OpenAI operations (MY_OPENAI_API_KEY).
-            gemini_api_key (str): Google API key for Google operations (GEMINI_API_KEY).
-            model_provider (str): Provider selection - "openai" or "google".
-                                 - OpenAI: uses gpt-4o-mini model
-                                 - Google: uses gemini-1.5-flash model
-        
+            openai_api_key: API key for OpenAI operations.
+            gemini_api_key: API key for Google operations.
+            model_provider: Provider selection ("openai" or "google").
+
         Raises:
-            ValueError: If required API key is None or empty for selected provider.
+            ValueError: If a required API key is missing for the selected provider.
         """
         # Validate injected API keys based on provider at init (fail-fast-appraoch)
         if model_provider == "openai" and not openai_api_key:
@@ -73,12 +71,12 @@ class Agents:
             # AsyncOpenAI client needed because pydantic-ai's OpenAIModel requires it
             client = AsyncOpenAI(api_key=self.openai_api_key)
             text_model = OpenAIModel(
-                "gpt-4o-mini", 
+                "gpt-4.1", 
                 provider=OpenAIProvider(openai_client=client)
             )
         elif model_provider == "google":
             provider = GoogleProvider(api_key=self.gemini_api_key)
-            text_model = GoogleModel("gemini-1.5-flash", provider=provider)
+            text_model = GoogleModel("gemini-2.5-flash", provider=provider)
         else:
             raise ValueError(f"Unsupported model provider: {model_provider}")
         
@@ -89,9 +87,9 @@ class Agents:
     def _initialize_agents(self, text_model):
         """
         Initialize all text-based agents with the provided model.
-        
+
         Args:
-            text_model: The configured OpenAI model for text operations.
+            text_model: Configured text model to use.
         """
 
         self.product_image_agent = Agent(
@@ -245,13 +243,13 @@ class Agents:
 
     async def analyze_product_image(self, image_bytes: bytes) -> ImageAnalysis:
         """
-        Analyze a product image using the product_image_agent and return structured analysis.
+        Analyze a product image and return structured analysis.
 
         Args:
-            image_bytes (bytes): Raw product image data.
+            image_bytes: Raw product image data.
 
         Returns:
-            ImageAnalysis: Structured analysis of the product image.
+            Structured ImageAnalysis.
         """
         prompt_text = """
             EXAMPLES OF EFFECTIVE PRODUCT ANALYSIS:
@@ -310,13 +308,13 @@ class Agents:
 
     async def analyze_moodboard(self, image_bytes_list: list[bytes]) -> list[MoodboardAnalysis]:
         """
-        Analyze a list of moodboard images using the moodboard_agent and return structured analyses.
+        Analyze a list of moodboard images and return structured analyses.
 
         Args:
-            image_bytes_list (list[bytes]): List of raw moodboard image data.
+            image_bytes_list: Raw moodboard image data.
 
         Returns:
-            list[MoodboardAnalysis]: List of structured analyses for each moodboard image.
+            List of MoodboardAnalysis.
         """
         results = []
 
@@ -368,12 +366,13 @@ class Agents:
 
     async def parse_user_vision(self, user_text: str) -> UserVision:
         """
-        Parse a user vision description and return structured information using the user_vision_agent.
+        Parse a user vision description and return structured information.
 
         Args:
-            user_text (str): The user's vision or description as text.
+            user_text: The user's vision or description as text.
+
         Returns:
-            UserVision: Structured user vision information.
+            Structured UserVision.
         """
         # Double {{}}: Literal curly braces in f-strings
         # Single {}: Variable interpolation in f-strings
@@ -433,24 +432,22 @@ class Agents:
         prompt_examples: list[PromptExample] | None = None
     ) -> Prompt:
         """
-        Build a single, cohesive prompt for OpenAI's image generation tool using the provided analysis data and focus instruction.
+        Build a cohesive prompt for image generation using prior analyses and focus.
 
-        Integrates RAG-retrieved examples for Few-Shot prompting when available, improving prompt quality through category-specific examples from the PromptExample database.
+        Integrates category-matched examples for Few-Shot prompting when available.
 
         Args:
-            image_analysis (ImageAnalysis): Structured product image analysis.
-            user_vision (UserVision): Structured user vision information.
-            focus_slider (int): Value (0-10) indicating the desired product/scene focus.
-            is_refinement (bool): Whether this is a refinement of a previous prompt (default: False).
-            moodboard_analyses (list[MoodboardAnalysis] | None): List of structured moodboard analyses.
-                                                               Optional - can be None for no moodboards.
-            previous_prompt_text (str | None): Previous prompt for refinement context (optional).
-            user_feedback (str | None): User feedback for refinement (optional).
-            prompt_examples (list[PromptExample] | None): RAG-retrieved examples for Few-Shot prompting.
-                                                        Optional - can be None for no examples.
+            image_analysis: Structured product image analysis.
+            user_vision: Structured user vision information.
+            focus_slider: Desired balance (0–10) between product and scene.
+            is_refinement: Whether this is a refinement of a previous prompt.
+            moodboard_analyses: Optional moodboard analyses.
+            previous_prompt_text: Previous prompt (for refinement context).
+            user_feedback: Optional feedback for refinement.
+            prompt_examples: Optional examples for Few-Shot prompting.
 
         Returns:
-            Prompt: The generated advertising prompt.
+            Generated Prompt.
         """
         focus_instructions = [
             "The product is the sole focus, with minimal background or scene elements.",
