@@ -11,6 +11,7 @@ uvicorn>=0.24.0
 
 # AI and API
 openai>=1.0.0
+google-genai>=0.1.0
 transformers>=4.30.0
 
 # HTTP requests

@@ -10,8 +10,8 @@ from sqlalchemy import func
 
 # local imports
 from agents import Agents
-from api.api_scripts.google_cse import image_analysis
-from api.image_generator import generate_image_data_url
+from api.gpt_image1_generator import generate_image_data_url as gpt_generate_image_data_url
+from api.gemini_image_generator import generate_image_data_url as gemini_generate_image_data_url
 from models import ImageAnalysis, MoodboardAnalysis, UserVision, Prompt, GeneratedImage, PromptExample
 
 
@@ -30,8 +30,8 @@ class AdGeneratorService:
         self, 
         agents: Agents, 
         session: Session, 
-        img_model: str,
-        openai_api_key: str
+        openai_api_key: str | None = None,
+        gemini_api_key: str | None = None
     ):
         """
         Initialize the service with agents, database session, and image generation config.
@@ -40,24 +40,22 @@ class AdGeneratorService:
             agents: The AI agents for text analysis tasks (uses 'gpt-4.1' or
                     'gemini-2.5-flash' depending on the session's provider)
             session: Database session for persistence
-            img_model: Image generation model name (must be "gpt-image-1" - the only supported model)
-            openai_api_key: OpenAI API key for image generation (MY_OPENAI_API_KEY).
-                           Same key used by agents, required for all operations.
+            openai_api_key: OpenAI API key for image generation (optional; required when image_model_choice="openai").
+            gemini_api_key: Google API key for Gemini image generation (optional; required when image_model_choice="google").
         
         Attributes:
             agents: AI agents configured with the session's model provider
             session: Database session for persistence
             openai_api_key: OpenAI API key for image generation
-            img_model: Image generation model name
+            gemini_api_key: Google API key for Gemini image generation
         """
-        # Validate injected API key at initialization
-        if not openai_api_key:
-            raise ValueError("OpenAI API key is required. Please set MY_OPENAI_API_KEY environment variable.")
-        
+        # Store API keys and configuration
+        # Note: Text analysis validation happens in Agents.__init__()
+        # Image generation validation happens at point of use in generate_image()
         self.agents = agents
         self.session = session
         self.openai_api_key = openai_api_key
-        self.img_model = img_model
+        self.gemini_api_key = gemini_api_key
 
 
     @staticmethod
@@ -350,6 +348,7 @@ class AdGeneratorService:
     async def generate_image(
         self, 
         prompt_id: int, 
+        image_model_choice: str,
         reference_image_bytes_list: list[bytes] | None = None, 
         user_session_id: str | None = None
     ) -> GeneratedImage:
@@ -358,6 +357,7 @@ class AdGeneratorService:
 
         Args:
             prompt_id: Prompt to render.
+            image_model_choice: Image generation model choice ("openai" or "google").
             reference_image_bytes_list: Optional reference images.
             user_session_id: If omitted, falls back to the prompt's session.
 
@@ -388,15 +388,32 @@ class AdGeneratorService:
                     saved_ref = self._save_image(ref_bytes, "references", f"ref_{idx+1}")
                     saved_reference_paths.append(saved_ref)
             
-            # Generate image using the dedicated image generator module
-            # Note: API key already validated in __init__, so self.openai_api_key is guaranteed to exist
-            data_url = await generate_image_data_url(
-                prompt=prompt.prompt_text,
-                product_image_bytes=product_image_bytes,
-                model=self.img_model,
-                api_key=self.openai_api_key,
-                reference_images_bytes=reference_image_bytes_list,
-            )
+            # Generate image using the user's chosen image model (independent of text analysis provider)
+            # Validate API key availability for the chosen image model
+            if image_model_choice == "openai":
+                if not self.openai_api_key:
+                    raise ValueError("OpenAI API key is required for OpenAI image generation. Please set MY_OPENAI_API_KEY environment variable.")
+                # Use GPT image generator
+                data_url = await gpt_generate_image_data_url(
+                    prompt=prompt.prompt_text,
+                    product_image_bytes=product_image_bytes,
+                    model="gpt-image-1",
+                    api_key=self.openai_api_key,
+                    reference_images_bytes=reference_image_bytes_list,
+                )
+            elif image_model_choice == "google":
+                if not self.gemini_api_key:
+                    raise ValueError("Gemini API key is required for Gemini image generation. Please set GEMINI_API_KEY environment variable.")
+                # Use Gemini image generator
+                data_url = await gemini_generate_image_data_url(
+                    prompt=prompt.prompt_text,
+                    product_image_bytes=product_image_bytes,
+                    model="gemini-2.5-flash-image",
+                    api_key=self.gemini_api_key,
+                    reference_images_bytes=reference_image_bytes_list,
+                )
+            else:
+                raise ValueError(f"Unsupported image model choice: {image_model_choice}. Must be 'openai' or 'google'.")
 
             # Persist generated image locally and expose it via /static
             os.makedirs("output_images", exist_ok=True)
@@ -439,7 +456,7 @@ class AdGeneratorService:
                 image_url=final_local_url,
                 input_images=used_paths,
                 session_id=final_session_id,
-                model_provider="openai"  
+                model_provider=image_model_choice  # Use the chosen image model provider
             )
             
             self.session.add(db_ad_img)
@@ -584,6 +601,7 @@ class AdGeneratorService:
         user_vision_text: str,
         focus_slider: int,
         user_session_id: str,
+        image_model_choice: str,
         moodboard_image_bytes_list: list[bytes] | None = None,
         reference_image_bytes_list: list[bytes] | None = None,
     ) -> GeneratedImage:
@@ -596,6 +614,7 @@ class AdGeneratorService:
             user_vision_text: User's scene/brand intent.
             focus_slider: Balance between product and scene (0–10).
             user_session_id: User session identifier to link all records.
+            image_model_choice: Image generation model choice ("openai" or "google").
             moodboard_image_bytes_list: Optional moodboard images.
             reference_image_bytes_list: Optional reference images for final generation.
 
@@ -628,7 +647,7 @@ class AdGeneratorService:
             )
             
             # Step 5: Generate final image using product + optional references
-            final_image = await self.generate_image(prompt.id, reference_image_bytes_list, user_session_id)
+            final_image = await self.generate_image(prompt.id, image_model_choice, reference_image_bytes_list, user_session_id)
             
             logger.info(f"Complete ad generation workflow finished: {final_image.id}")
             return final_image

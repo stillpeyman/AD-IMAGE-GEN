@@ -41,22 +41,22 @@ class Agents:
     """
     def __init__(
         self,
-        openai_api_key: str,
-        gemini_api_key: str,
-        model_provider: str
+        model_provider: str,
+        openai_api_key: str | None = None,
+        gemini_api_key: str | None = None,
     ):
         """
         Initialize agents based on the selected provider.
 
         Args:
-            openai_api_key: API key for OpenAI operations.
-            gemini_api_key: API key for Google operations.
             model_provider: Provider selection ("openai" or "google").
+            openai_api_key: API key for OpenAI operations (optional; required when provider="openai").
+            gemini_api_key: API key for Google operations (optional; required when provider="google").
 
         Raises:
             ValueError: If a required API key is missing for the selected provider.
         """
-        # Validate injected API keys based on provider at init (fail-fast-appraoch)
+        # Validate injected API keys based on provider at init (fail-fast approach)
         if model_provider == "openai" and not openai_api_key:
             raise ValueError("OpenAI API key is required when using OpenAI provider.")
         if model_provider == "google" and not gemini_api_key:

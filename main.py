@@ -11,7 +11,7 @@ ARCHITECTURE NOTE TO MYSELF:
 
 Dual Provider, Multi-Model System:
 - MY_OPENAI_API_KEY for OpenAI operations (gpt-4.1 for text, gpt-image-1 for images)
-- GEMINI_API_KEY for Google operations (gemini-2.5-flash for text)
+- GEMINI_API_KEY for Google operations (gemini-2.5-flash for text gemini-2.5-flash-image for images)
 - User chooses model provider at session start (no defaults)
   
 Text Analysis (via Agents class):
@@ -20,8 +20,8 @@ Text Analysis (via Agents class):
 - Jobs: Product analysis, moodboard analysis, user vision parsing, prompt building
 - Validation: API keys checked at Agents.__init__() based on provider
 
-Image Generation (via image_generator module):  
-- Model: gpt-image-1 (OpenAI only - specialized for images)
+Image Generation (via image_generator modules):  
+- Model: gpt-image-1 or gemini-2.5-flash-image
 - Jobs: Generate final ad images
 - Validation: API key validated at AdGeneratorService.__init__()
 
@@ -139,8 +139,8 @@ def get_service(user_session_id: str, db_session: Session = Depends(get_db_sessi
     return AdGeneratorService(
         agents=agents,                 
         session=db_session,
-        img_model=OPENAI_IMG_MODEL,         
-        openai_api_key=OPENAI_API_KEY 
+        openai_api_key=OPENAI_API_KEY,
+        gemini_api_key=GEMINI_API_KEY
     )
 
 
@@ -480,6 +480,7 @@ async def refine_prompt(
 async def generate_image(
     # Required  parameters
     user_session_id: str,
+    image_model_choice: str,
     # Optional parameters
     reference_files: list[UploadFile] | None = File(default=None),
     # Dependency injection
@@ -490,11 +491,16 @@ async def generate_image(
 
     Args:
         user_session_id: ID returned by /session/create.
+        image_model_choice: Image generation model choice ("openai" or "google").
         reference_files: Optional reference images.
 
     Returns:
         Persisted GeneratedImage (served via /static when saved locally).
     """
+    # Input validation
+    if image_model_choice not in ["openai", "google"]:
+        raise HTTPException(status_code=400, detail="image_model_choice must be 'openai' or 'google'")
+        
     # File operations
     try:
         reference_image_bytes_list = None
@@ -516,7 +522,7 @@ async def generate_image(
         if not prompt:
             raise HTTPException(status_code=404, detail="No prompt found for this session")
         
-        result = await service.generate_image(prompt.id, reference_image_bytes_list, user_session_id)
+        result = await service.generate_image(prompt.id, image_model_choice, reference_image_bytes_list, user_session_id)
         return result
     
     except ValueError as e:
@@ -530,6 +536,7 @@ async def create_complete_ad(
     focus_slider: int,
     product_file: UploadFile,
     user_session_id: str,
+    image_model_choice: str,
     # Optional parameters
     moodboard_files: list[UploadFile] | None = File(default=None),
     reference_files: list[UploadFile] | None = File(default=None),
@@ -544,6 +551,7 @@ async def create_complete_ad(
         focus_slider: Balance between product and scene (0–10).
         product_file: Product image file upload.
         user_session_id: ID returned by /session/create.
+        image_model_choice: Image generation model choice ("openai" or "google").
         moodboard_files: Optional moodboard images.
         reference_files: Optional reference images for generation.
 
@@ -556,6 +564,9 @@ async def create_complete_ad(
 
     if not (0 <= focus_slider <= 10):
         raise HTTPException(status_code=400, detail="Focus slider must be between 0 and 10.")
+    
+    if image_model_choice not in ["openai", "google"]:
+        raise HTTPException(status_code=400, detail="image_model_choice must be 'openai' or 'google'")
 
     # File operations
     try:
@@ -585,10 +596,11 @@ async def create_complete_ad(
     try:
         result = await service.create_complete_ad(
             product_image_bytes,
-            moodboard_image_bytes_list,
             user_vision_text,
             focus_slider,
             user_session_id,
+            image_model_choice,
+            moodboard_image_bytes_list,
             reference_image_bytes_list
         )
         return result
