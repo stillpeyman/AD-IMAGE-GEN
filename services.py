@@ -419,6 +419,7 @@ class AdGeneratorService:
             os.makedirs("output_images", exist_ok=True)
             # Create a unique filename that associates the file with this session
             filename = f"generated_{user_session_id or 'session'}_{uuid.uuid4().hex}.png"
+            # Storage: File saved in output_images/ folder
             output_path = os.path.join("output_images", filename)
 
             # Since generate_image_data_url always returns a data URL format,
@@ -435,6 +436,7 @@ class AdGeneratorService:
                 with open(output_path, "wb") as f:
                     f.write(base64.b64decode(b64data))
                 
+                # Serving: FastAPI serves file via /static/ route
                 # Return a stable local URL that won't expire
                 final_local_url = f"/static/{filename}"
                 
