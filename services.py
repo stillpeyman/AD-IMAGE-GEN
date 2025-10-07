@@ -397,7 +397,7 @@ class AdGeneratorService:
                 data_url = await gpt_generate_image_data_url(
                     prompt=prompt.prompt_text,
                     product_image_bytes=product_image_bytes,
-                    model="gpt-image-1",
+                    model="gpt-4.1",
                     api_key=self.openai_api_key,
                     reference_images_bytes=reference_image_bytes_list,
                 )
@@ -423,7 +423,12 @@ class AdGeneratorService:
             output_path = os.path.join("output_images", filename)
 
             # Since generate_image_data_url always returns a data URL format,
-            # we know it will be: "data:image/png;base64,<base64-bytes>"
+            # We know it will be: "data:image/png;base64,<base64-bytes>"
+            # Data URL format benefits:
+            # - Universal web compatibility (works in HTML <img src="...">)
+            # - No temporary file management needed
+            # - Consistent format between OpenAI and Google providers
+            # - Can be saved to disk or displayed directly
             try:
                 if not data_url or not data_url.startswith("data:image"):
                     raise ValueError("Invalid data URL format from image generator")

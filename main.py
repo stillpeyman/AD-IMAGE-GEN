@@ -465,10 +465,10 @@ async def refine_prompt(
             raise HTTPException(status_code=404, detail="No prompt found for this session.")
         
         result = await service.refine_prompt(
-            prompt.id,
-            user_session_id,
-            focus_slider,
-            text
+            previous_prompt_id=prompt.id,
+            user_session_id=user_session_id,
+            user_feedback=text,
+            focus_slider=focus_slider
         )
         return result
     

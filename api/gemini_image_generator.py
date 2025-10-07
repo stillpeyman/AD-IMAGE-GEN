@@ -7,7 +7,8 @@ in the multi-model architecture.
 """
 
 # stdlib imports
-import base64
+from PIL import Image
+from io import BytesIO
 
 # third-party imports  
 from google import genai
@@ -51,20 +52,19 @@ async def generate_image_data_url(
         "Generate the image based on this description and the provided reference images."
     )
     
-    # Convert product image bytes to base64 string (not data URL)
-    # Gemini expects base64 strings directly, not data URLs like OpenAI
-    product_image_b64 = base64.b64encode(product_image_bytes).decode('utf-8')
+    # Convert product image to PIL Image object
+    product_image = Image.open(BytesIO(product_image_bytes))
     
     # Create contents list with text prompt first, then images
     # Gemini's API expects: contents=[text, image1, image2, ...]
-    contents = [final_prompt, product_image_b64]
+    contents = [final_prompt, product_image]
     
     # Add reference images if provided
-    # Each reference image is converted to base64 and appended to contents
+    # Each reference image is converted to PIL Image object and appended to contents
     if reference_images_bytes:
         for img_bytes in reference_images_bytes:
-            reference_image_b64 = base64.b64encode(img_bytes).decode('utf-8')
-            contents.append(reference_image_b64)
+            reference_image = Image.open(BytesIO(img_bytes))
+            contents.append(reference_image)
     
     # Initialize Gemini client with the provided API key
     client = genai.Client(api_key=api_key)
@@ -75,6 +75,9 @@ async def generate_image_data_url(
         model=model,
         contents=contents
     )
+    print(f"DEBUG: Response parts: {len(response.candidates[0].content.parts)}")
+    for i, part in enumerate(response.candidates[0].content.parts):
+        print(f"DEBUG: Part {i}: type={getattr(part, 'type', None)}, has_inline_data={part.inline_data is not None}")
     
     # Extract image data from response
     # Gemini response structure: response.candidates[0].content.parts
@@ -82,7 +85,13 @@ async def generate_image_data_url(
     for part in response.candidates[0].content.parts:
         if part.inline_data is not None:
             # Found the generated image data in base64 format
+            # Gemini always returns base64 in its response structure
             b64_image_data = part.inline_data.data
+
+            # Add this after line 86 in gemini_image_generator.py:
+            print(f"DEBUG: Gemini returned data length: {len(b64_image_data)}")
+            print(f"DEBUG: First 100 chars: {b64_image_data[:100]}")
+
             # Return as data URL format (consistent with GPT generator)
             # This ensures both generators return the same format for services.py
             return f"data:image/png;base64,{b64_image_data}"
