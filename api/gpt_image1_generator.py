@@ -77,6 +77,10 @@ async def generate_image_data_url(
     )
     
     # Extract the base64 image data from the response
+    print("=== OPENAI RESPONSE BODY ===")
+    print(resp)
+    print("=== END RESPONSE BODY ===")
+    
     b64_image = None
     for out in getattr(resp, "output", []):
         if getattr(out, "type", None) == "image_generation_call":

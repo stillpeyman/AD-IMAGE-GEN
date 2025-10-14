@@ -429,7 +429,7 @@ class Agents:
         moodboard_analyses: list[MoodboardAnalysis] | None = None,
         previous_prompt_text: str | None = None,
         user_feedback: str | None = None,
-        prompt_examples: list[PromptExample] | None = None
+        prompt_examples: list[dict] | None = None
     ) -> Prompt:
         """
         Build a cohesive prompt for image generation using prior analyses and focus.
@@ -444,7 +444,7 @@ class Agents:
             moodboard_analyses: Optional moodboard analyses.
             previous_prompt_text: Previous prompt (for refinement context).
             user_feedback: Optional feedback for refinement.
-            prompt_examples: Optional examples for Few-Shot prompting.
+            prompt_examples: Optional list of example dicts with 'prompt_text' and 'product_category' keys.
 
         Returns:
             Generated Prompt.
@@ -480,7 +480,8 @@ class Agents:
             examples_section = "EXAMPLES OF EFFECTIVE ADVERTISING PROMPTS:\n"
             for i, example in enumerate(prompt_examples, 1):
                 # \" escapes the quote character inside the f-string
-                examples_section += f"Example {i}: \"{example.prompt_text}\"\n"
+                # example is a dict: {"prompt_text": "...", "product_category": "..."}
+                examples_section += f"Example {i}: \"{example['prompt_text']}\"\n"
                 examples_section += "\n"
         
         prompt = (

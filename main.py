@@ -46,23 +46,33 @@ see https://fastapi.tiangolo.com/tutorial/bigger-applications/#import-apirouter
 >>> "Multiple Files/APIRouter"
 """
 # stdlib
+import logging
 import os
+import uuid
 
 # third-party
 from dotenv import load_dotenv
 from fastapi import FastAPI, Depends, File, UploadFile, HTTPException
 from fastapi.staticfiles import StaticFiles
 from sqlmodel import SQLModel, Session, create_engine, select
+from sqlalchemy import event
 
 # local
 from agents import Agents
 from models import ImageAnalysis, MoodboardAnalysis, PromptExample, UserVision, Prompt, GeneratedImage, UserSession
 from services import AdGeneratorService
-import uuid
 
+
+# Configure application logging
+# This enables logger.info() statements throughout services.py
+# Format: timestamp - module - level - message
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
 
 # Test session for MVP
-TEST_SESSION_ID = "test-session-123"
+# TEST_SESSION_ID = "test-session-123"
 
 
 # 1) env
@@ -77,10 +87,49 @@ OPENAI_IMG_MODEL = "gpt-image-1"
 ENABLE_DB_PING = os.getenv("ENABLE_DB_PING", "false").lower() == "true"
 
 
-# 2) database
+# 2) Database engine configuration
 DATABASE_FILE = "database.db"
 DATABASE_URL = f"sqlite:///{DATABASE_FILE}"
-engine = create_engine(DATABASE_URL, echo=True)
+
+# Create SQLAlchemy engine with SQLite-specific configurations
+# - echo=False: Not logging all SQL statements (logging takes care of it for debugging)
+# - check_same_thread=False: Allow connections to be used across async thread switches
+#   (Required for FastAPI's async nature; see Python sqlite3 docs)
+# - timeout=30: Wait up to 30 seconds for database lock before raising error
+#   (Default is 5 seconds; increased to handle concurrent requests better)
+engine = create_engine(
+    DATABASE_URL, 
+    echo=False,
+    connect_args={"check_same_thread": False, "timeout": 30}
+)
+
+# Understand the flow and when @event.listens_for triggers:
+# 1. App starts
+# 2. create_engine() is called
+# 3. Engine created, but no connections yet
+# (now every time a NEW connection opens, 4.-11. runs)
+# 4. First HTTP request comes in
+# 5. get_db_session() is called
+# 6. Session tries to get a connection from the engine
+# 7. Engine opens a NEW database connection
+# 8. @event.listens_for triggers! ← HERE
+# 9. _sqlite_set_pragmas() is called automatically
+# 10. WAL mode is set
+# 11. Connection is now ready to use
+@event.listens_for(engine, "connect")
+def _sqlite_set_pragmas(dbapi_connection, connection_record):
+    """
+    Set pragmas on connection open:
+    - Enable WAL (write-ahead log) for better concurrency.
+    Note: WAL is persistent on the DB file; this sets it on each connection defensively.
+    """
+    try:
+        cursor = dbapi_connection.cursor()
+        cursor.execute("PRAGMA journal_mode=WAL;")
+        cursor.close()
+    except Exception:
+        # best-effort; we don't want to crash app creation if the pragma fails
+        pass
 
 
 def create_db_and_tables() -> None:
@@ -146,6 +195,12 @@ def get_service(user_session_id: str, db_session: Session = Depends(get_db_sessi
 
 @app.on_event("startup")
 def on_startup() -> None:
+    """
+    FastAPI startup event handler.
+    
+    Called once when the application starts, before accepting any requests.
+    Creates all database tables if they don't exist yet (idempotent operation).
+    """
     create_db_and_tables()
 
 
@@ -459,7 +514,7 @@ async def refine_prompt(
     # Service operations
     try:
         prompt = service.session.exec(
-            select(Prompt).where(Prompt.session_id == user_session_id)
+            select(Prompt).where(Prompt.session_id == user_session_id).order_by(Prompt.id.desc())
         ).first()
         if not prompt:
             raise HTTPException(status_code=404, detail="No prompt found for this session.")
@@ -522,7 +577,7 @@ async def generate_image(
         if not prompt:
             raise HTTPException(status_code=404, detail="No prompt found for this session")
         
-        result = await service.generate_image(prompt.id, image_model_choice, reference_image_bytes_list, user_session_id)
+        result = await service.generate_image(prompt.id, image_model_choice, user_session_id, reference_image_bytes_list)
         return result
     
     except ValueError as e:

@@ -3,6 +3,7 @@ import base64
 import logging
 import os
 import uuid
+import threading
 
 # third-party imports
 from sqlmodel import Session, select
@@ -16,6 +17,22 @@ from models import ImageAnalysis, MoodboardAnalysis, UserVision, Prompt, Generat
 
 
 logger = logging.getLogger(__name__)
+
+
+def _log_sess(msg, session_obj):
+    """
+    Debug helper to log thread ID and session object ID.
+    
+    Used to track if requests switch threads during async operations
+    and to verify session object identity remains consistent.
+    
+    Args:
+        msg: Descriptive message about what's happening
+        session_obj: The SQLAlchemy session object to log
+    
+    Logs format: [tid=12345] message session_obj_id=140234567890
+    """
+    logger.info(f"[tid={threading.get_ident()}] {msg} session_obj_id={id(session_obj)}")
 
 
 class AdGeneratorService:
@@ -265,7 +282,8 @@ class AdGeneratorService:
             ValueError: If required analyses are missing or generation fails.
         """
         try:
-            # Get all required analyses, if not found SQLModel returns None
+            # Get all required analyses, if not found SQLModel returns None 
+            # All db objects bound to session
             product_analysis = self.session.get(ImageAnalysis, image_analysis_id)
             if not product_analysis:
                 # Returning None not good for user experience, give clear error message
@@ -305,9 +323,24 @@ class AdGeneratorService:
             
             # Execute query and get up to 2 examples
             # Returns empty list [] if no examples
-            prompt_examples = self.session.exec(stmt).all()
+            prompt_examples_db = self.session.exec(stmt).all()
+            
+            # Convert to plain dicts to avoid SQLAlchemy lazy-loading issues
+            # Extract all data from DB objects while session is active
+            prompt_examples = [
+                {
+                    "prompt_text": ex.prompt_text,
+                    "product_category": ex.product_category
+                }
+                for ex in prompt_examples_db
+            ]
 
-            # Use all moodboard analyses for prompt building
+            # Commit and close to release database lock before long AI call
+            self.session.commit()
+            engine = self.session.get_bind()
+            self.session.close()
+
+            # Make AI call (long-running operation, no database lock held)
             prompt = await self.agents.build_advertising_prompt(
                 product_analysis, 
                 user_vision, 
@@ -319,6 +352,7 @@ class AdGeneratorService:
                 prompt_examples
             )
             
+            # Save results with a fresh session
             db_prompt = Prompt(
                 prompt_text=prompt.prompt_text,
                 image_analysis_id=image_analysis_id,
@@ -332,34 +366,110 @@ class AdGeneratorService:
                 model_provider=self.agents.model_provider 
             )
             
-            self.session.add(db_prompt)
-            self.session.commit()
-            self.session.refresh(db_prompt)
+            with Session(engine) as write_session:
+                write_session.add(db_prompt)
+                write_session.commit()
+                write_session.refresh(db_prompt)
             
             logger.info(f"Advertising prompt built: {db_prompt.id}")
             return db_prompt
             
         except Exception as e:
-            self.session.rollback()
+            try:
+                self.session.rollback()
+                self.session.close()
+            except Exception:
+                pass
             logger.error(f"Prompt building failed: {str(e)}")
             raise ValueError(f"Prompt building failed: {str(e)}")
+    
+
+    async def refine_prompt(
+        self,
+        previous_prompt_id: int,
+        user_session_id: str,
+        user_feedback: str | None = None,
+        focus_slider: int | None = None
+    ) -> Prompt:
+        """
+        Refine a saved prompt by generating a new iteration.
+
+        Reuses prior analyses (product, moodboard, user vision) referenced by the previous prompt to avoid re-analysis. Delegates to build_advertising_prompt.
+
+        Args:
+            previous_prompt_id: Prompt to refine.
+            user_session_id: User session identifier to link the refined prompt.
+            focus_slider: Optional new focus value; defaults to previous value when None.
+            user_feedback: Optional feedback text to guide refinement.
+
+        Returns:
+            Persisted refined Prompt.
+
+        Raises:
+            ValueError: If previous prompt is missing, focus invalid, or max refinements exceeded.
+        """
+        try:
+            # Get previous prompt and validate it exists
+            previous_prompt = self.session.get(Prompt, previous_prompt_id)
+            if not previous_prompt:
+                raise ValueError(f"Previous prompt with ID {previous_prompt_id} not found")
+            
+            # Use previous focus_slider if not provided
+            final_focus_slider = focus_slider if focus_slider is not None else previous_prompt.focus_slider
+            
+            # Inside try-block: validation depends on database data (previous_prompt.focus_slider)
+            # Must fetch previous_prompt first to calculate final_focus_slider before validating
+            if not (0 <= final_focus_slider <= 10):
+                raise ValueError("Focus slider must be between 0 and 10.")
+            
+            # Extract data from previous prompt (reuse existing analyses)
+            image_analysis_id = previous_prompt.image_analysis_id
+            user_vision_id = previous_prompt.user_vision_id
+            moodboard_analysis_ids = previous_prompt.moodboard_analysis_ids
+
+            # Delegate to build_advertising_prompt which handles its own session management
+            # (loads data → commits → closes → AI call → new session → saves)
+            refined_prompt = await self.build_advertising_prompt(
+                image_analysis_id, 
+                user_vision_id, 
+                final_focus_slider, 
+                user_session_id, 
+                moodboard_analysis_ids, 
+                is_refinement=True, 
+                previous_prompt_id=previous_prompt_id, 
+                user_feedback=user_feedback
+            )
+
+            return refined_prompt
+
+        except Exception as e:
+            self.session.rollback()
+            logger.error(f"Prompt refinement failed: {str(e)}")
+            raise ValueError(f"Prompt refinement failed: {str(e)}")
 
 
     async def generate_image(
         self, 
         prompt_id: int, 
         image_model_choice: str,
-        reference_image_bytes_list: list[bytes] | None = None, 
-        user_session_id: str | None = None
+        user_session_id: str,
+        reference_image_bytes_list: list[bytes] | None = None
     ) -> GeneratedImage:
         """
         Generate and persist the final ad image using a saved prompt.
+        
+        IMPORTANT: This method prevents SQLite "database is locked" errors by:
+        1. Loading all data and committing the read transaction BEFORE the API call
+        2. Making the long-running API call with no database lock held
+        3. Opening a fresh transaction to save the results
+        
+        This prevents timeout issues when image generation takes >5 seconds.
 
         Args:
             prompt_id: Prompt to render.
             image_model_choice: Image generation model choice ("openai" or "google").
+            user_session_id: User session identifier to link the generated image.
             reference_image_bytes_list: Optional reference images.
-            user_session_id: If omitted, falls back to the prompt's session.
 
         Returns:
             Persisted GeneratedImage (with local /static URL when possible).
@@ -368,17 +478,47 @@ class AdGeneratorService:
             ValueError: If generation or persistence fails.
         """
         try:
+            # PHASE 1: Load all needed data from database
             prompt = self.session.get(Prompt, prompt_id)
             if not prompt:
                 raise ValueError(f"Prompt with ID {prompt_id} not found")
             
-            # Get the product image from the database
             product_analysis = self.session.get(ImageAnalysis, prompt.image_analysis_id)
             if not product_analysis or not product_analysis.image_path:
                 raise ValueError(f"Product image not found for prompt {prompt_id}")
             
-            # Read product image from disk
-            with open(product_analysis.image_path, "rb") as f:
+            # Extract all data (primitive data -> strings, paths) 
+            # as Python variables (no longer tied to DB session)
+            prompt_text = prompt.prompt_text
+            product_image_path = product_analysis.image_path
+            
+            # CRITICAL FIX: Commit and close to release database lock before long API call
+            # -------------------------------------------------------------------------
+            # This prevents "database is locked" errors when Gemini API takes 10+ seconds
+            # Pattern: Load data → Commit → Close → Long operation → New session → Save  
+            # Why this is necessary:
+            # - SQLite allows only one writer at a time
+            # - Holding a transaction during the 10+ second Gemini call blocks other requests
+            # - WAL mode + check_same_thread=False help, but we still need to release the lock
+            # - Solution: Commit and close before the long operation, create new session after
+            
+            _log_sess("before commit (phase1)", self.session)
+            # Save transaction, release write lock
+            # (only read data -> still a transaction)
+            self.session.commit()  
+            _log_sess("after commit (phase1)", self.session)
+            
+            # Get engine reference before closing session (needed to create new session later)
+            # session.get_bind() returns the Engine object that this session is using
+            engine = self.session.get_bind()
+            
+            # Close session to fully release the database connection back to the pool
+            # This makes the connection available for other requests during the long Gemini call
+            self.session.close()
+            _log_sess("closed request session", self.session)
+            
+            # PHASE 2: File operations and API call (no database lock held)
+            with open(product_image_path, "rb") as f:
                 product_image_bytes = f.read()
             
             # Save reference images to disk if provided
@@ -395,7 +535,7 @@ class AdGeneratorService:
                     raise ValueError("OpenAI API key is required for OpenAI image generation. Please set MY_OPENAI_API_KEY environment variable.")
                 # Use GPT image generator
                 data_url = await gpt_generate_image_data_url(
-                    prompt=prompt.prompt_text,
+                    prompt=prompt_text,
                     product_image_bytes=product_image_bytes,
                     model="gpt-4.1",
                     api_key=self.openai_api_key,
@@ -406,7 +546,7 @@ class AdGeneratorService:
                     raise ValueError("Gemini API key is required for Gemini image generation. Please set GEMINI_API_KEY environment variable.")
                 # Use Gemini image generator
                 data_url = await gemini_generate_image_data_url(
-                    prompt=prompt.prompt_text,
+                    prompt=prompt_text,
                     product_image_bytes=product_image_bytes,
                     model="gemini-2.5-flash-image",
                     api_key=self.gemini_api_key,
@@ -418,7 +558,7 @@ class AdGeneratorService:
             # Persist generated image locally and expose it via /static
             os.makedirs("output_images", exist_ok=True)
             # Create a unique filename that associates the file with this session
-            filename = f"generated_{user_session_id or 'session'}_{uuid.uuid4().hex}.png"
+            filename = f"generated_{user_session_id}_{uuid.uuid4().hex}.png"
             # Storage: File saved in output_images/ folder
             output_path = os.path.join("output_images", filename)
 
@@ -452,29 +592,62 @@ class AdGeneratorService:
                 final_local_url = data_url
 
             # Store the exact file paths used for generation
-            used_paths = [product_analysis.image_path] if product_analysis.image_path else []
+            # product_image_path is guaranteed to exist (validated at line 386-387)
+            used_paths = [product_image_path]
             used_paths.extend(saved_reference_paths)
             
-            # Use provided session_id or get it from the prompt
-            final_session_id = user_session_id or prompt.session_id
+            # PHASE 3: Save results to database with a fresh session
+            # -------------------------------------------------------
+            # We closed self.session earlier (line 429), so we need a new session to save results
+            # Why a new session:
+            # - self.session is closed and cannot be used anymore
+            # - Creating a fresh session gets a new connection from the pool
+            # - No risk of "database is locked" because we're not reusing the old session
+            # - The engine we extracted at line 425 is used to create this new session
             
             db_ad_img = GeneratedImage(
                 prompt_id=prompt_id,
                 image_url=final_local_url,
                 input_images=used_paths,
-                session_id=final_session_id,
-                model_provider=image_model_choice  # Use the chosen image model provider
+                session_id=user_session_id,
+                model_provider=image_model_choice
             )
             
-            self.session.add(db_ad_img)
-            self.session.commit()
-            self.session.refresh(db_ad_img)
+            # Create fresh session from engine (extracted at line 425 before closing old session)
+            # Context manager (with-block) ensures session is properly closed after use
+            with Session(engine) as write_session:
+                try:
+                    _log_sess("new write session created", write_session)
+                    write_session.add(db_ad_img)     
+                    write_session.commit()
+                    write_session.refresh(db_ad_img)  
+                    _log_sess("write session committed", write_session)
+                except Exception:
+                    write_session.rollback()  # Undo changes if error
+                    raise  # Re-raise the error to be caught by outer except
             
             logger.info(f"Image generation completed: {db_ad_img.id}")
             return db_ad_img
             
         except Exception as e:
-            self.session.rollback()
+            # Outer exception handler: catches ANY error from the entire function
+            # This could be: file not found, API failure, database error, etc.
+            
+            # Try to clean up the original request session (self.session)
+            # Why nested try/except:
+            # - If error happened after we closed the session (line 429), attempting
+            #   rollback/close will fail because the session is already closed
+            # - We don't care about cleanup errors, we care about the ORIGINAL error
+            # - The inner try/except prevents cleanup errors from hiding the original error
+            try:
+                self.session.rollback()  # Attempt to undo any uncommitted changes
+                self.session.close()     # Attempt to close the session
+            except Exception:
+                # If cleanup fails (e.g., session already closed), ignore it
+                # We want to report the original error (e), not the cleanup error
+                pass
+            
+            # Log and re-raise the ORIGINAL error (stored in variable 'e')
             logger.error(f"Image generation failed: {str(e)}")
             raise ValueError(f"Image generation failed: {str(e)}")
 
@@ -537,69 +710,6 @@ class AdGeneratorService:
         except Exception as e:
             logger.error(f"Complete ad prompt generation workflow failed: {str(e)}")
             raise ValueError(f"Ad prompt generation workflow failed: {str(e)}")
-    
-
-    async def refine_prompt(
-        self,
-        previous_prompt_id: int,
-        user_session_id: str,
-        user_feedback: str | None = None,
-        focus_slider: int | None = None
-    ) -> Prompt:
-        """
-        Refine a saved prompt by generating a new iteration.
-
-        Reuses prior analyses (product, moodboard, user vision) referenced by the previous prompt to avoid re-analysis. Delegates to build_advertising_prompt.
-
-        Args:
-            previous_prompt_id: Prompt to refine.
-            user_session_id: User session identifier to link the refined prompt.
-            focus_slider: Optional new focus value; defaults to previous value when None.
-            user_feedback: Optional feedback text to guide refinement.
-
-        Returns:
-            Persisted refined Prompt.
-
-        Raises:
-            ValueError: If previous prompt is missing, focus invalid, or max refinements exceeded.
-        """
-        try:
-            # Get previous prompt and validate it exists
-            previous_prompt = self.session.get(Prompt, previous_prompt_id)
-            if not previous_prompt:
-                raise ValueError(f"Previous prompt with ID {previous_prompt_id} not found")
-            
-            # Use previous focus_slider if not provided
-            final_focus_slider = focus_slider if focus_slider is not None else previous_prompt.focus_slider
-            
-            # Inside try-block: validation depends on database data (previous_prompt.focus_slider)
-            # Must fetch previous_prompt first to calculate final_focus_slider before validating
-            if not (0 <= final_focus_slider <= 10):
-                raise ValueError("Focus slider must be between 0 and 10.")
-            
-            # Extract data from previous prompt (reuse existing analyses)
-            image_analysis_id = previous_prompt.image_analysis_id
-            user_vision_id = previous_prompt.user_vision_id
-            moodboard_analysis_ids = previous_prompt.moodboard_analysis_ids
-
-            # Call service method with refinement parameters
-            refined_prompt = await self.build_advertising_prompt(
-                image_analysis_id, 
-                user_vision_id, 
-                final_focus_slider, 
-                user_session_id, 
-                moodboard_analysis_ids, 
-                is_refinement=True, 
-                previous_prompt_id=previous_prompt_id, 
-                user_feedback=user_feedback
-            )
-
-            return refined_prompt
-
-        except Exception as e:
-            self.session.rollback()
-            logger.error(f"Prompt refinement failed: {str(e)}")
-            raise ValueError(f"Prompt refinement failed: {str(e)}")
 
 
     async def create_complete_ad(
@@ -654,7 +764,7 @@ class AdGeneratorService:
             )
             
             # Step 5: Generate final image using product + optional references
-            final_image = await self.generate_image(prompt.id, image_model_choice, reference_image_bytes_list, user_session_id)
+            final_image = await self.generate_image(prompt.id, image_model_choice, user_session_id, reference_image_bytes_list)
             
             logger.info(f"Complete ad generation workflow finished: {final_image.id}")
             return final_image

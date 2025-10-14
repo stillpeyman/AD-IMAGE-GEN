@@ -7,6 +7,7 @@ in the multi-model architecture.
 """
 
 # stdlib imports
+import base64
 from PIL import Image
 from io import BytesIO
 
@@ -75,8 +76,15 @@ async def generate_image_data_url(
         model=model,
         contents=contents
     )
+
     print(f"DEBUG: Response parts: {len(response.candidates[0].content.parts)}")
     for i, part in enumerate(response.candidates[0].content.parts):
+        # getattr(part, 'type', None) safely gets the type attribute
+        # If part has a type field, returns its value
+        # If no type field exists, returns None (instead of crashing)
+        # has_inline_data={part.inline_data is not None}:
+        # Checks if part.inline_data exists and isn't None
+        # Returns True if there's image data, False if not
         print(f"DEBUG: Part {i}: type={getattr(part, 'type', None)}, has_inline_data={part.inline_data is not None}")
     
     # Extract image data from response
@@ -84,13 +92,15 @@ async def generate_image_data_url(
     # Each part can contain text OR image data (inline_data)
     for part in response.candidates[0].content.parts:
         if part.inline_data is not None:
-            # Found the generated image data in base64 format
-            # Gemini always returns base64 in its response structure
-            b64_image_data = part.inline_data.data
+            # Found the generated image data - it's binary PNG data, not base64
+            # We need to base64-encode it to match the expected data URL format
+            binary_image_data = part.inline_data.data
 
-            # Add this after line 86 in gemini_image_generator.py:
-            print(f"DEBUG: Gemini returned data length: {len(b64_image_data)}")
-            print(f"DEBUG: First 100 chars: {b64_image_data[:100]}")
+            print(f"DEBUG: Gemini returned data length: {len(binary_image_data)}")
+            print(f"DEBUG: First 100 bytes: {binary_image_data[:100]}")
+
+            # Convert binary PNG data to base64 for data URL format
+            b64_image_data = base64.b64encode(binary_image_data).decode('utf-8')
 
             # Return as data URL format (consistent with GPT generator)
             # This ensures both generators return the same format for services.py
