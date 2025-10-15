@@ -78,7 +78,14 @@ async def generate_image_data_url(
     
     # Extract the base64 image data from the response
     print("=== OPENAI RESPONSE BODY ===")
-    print(resp)
+    if hasattr(resp, 'output') and resp.output:
+        for i, out in enumerate(resp.output):
+            out_type = getattr(out, 'type', 'unknown')
+            print(f"Output[{i}]: type={out_type}")
+            if out_type == 'image_generation_call':
+                result = getattr(out, 'result', None)
+                if result:
+                    print(f"Image data length: {len(result)} chars, first 25: {result[:25]}...")
     print("=== END RESPONSE BODY ===")
     
     b64_image = None

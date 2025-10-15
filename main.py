@@ -572,7 +572,7 @@ async def generate_image(
     try:
         # Find the prompt for this session
         prompt = service.session.exec(
-            select(Prompt).where(Prompt.session_id == user_session_id)
+            select(Prompt).where(Prompt.session_id == user_session_id).order_by(Prompt.id.desc())
         ).first()
         if not prompt:
             raise HTTPException(status_code=404, detail="No prompt found for this session")
