@@ -54,8 +54,10 @@ import uuid
 from dotenv import load_dotenv
 from fastapi import FastAPI, Depends, File, UploadFile, HTTPException
 from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import SQLModel, Session, create_engine, select
 from sqlalchemy import event
+import uvicorn
 
 # local
 from agents import Agents
@@ -142,6 +144,15 @@ def create_db_and_tables() -> None:
 
 # 3) App creation
 app = FastAPI()
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],  # Frontend URL
+    allow_credentials=True,
+    allow_methods=["*"],  # Allow all HTTP methods
+    allow_headers=["*"],  # Allow all headers
+)
 
 # Serve generated images from local disk under /static
 app.mount("/static", StaticFiles(directory="output_images"), name="static")
@@ -718,4 +729,14 @@ async def test_text_only(
 
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+
+if __name__ == "__main__":
+    uvicorn.run(
+        "main:app",
+        host="0.0.0.0",
+        port=5001,
+        reload=True,  # Only for development
+        log_level="info"
+    )
 
