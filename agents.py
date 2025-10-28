@@ -1,3 +1,6 @@
+# stdlib imports
+import json
+
 # third-party imports
 from openai import AsyncOpenAI
 from pydantic_ai import Agent, BinaryContent
@@ -422,11 +425,11 @@ class Agents:
 
     async def build_advertising_prompt(
         self,
-        image_analysis: ImageAnalysis,
-        user_vision: UserVision,
+        image_analysis: dict,
+        user_vision: dict,
         focus_slider: int,
         is_refinement: bool = False,
-        moodboard_analyses: list[MoodboardAnalysis] | None = None,
+        moodboard_analyses: list[dict] | None = None,
         previous_prompt_text: str | None = None,
         user_feedback: str | None = None,
         prompt_examples: list[dict] | None = None
@@ -437,11 +440,11 @@ class Agents:
         Integrates category-matched examples for Few-Shot prompting when available.
 
         Args:
-            image_analysis: Structured product image analysis.
-            user_vision: Structured user vision information.
+            image_analysis: Product image analysis as a dictionary (extracted from ImageAnalysis model).
+            user_vision: User vision information as a dictionary (extracted from UserVision model).
             focus_slider: Desired balance (0–10) between product and scene.
             is_refinement: Whether this is a refinement of a previous prompt.
-            moodboard_analyses: Optional moodboard analyses.
+            moodboard_analyses: Optional list of moodboard analyses as dictionaries (extracted from MoodboardAnalysis models).
             previous_prompt_text: Previous prompt (for refinement context).
             user_feedback: Optional feedback for refinement.
             prompt_examples: Optional list of example dicts with 'prompt_text' and 'product_category' keys.
@@ -469,7 +472,7 @@ class Agents:
         if moodboard_analyses:
             for i, moodboard in enumerate(moodboard_analyses, 1):
                 moodboard_descriptions.append(
-                    f"MOODBOARD {i}: {moodboard.model_dump_json(indent=2)}"
+                    f"MOODBOARD {i}: {json.dumps(moodboard, indent=2)}"
                 )
 
         combined_moodboards = "\n".join(moodboard_descriptions) if moodboard_descriptions else "<no moodboards provided>"
@@ -487,9 +490,9 @@ class Agents:
         prompt = (
             f"{examples_section}"
             "Create a single, cohesive prompt for OpenAI's image generation tool using the following data:\n"
-            f"PRODUCT ANALYSIS: {image_analysis.model_dump_json(indent=2)}\n"
+            f"PRODUCT ANALYSIS: {json.dumps(image_analysis, indent=2)}\n"
             f"MOODBOARD INSPIRATIONS:\n{combined_moodboards}\n"
-            f"USER VISION: {user_vision.model_dump_json(indent=2)}\n"
+            f"USER VISION: {json.dumps(user_vision, indent=2)}\n"
             f"FOCUS INSTRUCTION: {focus_instruction}\n"
             "Requirements:\n"
             "- The prompt should be 30-75 words.\n"

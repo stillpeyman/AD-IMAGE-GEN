@@ -236,9 +236,9 @@ export default function AdGeneratorWizard() {
         {currentStep === 2 && (
           <Card>
             <CardHeader>
-              <CardTitle className="text-2xl">Step 2: Upload Content</CardTitle>
+              <CardTitle className="text-2xl">Step 2: Build Ad Prompt</CardTitle>
               <CardDescription>
-                Upload your product image and describe your vision.
+                Upload your product image (required), describe your vision (required), adjust the focus slider to balance product vs. scene emphasis, and optionally add moodboard images to inspire the ad style.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -289,28 +289,10 @@ export default function AdGeneratorWizard() {
                 </div>
 
                 <div>
-                  <Label className="text-sm font-medium">
-                    Creativity Level: {formData.creativityLevel || 50}%
-                  </Label>
-                  <div className="mt-2 px-2">
-                    <Slider
-                      value={[formData.creativityLevel || 50]}
-                      onValueChange={(value) => updateFormData('creativityLevel', value[0])}
-                      min={0}
-                      max={100}
-                      step={10}
-                      className="w-full"
-                    />
-                    <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                      <span>Conservative</span>
-                      <span>Balanced</span>
-                      <span>Creative</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div>
                   <Label className="text-sm font-medium">Focus Level: {formData.focusSlider}/10</Label>
+                  <p className="text-xs text-muted-foreground mt-1 mb-2">
+                    Balance between product and scene focus
+                  </p>
                   <div className="mt-2 px-2">
                     <Slider
                       value={[formData.focusSlider]}
@@ -321,9 +303,9 @@ export default function AdGeneratorWizard() {
                       className="w-full"
                     />
                     <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                      <span>Broad</span>
+                      <span>Product Focus</span>
                       <span>Balanced</span>
-                      <span>Focused</span>
+                      <span>Scene Focus</span>
                     </div>
                   </div>
                 </div>
@@ -333,7 +315,7 @@ export default function AdGeneratorWizard() {
                   <div>
                     <Label className="text-sm font-medium">Moodboard Images (Optional)</Label>
                     <p className="text-xs text-muted-foreground mt-1">
-                      Upload reference images to inspire the ad style and mood
+                      Upload moodboard images to inspire the ad style and mood
                     </p>
                   </div>
                   
@@ -440,6 +422,9 @@ export default function AdGeneratorWizard() {
                     <Label className="text-sm font-medium">
                       Focus Level: {formData.focusSlider}/10
                     </Label>
+                    <p className="text-xs text-muted-foreground mt-1 mb-2">
+                      Balance between product and scene focus
+                    </p>
                     <div className="mt-2 px-2">
                       <Slider
                         value={[formData.focusSlider]}
@@ -450,9 +435,9 @@ export default function AdGeneratorWizard() {
                         className="w-full"
                       />
                       <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                        <span>Broad</span>
+                        <span>Product Focus</span>
                         <span>Balanced</span>
-                        <span>Focused</span>
+                        <span>Scene Focus</span>
                       </div>
                     </div>
                   </div>
@@ -602,27 +587,60 @@ export default function AdGeneratorWizard() {
             <CardHeader>
               <CardTitle className="text-2xl">Step 5: Your Ad Image</CardTitle>
               <CardDescription>
-                Here's your generated ad image!
+                Compare your original product image with the AI-generated ad!
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {/* Result display */}
-              <div className="space-y-4">
-                {formData.generatedImage ? (
-                  <div className="space-y-4">
-                    <img 
-                      src={formData.generatedImage} 
-                      alt="Generated Ad" 
-                      className="w-full max-w-md mx-auto rounded-lg shadow-lg"
-                    />
-                    <p className="text-center text-sm text-muted-foreground">
-                      Your AI-generated ad image is ready!
-                    </p>
+              {/* Result display - side by side comparison */}
+              <div className="space-y-6">
+                {formData.generatedImage || formData.productImagePreview ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Product Image */}
+                    <div className="space-y-2">
+                      <h3 className="text-lg font-semibold text-center">Original Product</h3>
+                      {formData.productImagePreview ? (
+                        <div className="border rounded-lg overflow-hidden bg-muted">
+                          <img 
+                            src={formData.productImagePreview} 
+                            alt="Original Product" 
+                            className="w-full h-auto object-contain"
+                          />
+                        </div>
+                      ) : (
+                        <div className="border rounded-lg bg-muted p-8 text-center">
+                          <p className="text-muted-foreground text-sm">Product image not available</p>
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* Generated Ad Image */}
+                    <div className="space-y-2">
+                      <h3 className="text-lg font-semibold text-center">Generated Ad</h3>
+                      {formData.generatedImage ? (
+                        <div className="border rounded-lg overflow-hidden bg-muted">
+                          <img 
+                            src={formData.generatedImage} 
+                            alt="Generated Ad" 
+                            className="w-full h-auto object-contain"
+                          />
+                        </div>
+                      ) : (
+                        <div className="border rounded-lg bg-muted p-8 text-center">
+                          <p className="text-muted-foreground text-sm">Generated image will appear here...</p>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 ) : (
                   <div className="bg-muted p-8 rounded-lg text-center">
-                    <p className="text-muted-foreground">Generated image will appear here...</p>
+                    <p className="text-muted-foreground">Images will appear here...</p>
                   </div>
+                )}
+                
+                {formData.generatedImage && (
+                  <p className="text-center text-sm text-primary font-medium">
+                    Your AI-generated ad image is ready!
+                  </p>
                 )}
               </div>
             </CardContent>

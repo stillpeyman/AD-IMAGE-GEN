@@ -314,16 +314,32 @@ class AdGeneratorService:
                     if refinement_count > 2:
                         raise ValueError("Maximum of 2 refinements allowed per prompt")
             
+            # Store product_category for use after session closes
+            product_category = product_analysis.product_category
+            
             # RAG: Retrieve random examples from same product category 
             # for Few-Shot prompting. If no examples returns empty list []
             stmt = select(PromptExample)\
-                .where(PromptExample.product_category == product_analysis.product_category)\
+                .where(PromptExample.product_category == product_category)\
                     .order_by(func.random())\
                         .limit(2)
             
             # Execute query and get up to 2 examples
             # Returns empty list [] if no examples
             prompt_examples_db = self.session.exec(stmt).all()
+            
+            # Log RAG retrieval results for visibility/debugging
+            if prompt_examples_db:
+                example_ids = [ex.id for ex in prompt_examples_db]
+                logger.info(
+                    f"RAG: Retrieved {len(prompt_examples_db)} example(s) for category '{product_category}'. "
+                    f"Example IDs: {example_ids}"
+                )
+            else:
+                logger.info(
+                    f"RAG: No examples found for category '{product_category}'. "
+                    f"Prompt generation will proceed without Few-Shot examples."
+                )
             
             # Convert to plain dicts to avoid SQLAlchemy lazy-loading issues
             # Extract all data from DB objects while session is active
@@ -334,6 +350,16 @@ class AdGeneratorService:
                 }
                 for ex in prompt_examples_db
             ]
+            
+            # Extract product_analysis data before closing session
+            # Use mode='json' to convert datetime objects to ISO format strings (JSON-serializable)
+            product_analysis_dict = product_analysis.model_dump(mode='json')
+            
+            # Extract user_vision data before closing session
+            user_vision_dict = user_vision.model_dump(mode='json')
+            
+            # Extract moodboard_analyses data before closing session
+            moodboard_analyses_dicts = [mb.model_dump(mode='json') for mb in moodboard_analyses] if moodboard_analyses else None
 
             # Commit and close to release database lock before long AI call
             self.session.commit()
@@ -342,11 +368,11 @@ class AdGeneratorService:
 
             # Make AI call (long-running operation, no database lock held)
             prompt = await self.agents.build_advertising_prompt(
-                product_analysis, 
-                user_vision, 
+                product_analysis_dict, 
+                user_vision_dict, 
                 focus_slider,
                 is_refinement,
-                moodboard_analyses,
+                moodboard_analyses_dicts,
                 previous_prompt_text,
                 user_feedback,
                 prompt_examples
@@ -371,7 +397,11 @@ class AdGeneratorService:
                 write_session.commit()
                 write_session.refresh(db_prompt)
             
-            logger.info(f"Advertising prompt built: {db_prompt.id}")
+            logger.info(
+                f"Advertising prompt built: {db_prompt.id}. "
+                f"RAG used: {len(prompt_examples)} example(s), "
+                f"Category: '{product_category}'"
+            )
             return db_prompt
             
         except Exception as e:

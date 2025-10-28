@@ -27,9 +27,8 @@ export function useAdGenerator() {
     // Step 2: Content Input
     uploadedImage: null, // File object for product image
     visionText: '', // User's vision description
-    creativityLevel: 50, // Creativity slider (0-100)
     moodboardFiles: [], // Array of moodboard image files
-    focusSlider: 5, // Focus slider (0-10)
+    focusSlider: 5, // Focus slider (0-10): 0=product focus, 10=scene focus
     
     // Step 4: Image Generation
     referenceFiles: [], // Array of reference image files
@@ -43,6 +42,7 @@ export function useAdGenerator() {
     
     // Step 5: Results
     generatedImage: null, // Generated image URL or data
+    productImagePreview: null, // Product image preview URL (for display)
     imageAnalysis: null, // Product image analysis
     userVision: null, // Parsed user vision
   })
@@ -164,12 +164,15 @@ export function useAdGenerator() {
       )
       updateFormData('generatedPrompt', promptResult.prompt_text || promptResult.content)
       
+      // Advance to Step 3 after successful prompt generation
+      setCurrentStep(3)
+      
     } catch (err) {
       setError(`Failed to generate prompt: ${err.message}`)
     } finally {
       setIsLoading(false)
     }
-  }, [userSessionId, formData, updateFormData, clearError])
+  }, [userSessionId, formData, updateFormData, clearError, setCurrentStep])
 
   // Step 3: Refine prompt
   const refinePrompt = useCallback(async (refinementText, focusSlider = null) => {
@@ -234,8 +237,22 @@ export function useAdGenerator() {
 
       updateFormData('selectedImageModel', imageModel)
       
-      const imageResult = await api.generateImage(userSessionId, imageModel)
-      updateFormData('generatedImage', imageResult.image_url || imageResult.content)
+      // Pass reference files to API
+      const referenceFiles = formData.referenceFiles || []
+      const imageResult = await api.generateImage(userSessionId, imageModel, referenceFiles)
+      
+      // Fix image URL: if it starts with /static/, prepend API base URL
+      let imageUrl = imageResult.image_url || imageResult.content
+      if (imageUrl && imageUrl.startsWith('/static/')) {
+        imageUrl = `http://localhost:5001${imageUrl}`
+      }
+      updateFormData('generatedImage', imageUrl)
+      
+      // Create preview URL for product image (client-side object URL)
+      if (formData.uploadedImage) {
+        const productImageUrl = URL.createObjectURL(formData.uploadedImage)
+        updateFormData('productImagePreview', productImageUrl)
+      }
       
       // Auto-advance to next step
       nextStep()
@@ -244,28 +261,34 @@ export function useAdGenerator() {
     } finally {
       setIsLoading(false)
     }
-  }, [userSessionId, updateFormData, nextStep, clearError])
+  }, [userSessionId, formData.referenceFiles, formData.uploadedImage, updateFormData, nextStep, clearError])
 
   // Reset everything for new session
   const resetSession = useCallback(() => {
+    // Clean up object URL to prevent memory leaks
+    setFormData(prev => {
+      if (prev.productImagePreview && prev.productImagePreview.startsWith('blob:')) {
+        URL.revokeObjectURL(prev.productImagePreview)
+      }
+      return {
+        selectedModel: '',
+        uploadedImage: null,
+        visionText: '',
+        moodboardFiles: [],
+        focusSlider: 5,
+        referenceFiles: [],
+        generatedPrompt: '',
+        promptRefinement: '',
+        selectedImageModel: '',
+        generatedImage: null,
+        productImagePreview: null,
+        imageAnalysis: null,
+        userVision: null,
+      }
+    })
     setCurrentStep(1)
     setUserSessionId(null)
     setError(null)
-    setFormData({
-      selectedModel: '',
-      uploadedImage: null,
-      visionText: '',
-      creativityLevel: 50,
-      moodboardFiles: [],
-      focusSlider: 5,
-      referenceFiles: [],
-      generatedPrompt: '',
-      promptRefinement: '',
-      selectedImageModel: '',
-      generatedImage: null,
-      imageAnalysis: null,
-      userVision: null,
-    })
   }, [])
 
   // Test backend connection
