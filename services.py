@@ -13,7 +13,7 @@ from sqlalchemy import func
 from agents import Agents
 from api.gpt_image1_generator import generate_image_data_url as gpt_generate_image_data_url
 from api.gemini_image_generator import generate_image_data_url as gemini_generate_image_data_url
-from models import ImageAnalysis, MoodboardAnalysis, UserVision, Prompt, GeneratedImage, PromptExample
+from models import ImageAnalysis, MoodboardAnalysis, UserVision, Prompt, GeneratedImage, PromptExample, HistoryEvent
 
 
 logger = logging.getLogger(__name__)
@@ -124,10 +124,47 @@ class AdGeneratorService:
                 session_id=user_session_id,
                 model_provider=self.agents.model_provider  
             )
+
+            # SIDE NOTE for the following flow: 
+            # self.session.add(db_analysis)
+            # self.session.flush() sends pending operations to DB 
+            # -> before commiting, so without finalizing the transaction
+            # Database assigns id=123, db_analysis.id available to use
+            # keeping self.session.refresh(db_analysis) -> defensive 
+            # -> ensures all databse-assigned values available
+            # -> useful if the DB sets defaults/triggers
             
             self.session.add(db_analysis)
-            self.session.commit()
+            self.session.flush()
             self.session.refresh(db_analysis)
+
+            # Create history events
+            # Event 1: Product uploaded
+            upload_event = HistoryEvent(
+                session_id=user_session_id,
+                event_type="product_image_upload",
+                related_type="ImageAnalysis",
+                related_id=db_analysis.id,
+                actor="user",
+                snapshot_data={"image_path": image_path}
+            )
+
+            # Event 2: Product image analyzed
+            analyzed_event = HistoryEvent(
+                session_id=user_session_id,
+                event_type="product_image_analyzed",
+                related_type="ImageAnalysis",
+                related_id=db_analysis.id,
+                actor="system",
+                snapshot_data={
+                    "product_type": db_analysis.product_type,
+                    "product_category": db_analysis.product_category
+                }
+            )
+
+            self.session.add_all([upload_event, analyzed_event])
+            # Single commit for everything
+            self.session.commit()
             
             logger.info(f"Product image analysis completed: {db_analysis.id}")
             return db_analysis

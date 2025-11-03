@@ -61,7 +61,7 @@ import uvicorn
 
 # local
 from agents import Agents
-from models import ImageAnalysis, MoodboardAnalysis, PromptExample, UserVision, Prompt, GeneratedImage, UserSession
+from models import ImageAnalysis, MoodboardAnalysis, PromptExample, UserVision, Prompt, GeneratedImage, UserSession, HistoryEvent
 from services import AdGeneratorService
 
 
@@ -257,6 +257,18 @@ async def create_session(model_provider: str, db_session: Session = Depends(get_
         db_session.add(session_record)
         db_session.commit()
         db_session.refresh(session_record)
+
+        history_event = HistoryEvent(
+            session_id=user_session_id,
+            event_type="session_created",
+            related_type="UserSession",
+            related_id=user_session_id,
+            actor="user",
+            snapshot_data={"model_provider": model_provider}
+        )
+
+        db_session.add(history_event)
+        db_session.commit()
         
         return {"user_session_id": user_session_id, "model_provider": model_provider}
         

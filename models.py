@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 # third-party imports
 from sqlalchemy import Column
 from sqlalchemy.dialects.sqlite import JSON
-from sqlmodel import SQLModel, Field, table
+from sqlmodel import SQLModel, Field, Index
 
 
 """
@@ -123,3 +123,22 @@ class PromptExample(SQLModel, table=True):
     # Matches ImageAnalysis.product_category for retrieval
     product_category: str
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class HistoryEvent(SQLModel, table=True):
+    """
+    Stores history events for session workflow timeline.
+    
+    Each row represents one user-visible step in the ad generation workflow,
+    enabling chat-style history display per session.
+    """
+    id: int | None = Field(default=None, primary_key=True)
+    session_id: str = Field(foreign_key="usersession.id")
+    event_type: str
+    related_type: str | None = None
+    related_id: int | None = None
+    actor: str
+    snapshot_data: dict = Field(sa_column=Column(JSON))
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (Index("idx_session_created", "session_id", "created_at"),)
