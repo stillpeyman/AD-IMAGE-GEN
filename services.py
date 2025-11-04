@@ -94,19 +94,33 @@ class AdGeneratorService:
         Analyze a product image and store results.
 
         Uses self.agents for analysis and persists the structured result linked to the user session.
+        Creates history events for product image upload and analysis completion.
 
         Args:
             image_bytes: Raw product image data.
             user_session_id: User session identifier to link created records.
 
         Returns:
-            Persisted ImageAnalysis.
+            Persisted ImageAnalysis with all analysis fields populated.
 
         Raises:
             ValueError: If analysis or persistence fails.
         """
-        try:   
+        try:
             image_path = self._save_image(image_bytes, "product", "product")
+
+            # History Event 1: Product image uploaded
+            upload_event = HistoryEvent(
+                session_id=user_session_id,
+                event_type="product_image_upload",
+                related_type="ImageAnalysis",
+                related_id=None,
+                actor="user",
+                snapshot_data={"image_path": image_path}
+            )
+            self.session.add(upload_event)
+            self.session.flush()
+
             analysis = await self.agents.analyze_product_image(image_bytes)
             
             db_analysis = ImageAnalysis(
@@ -125,31 +139,23 @@ class AdGeneratorService:
                 model_provider=self.agents.model_provider  
             )
 
-            # SIDE NOTE for the following flow: 
+            # SIDE NOTE for the following flow:
             # self.session.add(db_analysis)
-            # self.session.flush() sends pending operations to DB 
-            # -> before commiting, so without finalizing the transaction
+            # self.session.flush() sends pending operations to DB
+            # -> before committing, so without finalizing the transaction
             # Database assigns id=123, db_analysis.id available to use
-            # keeping self.session.refresh(db_analysis) -> defensive 
-            # -> ensures all databse-assigned values available
+            # keeping self.session.refresh(db_analysis) -> defensive
+            # -> ensures all database-assigned values available
             # -> useful if the DB sets defaults/triggers
             
             self.session.add(db_analysis)
             self.session.flush()
             self.session.refresh(db_analysis)
 
-            # Create history events
-            # Event 1: Product uploaded
-            upload_event = HistoryEvent(
-                session_id=user_session_id,
-                event_type="product_image_upload",
-                related_type="ImageAnalysis",
-                related_id=db_analysis.id,
-                actor="user",
-                snapshot_data={"image_path": image_path}
-            )
+            # Update upload event with ImageAnalysis.id
+            upload_event.related_id = db_analysis.id
 
-            # Event 2: Product image analyzed
+            # History Event 2: Product image analyzed
             analyzed_event = HistoryEvent(
                 session_id=user_session_id,
                 event_type="product_image_analyzed",
@@ -162,7 +168,7 @@ class AdGeneratorService:
                 }
             )
 
-            self.session.add_all([upload_event, analyzed_event])
+            self.session.add(analyzed_event)
             # Single commit for everything
             self.session.commit()
             
@@ -183,12 +189,15 @@ class AdGeneratorService:
         """
         Analyze moodboard images (if provided) and store results.
 
+        Creates history events for each moodboard image upload and analysis completion.
+        All events are committed atomically with their corresponding analysis records.
+
         Args:
             image_bytes_list: Moodboard images to analyze; if None/empty, returns [].
             user_session_id: User session identifier to link created records.
 
         Returns:
-            List of persisted MoodboardAnalysis.
+            List of persisted MoodboardAnalysis, one per input image.
 
         Raises:
             ValueError: If analysis or persistence fails.
@@ -205,8 +214,24 @@ class AdGeneratorService:
                 saved_path = self._save_image(image_bytes, "moodboards", f"moodboard_{idx+1}")
                 saved_paths.append(saved_path)
             
+            # History Event 1: Moodboard image uploaded
+            upload_events = []
+            for saved_path in saved_paths:
+                upload_event = HistoryEvent(
+                    session_id=user_session_id,
+                    event_type="moodboard_upload",
+                    related_type="MoodboardAnalysis",
+                    related_id=None,
+                    actor="user",
+                    snapshot_data={"image_path": saved_path}
+                )
+                upload_events.append(upload_event)
+            
+            self.session.add_all(upload_events)
+            self.session.flush()
+            
             # Analyze all moodboard images at once
-            analyses = await self.agents.analyze_moodboard([image_bytes for image_bytes in image_bytes_list])
+            analyses = await self.agents.analyze_moodboard(image_bytes_list)
             
             # Create database records for each analysis with corresponding image_path
             for analysis, saved_path in zip(analyses, saved_paths):
@@ -222,14 +247,48 @@ class AdGeneratorService:
                     model_provider=self.agents.model_provider  
                 )
                 
-                self.session.add(db_analysis)
                 results.append(db_analysis)
-            
-            self.session.commit()
-            
-            # Refresh each result to get IDs
+                   
+            # Add all moodboard analyses to session
             for result in results:
+                self.session.add(result)
+            
+            # flush() sends all pending add() operations 
+            # to the database in one call -> get IDs
+            self.session.flush()
+
+            # Loop through results
+            # refresh() each result
+            # create history event for that result
+            # collect each history event in list
+            analyzed_events = []
+            for idx, result in enumerate(results):
                 self.session.refresh(result)
+
+                # Use idx (index) to get corresponding upload_event from upload_events
+                upload_event = upload_events[idx]
+
+                # Update upload event with MoodboardAnalysis.id
+                upload_event.related_id = result.id
+
+                # History Event 2: Moodboard image analyzed
+                analyzed_event = HistoryEvent(
+                    session_id=user_session_id,
+                    event_type="moodboard_image_analyzed",
+                    related_type="MoodboardAnalysis",
+                    related_id=result.id,
+                    actor="system",
+                    snapshot_data={
+                        "visual_style": result.visual_style,
+                        "mood_atmosphere": result.mood_atmosphere
+                    }
+                )
+
+                analyzed_events.append(analyzed_event)
+
+            # Add all at once and commit once
+            self.session.add_all(analyzed_events)
+            self.session.commit()
             
             logger.info(f"Moodboard analysis completed: {len(results)} images")
             return results
@@ -244,20 +303,36 @@ class AdGeneratorService:
         """
         Parse user vision text and store structured results.
 
+        Creates history events for user vision submission and parsing completion.
+        Both events are committed atomically with the UserVision record.
+
         Args:
-            user_text: User's vision description.
+            user_text: User's vision description (must be non-empty).
             user_session_id: User session identifier to link created records.
 
         Returns:
-            Persisted UserVision.
+            Persisted UserVision with all parsed fields populated.
 
         Raises:
-            ValueError: If parsing or persistence fails.
+            ValueError: If user_text is empty or parsing/persistence fails.
         """
         if not user_text or not user_text.strip():
             raise ValueError("User vision text is required and cannot be empty")
         
         try:
+            # History Event 1: user vision submission
+            submitted_event = HistoryEvent(
+                session_id=user_session_id,
+                event_type="user_vision_submitted",
+                related_type="UserVision",
+                related_id=None,
+                actor="user",
+                # Only first 100 chars of user vision text
+                snapshot_data={"preview_text": user_text[:100]}
+            )
+            self.session.add(submitted_event)
+            self.session.flush()
+
             analysis = await self.agents.parse_user_vision(user_text)
             
             db_analysis = UserVision(
@@ -272,8 +347,26 @@ class AdGeneratorService:
             )
             
             self.session.add(db_analysis)
-            self.session.commit()
+            self.session.flush()
             self.session.refresh(db_analysis)
+
+            # Update submission event with UserVision.id
+            submitted_event.related_id = db_analysis.id
+
+            parsed_event = HistoryEvent(
+                session_id=user_session_id,
+                event_type="vision_parsed",
+                related_type="UserVision",
+                related_id=db_analysis.id,
+                actor="system",
+                snapshot_data={
+                    "focus_subject": db_analysis.focus_subject,
+                    "setting": db_analysis.setting
+                }
+            )
+            
+            self.session.add(parsed_event)
+            self.session.commit()
             
             logger.info(f"User vision parsing completed: {db_analysis.id}")
             return db_analysis
@@ -301,6 +394,8 @@ class AdGeneratorService:
         Build and persist an advertising prompt using prior analyses.
 
         Optionally retrieves two category-matched PromptExample rows for Few-Shot prompting.
+        Creates a history event for prompt built or prompt refined (depending on is_refinement).
+        Closes the database session before the long-running AI call to prevent lock issues.
 
         Args:
             image_analysis_id: Product image analysis to use.
@@ -313,10 +408,10 @@ class AdGeneratorService:
             user_feedback: Optional feedback to steer refinement.
 
         Returns:
-            Persisted Prompt.
+            Persisted Prompt with prompt_text and all metadata populated.
 
         Raises:
-            ValueError: If required analyses are missing or generation fails.
+            ValueError: If required analyses are missing, max refinements exceeded, or generation fails.
         """
         try:
             # Get all required analyses, if not found SQLModel returns None 
@@ -324,7 +419,7 @@ class AdGeneratorService:
             product_analysis = self.session.get(ImageAnalysis, image_analysis_id)
             if not product_analysis:
                 # Returning None not good for user experience, give clear error message
-                # Basically business error if product analydsis is missing
+                # Basically business error if product analysis is missing
                 # FastAPI converts ValueError to HTTP 400 (Bad Request)
                 raise ValueError(f"Image analysis with ID {image_analysis_id} not found")
             
@@ -396,7 +491,10 @@ class AdGeneratorService:
             user_vision_dict = user_vision.model_dump(mode='json')
             
             # Extract moodboard_analyses data before closing session
-            moodboard_analyses_dicts = [mb.model_dump(mode='json') for mb in moodboard_analyses] if moodboard_analyses else None
+            moodboard_analyses_dicts = (
+                [mb.model_dump(mode='json') for mb in moodboard_analyses]
+                if moodboard_analyses else None
+            )
 
             # Commit and close to release database lock before long AI call
             self.session.commit()
@@ -431,8 +529,26 @@ class AdGeneratorService:
             
             with Session(engine) as write_session:
                 write_session.add(db_prompt)
-                write_session.commit()
+                write_session.flush()
                 write_session.refresh(db_prompt)
+
+                # History Event: prompt built or prompt refined
+                event_type = "prompt_refined" if is_refinement else "prompt_built"
+                prompt_event = HistoryEvent(
+                    session_id=user_session_id,
+                    event_type=event_type,
+                    related_type="Prompt",
+                    related_id=db_prompt.id,
+                    actor="system",
+                    snapshot_data={
+                        "focus_slider": focus_slider,
+                        "refinement_count": refinement_count,
+                        # Return a boolean (True/False)
+                        "used_rag_examples": len(prompt_examples) > 0
+                    }
+                )
+                write_session.add(prompt_event)
+                write_session.commit()
             
             logger.info(
                 f"Advertising prompt built: {db_prompt.id}. "
@@ -461,19 +577,21 @@ class AdGeneratorService:
         """
         Refine a saved prompt by generating a new iteration.
 
-        Reuses prior analyses (product, moodboard, user vision) referenced by the previous prompt to avoid re-analysis. Delegates to build_advertising_prompt.
+        Reuses prior analyses (product, moodboard, user vision) referenced by the previous prompt to avoid re-analysis. Creates a history event for prompt refinement request, then delegates to build_advertising_prompt which creates the prompt_refined event.
 
         Args:
             previous_prompt_id: Prompt to refine.
             user_session_id: User session identifier to link the refined prompt.
             focus_slider: Optional new focus value; defaults to previous value when None.
             user_feedback: Optional feedback text to guide refinement.
+                Full feedback is used for prompt building; only the history event
+                snapshot stores a 100-char preview.
 
         Returns:
-            Persisted refined Prompt.
+            Persisted refined Prompt with updated prompt_text and incremented refinement_count.
 
         Raises:
-            ValueError: If previous prompt is missing, focus invalid, or max refinements exceeded.
+            ValueError: If previous prompt is missing, focus slider invalid, or max refinements exceeded.
         """
         try:
             # Get previous prompt and validate it exists
@@ -493,6 +611,21 @@ class AdGeneratorService:
             image_analysis_id = previous_prompt.image_analysis_id
             user_vision_id = previous_prompt.user_vision_id
             moodboard_analysis_ids = previous_prompt.moodboard_analysis_ids
+
+            # History Event: prompt refinement request
+            refinement_event = HistoryEvent(
+                session_id=user_session_id,
+                event_type="prompt_refinement_request",
+                related_type="Prompt",
+                related_id=previous_prompt_id,
+                actor="user",
+                snapshot_data={
+                    "user_feedback": user_feedback[:100] if user_feedback else None,
+                    "focus_slider": final_focus_slider
+                }
+            )
+            self.session.add(refinement_event)
+            self.session.commit()
 
             # Delegate to build_advertising_prompt which handles its own session management
             # (loads data → commits → closes → AI call → new session → saves)
@@ -531,20 +664,41 @@ class AdGeneratorService:
         3. Opening a fresh transaction to save the results
         
         This prevents timeout issues when image generation takes >5 seconds.
+        
+        Creates history events for:
+        - image_model_chosen (user action at start)
+        - reference_image_upload (user action, if reference images provided)
+        - image_generated (system action after generation completes)
+        
+        All events are committed atomically with the GeneratedImage record.
 
         Args:
             prompt_id: Prompt to render.
             image_model_choice: Image generation model choice ("openai" or "google").
             user_session_id: User session identifier to link the generated image.
-            reference_image_bytes_list: Optional reference images.
+            reference_image_bytes_list: Optional reference images for generation.
 
         Returns:
-            Persisted GeneratedImage (with local /static URL when possible).
+            Persisted GeneratedImage with image_url pointing to /static/ route or data URL.
 
         Raises:
-            ValueError: If generation or persistence fails.
+            ValueError: If prompt not found, product image missing, API key missing,
+                       invalid model choice, or generation/persistence fails.
         """
         try:
+            # History Event 1: image model choice (user action at start)
+            # Create early with related_id=None, will update after GeneratedImage is created
+            model_choice_event = HistoryEvent(
+                session_id=user_session_id,
+                event_type="image_model_chosen",
+                related_type="GeneratedImage",
+                related_id=None,
+                actor="user",
+                snapshot_data={"image_model": image_model_choice}
+            )
+            self.session.add(model_choice_event)
+            self.session.flush()
+
             # PHASE 1: Load all needed data from database
             prompt = self.session.get(Prompt, prompt_id)
             if not prompt:
@@ -570,8 +724,8 @@ class AdGeneratorService:
             # - Solution: Commit and close before the long operation, create new session after
             
             _log_sess("before commit (phase1)", self.session)
-            # Save transaction, release write lock
-            # (only read data -> still a transaction)
+            # Commit model_choice_event before closing session
+            # (it has related_id=None for now, will update in write_session)
             self.session.commit()  
             _log_sess("after commit (phase1)", self.session)
             
@@ -593,7 +747,7 @@ class AdGeneratorService:
             if reference_image_bytes_list:
                 for idx, ref_bytes in enumerate(reference_image_bytes_list):
                     saved_ref = self._save_image(ref_bytes, "references", f"ref_{idx+1}")
-                    saved_reference_paths.append(saved_ref)
+                    saved_reference_paths.append(saved_ref)        
             
             # Generate image using the user's chosen image model (independent of text analysis provider)
             # Validate API key availability for the chosen image model
@@ -659,18 +813,18 @@ class AdGeneratorService:
                 final_local_url = data_url
 
             # Store the exact file paths used for generation
-            # product_image_path is guaranteed to exist (validated at line 386-387)
+            # product_image_path is guaranteed to exist (validated at lines 708-709)
             used_paths = [product_image_path]
             used_paths.extend(saved_reference_paths)
             
             # PHASE 3: Save results to database with a fresh session
             # -------------------------------------------------------
-            # We closed self.session earlier (line 429), so we need a new session to save results
+            # We closed self.session earlier (line 736), so we need a new session to save results
             # Why a new session:
             # - self.session is closed and cannot be used anymore
             # - Creating a fresh session gets a new connection from the pool
             # - No risk of "database is locked" because we're not reusing the old session
-            # - The engine we extracted at line 425 is used to create this new session
+            # - The engine we extracted at line 732 is used to create this new session
             
             db_ad_img = GeneratedImage(
                 prompt_id=prompt_id,
@@ -680,15 +834,66 @@ class AdGeneratorService:
                 model_provider=image_model_choice
             )
             
-            # Create fresh session from engine (extracted at line 425 before closing old session)
+            # Create fresh session from engine (extracted at line 732 before closing old session)
             # Context manager (with-block) ensures session is properly closed after use
             with Session(engine) as write_session:
                 try:
                     _log_sess("new write session created", write_session)
                     write_session.add(db_ad_img)     
-                    write_session.commit()
+                    write_session.flush()
                     write_session.refresh(db_ad_img)  
                     _log_sess("write session committed", write_session)
+
+                    # Update model_choice_event with GeneratedImage.id
+                    # Query the event we created earlier in self.session
+                    # .order_by(...desc) sorts by newest first 
+                    # .limit(1) returns one row 
+                    # .first() returns the first row from the result (or None if empty) 
+                    # .first() redundant but it's idiomatic, making the intent clear
+                    stmt = select(HistoryEvent).where(
+                        HistoryEvent.session_id == user_session_id,
+                        HistoryEvent.event_type == "image_model_chosen",
+                        HistoryEvent.related_id.is_(None)
+                    ).order_by(HistoryEvent.created_at.desc()).limit(1)
+                    model_choice_event = write_session.exec(stmt).first()
+                    if model_choice_event:
+                        model_choice_event.related_id = db_ad_img.id
+
+                    # History Events: reference image uploads (if any)
+                    upload_events = []
+                    if saved_reference_paths:
+                        for saved_ref in saved_reference_paths:
+                            upload_event = HistoryEvent(
+                                session_id=user_session_id,
+                                event_type="reference_image_upload",
+                                related_type="GeneratedImage",
+                                related_id=db_ad_img.id,
+                                actor="user",
+                                snapshot_data={"image_path": saved_ref}
+                            )
+                            upload_events.append(upload_event)
+
+                    # History Event: image generated
+                    image_event = HistoryEvent(
+                        session_id=user_session_id,
+                        event_type="image_generated",
+                        related_type="GeneratedImage",
+                        related_id=db_ad_img.id,
+                        actor="system",
+                        snapshot_data={
+                            "image_url": db_ad_img.image_url,
+                            "input_images": db_ad_img.input_images,
+                            "model": db_ad_img.model_provider
+                        }
+                    )
+
+                    # Add all history events and commit once
+                    # (model_choice_event is already tracked by session after query/update)
+                    if upload_events:
+                        write_session.add_all(upload_events)
+                    write_session.add(image_event)
+                    write_session.commit()
+
                 except Exception:
                     write_session.rollback()  # Undo changes if error
                     raise  # Re-raise the error to be caught by outer except
@@ -702,7 +907,7 @@ class AdGeneratorService:
             
             # Try to clean up the original request session (self.session)
             # Why nested try/except:
-            # - If error happened after we closed the session (line 429), attempting
+            # - If error happened after we closed the session (line 736), attempting
             #   rollback/close will fail because the session is already closed
             # - We don't care about cleanup errors, we care about the ORIGINAL error
             # - The inner try/except prevents cleanup errors from hiding the original error
