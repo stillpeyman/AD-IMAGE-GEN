@@ -52,9 +52,9 @@ class Agents:
         Initialize agents based on the selected provider.
 
         Args:
-            model_provider: Provider selection ("openai" or "google").
+            model_provider: Provider selection ("openai" or "gemini").
             openai_api_key: API key for OpenAI operations (optional; required when provider="openai").
-            gemini_api_key: API key for Google operations (optional; required when provider="google").
+            gemini_api_key: API key for Google operations (optional; required when provider="gemini").
 
         Raises:
             ValueError: If a required API key is missing for the selected provider.
@@ -62,7 +62,7 @@ class Agents:
         # Validate injected API keys based on provider at init (fail-fast approach)
         if model_provider == "openai" and not openai_api_key:
             raise ValueError("OpenAI API key is required when using OpenAI provider.")
-        if model_provider == "google" and not gemini_api_key:
+        if model_provider == "gemini" and not gemini_api_key:
             raise ValueError("Gemini API key is required when using Google provider.")
         
         self.openai_api_key = openai_api_key
@@ -77,7 +77,7 @@ class Agents:
                 "gpt-4.1", 
                 provider=OpenAIProvider(openai_client=client)
             )
-        elif model_provider == "google":
+        elif model_provider == "gemini":
             provider = GoogleProvider(api_key=self.gemini_api_key)
             text_model = GoogleModel("gemini-2.5-flash", provider=provider)
         else:

@@ -82,8 +82,6 @@ load_dotenv()
 OPENAI_API_KEY = os.getenv("MY_OPENAI_API_KEY")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
-# Image generation models (separate from text models)
-OPENAI_IMG_MODEL = "gpt-image-1" 
 
 # Enable debug endpoint only when ENABLE_DB_PING=true in .env
 ENABLE_DB_PING = os.getenv("ENABLE_DB_PING", "false").lower() == "true"
@@ -242,14 +240,14 @@ async def create_session(model_provider: str, db_session: Session = Depends(get_
     frontend must include with subsequent requests.
 
     Args:
-        model_provider: Provider to use for this user session ("openai" or "google").
+        model_provider: Provider to use for this user session ("openai" or "gemini").
         db_session: Per-request database connection used to write the session.
 
     Returns:
         {"user_session_id": str, "model_provider": str}
     """
-    if model_provider not in ["openai", "google"]:
-        raise HTTPException(status_code=400, detail="model_provider must be 'openai' or 'google'")
+    if model_provider not in ["openai", "gemini"]:
+        raise HTTPException(status_code=400, detail="model_provider must be 'openai' or 'gemini'")
     
     try:
         user_session_id = str(uuid.uuid4())
@@ -569,15 +567,15 @@ async def generate_image(
 
     Args:
         user_session_id: ID returned by /session/create.
-        image_model_choice: Image generation model choice ("openai" or "google").
+        image_model_choice: Image generation model choice ("openai" or "gemini").
         reference_files: Optional reference images.
 
     Returns:
         Persisted GeneratedImage (served via /static when saved locally).
     """
     # Input validation
-    if image_model_choice not in ["openai", "google"]:
-        raise HTTPException(status_code=400, detail="image_model_choice must be 'openai' or 'google'")
+    if image_model_choice not in ["openai", "gemini"]:
+        raise HTTPException(status_code=400, detail="image_model_choice must be 'openai' or 'gemini'")
         
     # File operations
     try:
@@ -644,7 +642,7 @@ async def create_complete_ad(
         raise HTTPException(status_code=400, detail="Focus slider must be between 0 and 10.")
     
     if image_model_choice not in ["openai", "google"]:
-        raise HTTPException(status_code=400, detail="image_model_choice must be 'openai' or 'google'")
+        raise HTTPException(status_code=400, detail="image_model_choice must be 'openai' or 'gemini'")
 
     # File operations
     try:
@@ -685,6 +683,179 @@ async def create_complete_ad(
 
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+
+# Helper function for formatinng history events
+def format_event_text(event: HistoryEvent) -> str:
+    """Convert HistoryEvent to readable chat-style text."""
+    snapshot = event.snapshot_data or {}
+
+    if event.event_type == "session_created":
+        provider = snapshot.get("model_provider", "unknown")
+        return f"Session started with {provider} model."
+    
+    elif event.event_type == "product_image_upload":
+        return "User uploaded product image."
+    
+    elif event.event_type == "product_image_analyzed":
+        product_type = snapshot.get("product_type", "not specified")
+        product_category = snapshot.get("product_category", "not specified")
+        provider = snapshot.get("model_provider", "unknown")
+        return (
+            f"Product analyzed by {provider}.\n"
+            f"Detected type: {product_type}, category: {product_category}."
+        )
+    
+    elif event.event_type == "moodboard_upload":
+        return "User uploaded moodboard image."
+    
+    elif event.event_type == "moodboard_image_analyzed":
+        visual_style = snapshot.get("visual_style", "not specified")
+        mood_atmo = snapshot.get("mood_atmosphere", "not specified")
+        provider = snapshot.get("model_provider", "unknown")
+        return (
+            f"Moodboard image analyzed by {provider}.\n"
+            f"Visual style: {visual_style}\n"
+            f"Mood: {mood_atmo}"
+        )
+    
+    elif event.event_type == "user_vision_submitted":
+        preview_text = snapshot.get("preview_text", "")
+        if preview_text:
+            return (
+                "User submitted their vision.\n"
+                f"Preview: {preview_text}"
+            )
+        return "User submitted their vision."
+    
+    elif event.event_type == "vision_parsed":
+        focus_subject = snapshot.get("focus_subject", "not specified")
+        setting = snapshot.get("setting", "not specified")
+        provider = snapshot.get("model_provider", "unknown")
+        return (
+            f"Vision parsed and structured by {provider}.\n"
+            f"Focus subject: {focus_subject}\n"
+            f"Setting: {setting}"
+        )
+    
+    elif event.event_type == "prompt_built":
+        focus_slider = snapshot.get("focus_slider", "unknown")
+        used_rag_examples = snapshot.get("used_rag_examples", False)
+        provider = snapshot.get("model_provider", "unknown")
+        rag_status = "Yes" if used_rag_examples else "No"
+        return (
+            f"Advertising prompt built by {provider}.\n"
+            f"Focus slider: {focus_slider}\n"
+            f"Prompt examples used: {rag_status}"
+        )
+    
+    elif event.event_type == "prompt_refined":
+        focus_slider = snapshot.get("focus_slider", "unknown")
+        refinement_count = snapshot.get("refinement_count", "unknown")
+        used_rag_examples = snapshot.get("used_rag_examples", False)
+        provider = snapshot.get("model_provider", "unknown")
+        rag_status = "Yes" if used_rag_examples else "No"
+        return (
+            f"Advertising prompt refined by {provider}.\n"
+            f"Focus slider: {focus_slider}\n"
+            f"Refinement count: {refinement_count}\n"
+            f"Prompt examples used: {rag_status}"
+        )
+    
+    elif event.event_type == "prompt_refinement_request":
+        feedback = snapshot.get("user_feedback")
+        focus_slider = snapshot.get("focus_slider")
+        
+        parts = ["User requested prompt refinement."]
+        if feedback:
+            parts.append(f"\nFeedback: {feedback}")
+        if focus_slider is not None:
+            parts.append(f"\nFocus slider: {focus_slider}")
+        
+        return "".join(parts)
+    
+    elif event.event_type == "image_model_chosen":
+        model = snapshot.get("image_model", "unknown")
+        return f"Image generation model chosen: {model}."
+    
+    elif event.event_type == "reference_image_upload":
+        return "User uploaded reference image."
+    
+    elif event.event_type == "image_generated":
+        model = snapshot.get("model", "unknown")
+        return f"Ad image generated successfully with {model} model."
+    
+    else:
+        return f"Unknown event: {event.event_type}" 
+
+
+@app.get("/sessions/{user_session_id}/history")
+async def get_session_history(
+    user_session_id: str,
+    page: int = 1,
+    limit: int = 20,
+    db_session: Session = Depends(get_db_session)
+):
+    """
+    Retrieve paginated history events for a user session.
+
+    Args:
+        user_session_id: Session ID from URL path.
+        page: Page number (default: 1). Query parameter: ?page=1
+        limit: Events per page (default: 20, max: 100). Query parameter: ?limit=20
+
+    Returns:
+        {
+            "events": [list of formatted event strings],
+            "total": int,
+            "page": int,
+            "limit": int,
+            "has_more": bool
+        }
+    """
+    # Validate pagination 
+    if limit > 100:
+        limit = 100
+    if limit < 1:
+        limit = 20
+    if page < 1:
+        page = 1
+
+    offset = (page - 1) * limit
+
+    # Query events with pagination
+    stmt = (
+        select(HistoryEvent)
+        .where(HistoryEvent.session_id == user_session_id)
+        .order_by(HistoryEvent.created_at.asc())
+        .limit(limit)
+        .offset(offset)
+    )
+    events = db_session.exec(stmt).all()
+
+    # Count total events for pagination metadata
+    total_stmt = select(HistoryEvent).where(
+        HistoryEvent.session_id == user_session_id
+    )
+    total = len(db_session.exec(total_stmt).all())
+
+    # Format events
+    formatted = []
+    for event in events:
+        formatted.append(format_event_text(event))
+    
+    # Calculate has_more: True if there are more pages after current page
+    # Example: total=100, page=1, limit=20 -> has_more=True (pages 2-5 exist)
+    # Example: total=100, page=5, limit=20 -> has_more=False (no page 6)
+    has_more = (offset + limit) < total
+    
+    return {
+        "events": formatted,
+        "total": total,      # Total events: used by frontend to show "Page 1 of 5"
+        "page": page,        # Current page: used by frontend for navigation
+        "limit": limit,      # Page size: used by frontend to calculate total pages
+        "has_more": has_more  # Convenience flag: frontend can show "Load More" button
+    }
 
 
 @app.post("/examples/save", response_model=PromptExample)

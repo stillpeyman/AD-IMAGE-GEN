@@ -164,7 +164,8 @@ class AdGeneratorService:
                 actor="system",
                 snapshot_data={
                     "product_type": db_analysis.product_type,
-                    "product_category": db_analysis.product_category
+                    "product_category": db_analysis.product_category,
+                    "model_provider": db_analysis.model_provider
                 }
             )
 
@@ -280,7 +281,8 @@ class AdGeneratorService:
                     actor="system",
                     snapshot_data={
                         "visual_style": result.visual_style,
-                        "mood_atmosphere": result.mood_atmosphere
+                        "mood_atmosphere": result.mood_atmosphere,
+                        "model_provider": db_analysis.model_provider
                     }
                 )
 
@@ -361,7 +363,8 @@ class AdGeneratorService:
                 actor="system",
                 snapshot_data={
                     "focus_subject": db_analysis.focus_subject,
-                    "setting": db_analysis.setting
+                    "setting": db_analysis.setting,
+                    "model_provider": db_analysis.model_provider
                 }
             )
             
@@ -544,7 +547,8 @@ class AdGeneratorService:
                         "focus_slider": focus_slider,
                         "refinement_count": refinement_count,
                         # Return a boolean (True/False)
-                        "used_rag_examples": len(prompt_examples) > 0
+                        "used_rag_examples": len(prompt_examples) > 0,
+                        "model_provider": db_prompt.model_provider
                     }
                 )
                 write_session.add(prompt_event)
