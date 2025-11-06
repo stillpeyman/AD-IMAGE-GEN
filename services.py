@@ -517,20 +517,19 @@ class AdGeneratorService:
             )
             
             # Save results with a fresh session
-            db_prompt = Prompt(
-                prompt_text=prompt.prompt_text,
-                image_analysis_id=image_analysis_id,
-                moodboard_analysis_ids=moodboard_analysis_ids or [],
-                user_vision_id=user_vision_id,
-                focus_slider=focus_slider,
-                refinement_count=refinement_count,
-                user_feedback=user_feedback,
-                previous_prompt_id=previous_prompt_id,
-                session_id=user_session_id,
-                model_provider=self.agents.model_provider 
-            )
-            
             with Session(engine) as write_session:
+                db_prompt = Prompt(
+                    prompt_text=prompt.prompt_text,
+                    image_analysis_id=image_analysis_id,
+                    moodboard_analysis_ids=moodboard_analysis_ids or [],
+                    user_vision_id=user_vision_id,
+                    focus_slider=focus_slider,
+                    refinement_count=refinement_count,
+                    user_feedback=user_feedback,
+                    previous_prompt_id=previous_prompt_id,
+                    session_id=user_session_id,
+                    model_provider=self.agents.model_provider 
+                )
                 write_session.add(db_prompt)
                 write_session.flush()
                 write_session.refresh(db_prompt)
@@ -830,19 +829,18 @@ class AdGeneratorService:
             # - No risk of "database is locked" because we're not reusing the old session
             # - The engine we extracted at line 732 is used to create this new session
             
-            db_ad_img = GeneratedImage(
-                prompt_id=prompt_id,
-                image_url=final_local_url,
-                input_images=used_paths,
-                session_id=user_session_id,
-                model_provider=image_model_choice
-            )
-            
             # Create fresh session from engine (extracted at line 732 before closing old session)
             # Context manager (with-block) ensures session is properly closed after use
             with Session(engine) as write_session:
                 try:
                     _log_sess("new write session created", write_session)
+                    db_ad_img = GeneratedImage(
+                        prompt_id=prompt_id,
+                        image_url=final_local_url,
+                        input_images=used_paths,
+                        session_id=user_session_id,
+                        model_provider=image_model_choice
+                    )
                     write_session.add(db_ad_img)     
                     write_session.flush()
                     write_session.refresh(db_ad_img)  

@@ -1,19 +1,20 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Slider } from "@/components/ui/slider"
 import { useAdGenerator } from "@/hooks/useAdGenerator"
+import { History } from "@/components/History"
 
 // This is the main wizard component for ad image generation
 export default function AdGeneratorWizard() {
   // Use our custom hook for all state management and API calls
   const {
     currentStep,
+    userSessionId,
     isLoading,
     error,
     formData,
@@ -22,14 +23,25 @@ export default function AdGeneratorWizard() {
     nextStep,
     prevStep,
     selectModel,
-    uploadContent,
     generatePrompt,
     refinePrompt,
     refineAndRegenerate,
     generateImage,
     resetSession,
     testConnection,
+    // History state and functions
+    historyEvents,
+    historyPage,
+    historyLimit,
+    historyTotal,
+    historyHasMore,
+    isLoadingHistory,
+    fetchHistory,
+    loadMoreHistory,
   } = useAdGenerator()
+
+  // State to toggle history visibility
+  const [showHistory, setShowHistory] = useState(false)
 
   // Test backend connection on component mount
   useEffect(() => {
@@ -127,6 +139,13 @@ export default function AdGeneratorWizard() {
     await generateImage(imageModel)
   }
 
+  // Handle refine and regenerate (from Step 5)
+  const handleRefineAndRegenerate = async () => {
+    if (formData.promptRefinement && formData.promptRefinement.trim()) {
+      await refineAndRegenerate(formData.promptRefinement)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-background p-8">
       {/* Main container with max width and centered */}
@@ -158,9 +177,20 @@ export default function AdGeneratorWizard() {
         
         {/* Progress indicator */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-4">
-            Ad Image Generator
-          </h1>
+          <div className="flex items-center justify-between mb-4">
+            <h1 className="text-3xl font-bold text-foreground">
+              Ad Image Generator
+            </h1>
+            {/* View History Button - Only show when session exists */}
+            {userSessionId && (
+              <Button
+                variant="outline"
+                onClick={() => setShowHistory(!showHistory)}
+              >
+                {showHistory ? "Hide History" : "View History"}
+              </Button>
+            )}
+          </div>
           <div className="flex items-center space-x-4">
             {[1, 2, 3, 4, 5].map((step) => (
               <div key={step} className="flex items-center">
@@ -215,16 +245,16 @@ export default function AdGeneratorWizard() {
                 <div className="flex items-center space-x-3">
                   <input
                     type="radio"
-                    id="google"
+                    id="gemini"
                     name="model"
-                    value="google"
-                    checked={formData.selectedModel === 'google'}
-                    onChange={() => handleModelSelect('google')}
+                    value="gemini"
+                    checked={formData.selectedModel === 'gemini'}
+                    onChange={() => handleModelSelect('gemini')}
                     disabled={isLoading}
                     className="w-4 h-4 text-primary"
                   />
-                  <Label htmlFor="google" className="text-lg">
-                    Google (Gemini-2.5-flash)
+                  <Label htmlFor="gemini" className="text-lg">
+                    Gemini (Gemini-2.5-flash)
                   </Label>
                 </div>
               </div>
@@ -498,15 +528,15 @@ export default function AdGeneratorWizard() {
                 <div className="flex items-center space-x-3">
                   <input
                     type="radio"
-                    id="google-img"
+                    id="gemini-img"
                     name="image-model"
-                    value="google"
-                    checked={formData.selectedImageModel === 'google'}
+                    value="gemini"
+                    checked={formData.selectedImageModel === 'gemini'}
                     onChange={(e) => updateFormData('selectedImageModel', e.target.value)}
                     className="w-4 h-4 text-primary"
                   />
-                  <Label htmlFor="google-img" className="text-lg">
-                    Google (Gemini-2.5-flash-image)
+                  <Label htmlFor="gemini-img" className="text-lg">
+                    Gemini (Gemini-2.5-flash-image)
                   </Label>
                 </div>
 
@@ -642,6 +672,42 @@ export default function AdGeneratorWizard() {
                     Your AI-generated ad image is ready!
                   </p>
                 )}
+
+                {/* Refinement Section - Only show when image is generated */}
+                {formData.generatedImage && (
+                  <div className="space-y-4 pt-6 border-t">
+                    <div>
+                      <Label htmlFor="result-refinement" className="text-sm font-medium">
+                        Refine & Regenerate (Optional)
+                      </Label>
+                      <p className="text-xs text-muted-foreground mt-1 mb-2">
+                        Not happy with the result? Provide feedback to refine the prompt and regenerate the image.
+                        <br />
+                        Examples: "Make it more photorealistic", "Fix the lighting", "Make the background less busy"
+                      </p>
+                      <Textarea
+                        id="result-refinement"
+                        className="mt-2"
+                        rows="3"
+                        placeholder="Describe how you'd like to improve the image..."
+                        value={formData.promptRefinement}
+                        onChange={(e) => updateFormData('promptRefinement', e.target.value)}
+                      />
+                    </div>
+                    
+                    {formData.promptRefinement && formData.promptRefinement.trim() && (
+                      <div className="flex justify-center">
+                        <Button
+                          onClick={handleRefineAndRegenerate}
+                          disabled={isLoading}
+                          variant="default"
+                        >
+                          {isLoading ? "Refining & Regenerating..." : "Refine & Regenerate"}
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </CardContent>
             <CardFooter className="flex justify-between">
@@ -653,6 +719,24 @@ export default function AdGeneratorWizard() {
               </Button>
             </CardFooter>
           </Card>
+        )}
+
+        {/* History Component - Show when toggled and session exists */}
+        {showHistory && userSessionId && (
+          <div className="mt-8">
+            <History
+              userSessionId={userSessionId}
+              historyEvents={historyEvents}
+              historyPage={historyPage}
+              historyTotal={historyTotal}
+              historyLimit={historyLimit}
+              historyHasMore={historyHasMore}
+              isLoadingHistory={isLoadingHistory}
+              fetchHistory={fetchHistory}
+              loadMoreHistory={loadMoreHistory}
+              error={error}
+            />
+          </div>
         )}
       </div>
     </div>

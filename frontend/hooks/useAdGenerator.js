@@ -12,6 +12,14 @@
 import { useState, useCallback } from 'react'
 import * as api from '@/lib/api'
 
+// Helper function to fix image URL if it starts with /static/
+function fixImageUrl(imageUrl) {
+  if (imageUrl && imageUrl.startsWith('/static/')) {
+    return `http://localhost:5001${imageUrl}`
+  }
+  return imageUrl
+}
+
 export function useAdGenerator() {
   // Core state
   const [currentStep, setCurrentStep] = useState(1)
@@ -19,10 +27,18 @@ export function useAdGenerator() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState(null)
 
+  // History state
+  const [historyEvents, setHistoryEvents] = useState([]) // Array of formatted event strings
+  const [historyPage, setHistoryPage] = useState(1) // Current page number
+  const [historyLimit, setHistoryLimit] = useState(20) // Events per page
+  const [historyTotal, setHistoryTotal] = useState(0) // Total events count
+  const [historyHasMore, setHistoryHasMore] = useState(false) // Pagination flag
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false) // Loading state for history
+
   // Form data state
   const [formData, setFormData] = useState({
     // Step 1: AI Model Selection
-    selectedModel: '', // 'openai' or 'google'
+    selectedModel: '', // 'openai' or 'gemini'
     
     // Step 2: Content Input
     uploadedImage: null, // File object for product image
@@ -38,7 +54,7 @@ export function useAdGenerator() {
     promptRefinement: '', // User's refinement request
     
     // Step 4: Image Generation
-    selectedImageModel: '', // 'openai' or 'google' for image generation
+    selectedImageModel: '', // 'openai' or 'gemini' for image generation
     
     // Step 5: Results
     generatedImage: null, // Generated image URL or data
@@ -106,38 +122,7 @@ export function useAdGenerator() {
     }
   }, [])
 
-  // Step 2: Upload content and analyze
-  const uploadContent = useCallback(async (file, visionText) => {
-    try {
-      setIsLoading(true)
-      clearError()
-      
-      if (!userSessionId) {
-        throw new Error('No active session. Please select a model first.')
-      }
-
-      // Update form data
-      updateFormData('uploadedFile', file)
-      updateFormData('visionText', visionText)
-
-      // Analyze product image
-      const imageAnalysis = await api.analyzeProductImage(file, userSessionId)
-      updateFormData('imageAnalysis', imageAnalysis)
-
-      // Parse user vision
-      const userVision = await api.parseUserVision(visionText, userSessionId)
-      updateFormData('userVision', userVision)
-
-      // Auto-advance to next step
-      nextStep()
-    } catch (err) {
-      setError(`Failed to process content: ${err.message}`)
-    } finally {
-      setIsLoading(false)
-    }
-  }, [userSessionId, updateFormData, nextStep, clearError])
-
-  // Step 3: Generate and review prompt
+  // Step 2: Generate and review prompt
   const generatePrompt = useCallback(async () => {
     try {
       setIsLoading(true)
@@ -216,7 +201,10 @@ export function useAdGenerator() {
 
       // Then regenerate the image with the same model
       const imageResult = await api.generateImage(userSessionId, formData.selectedImageModel)
-      updateFormData('generatedImage', imageResult.image_url || imageResult.content)
+      
+      // Fix image URL: if it starts with /static/, prepend API base URL
+      const imageUrl = fixImageUrl(imageResult.image_url || imageResult.content)
+      updateFormData('generatedImage', imageUrl)
       
     } catch (err) {
       setError(`Failed to refine and regenerate: ${err.message}`)
@@ -242,10 +230,7 @@ export function useAdGenerator() {
       const imageResult = await api.generateImage(userSessionId, imageModel, referenceFiles)
       
       // Fix image URL: if it starts with /static/, prepend API base URL
-      let imageUrl = imageResult.image_url || imageResult.content
-      if (imageUrl && imageUrl.startsWith('/static/')) {
-        imageUrl = `http://localhost:5001${imageUrl}`
-      }
+      const imageUrl = fixImageUrl(imageResult.image_url || imageResult.content)
       updateFormData('generatedImage', imageUrl)
       
       // Create preview URL for product image (client-side object URL)
@@ -262,6 +247,92 @@ export function useAdGenerator() {
       setIsLoading(false)
     }
   }, [userSessionId, formData.referenceFiles, formData.uploadedImage, updateFormData, nextStep, clearError])
+
+  // Test backend connection
+  const testConnection = useCallback(async () => {
+    try {
+      const isConnected = await api.testConnection()
+      if (!isConnected) {
+        setError('Backend server is not responding. Please check if the server is running.')
+      }
+      return isConnected
+    } catch (err) {
+      setError('Failed to connect to backend server.')
+      return false
+    }
+  }, [])
+
+  // History management functions
+  // Reset history state (called when starting new session)
+  const resetHistory = useCallback(() => {
+    setHistoryEvents([])
+    setHistoryPage(1)
+    setHistoryLimit(20)
+    setHistoryTotal(0)
+    setHistoryHasMore(false)
+    setIsLoadingHistory(false)
+  }, [])
+
+  // Fetch history events for a specific page
+  const fetchHistory = useCallback(async (page = 1, limit = 20) => {
+    try {
+      setIsLoadingHistory(true)
+      clearError()
+      
+      if (!userSessionId) {
+        throw new Error('No active session. Cannot fetch history.')
+      }
+
+      // Call the API to get history
+      const response = await api.getSessionHistory(userSessionId, page, limit)
+      
+      // Update state with response data
+      // response contains: { events, total, page, limit, has_more }
+      setHistoryEvents(response.events || [])
+      setHistoryPage(response.page || page)
+      setHistoryLimit(response.limit || limit)
+      setHistoryTotal(response.total || 0)
+      setHistoryHasMore(response.has_more || false)
+      
+    } catch (err) {
+      setError(`Failed to fetch history: ${err.message}`)
+    } finally {
+      setIsLoadingHistory(false)
+    }
+  }, [userSessionId, clearError])
+
+  // Load more history events (for pagination)
+  const loadMoreHistory = useCallback(async () => {
+    try {
+      if (!historyHasMore || isLoadingHistory) {
+        return // Don't load if no more pages or already loading
+      }
+
+      setIsLoadingHistory(true)
+      clearError()
+      
+      if (!userSessionId) {
+        throw new Error('No active session. Cannot load more history.')
+      }
+
+      // Calculate next page number
+      const nextPage = historyPage + 1
+      
+      // Fetch next page
+      const response = await api.getSessionHistory(userSessionId, nextPage, historyLimit)
+      
+      // Append new events to existing array (don't replace)
+      setHistoryEvents(prev => [...prev, ...(response.events || [])])
+      setHistoryPage(response.page || nextPage)
+      setHistoryTotal(response.total || 0)
+      setHistoryHasMore(response.has_more || false)
+      
+    } catch (err) {
+      setError(`Failed to load more history: ${err.message}`)
+    } finally {
+      setIsLoadingHistory(false)
+    }
+  }, [userSessionId, historyPage, historyLimit, historyHasMore, isLoadingHistory, clearError])
 
   // Reset everything for new session
   const resetSession = useCallback(() => {
@@ -289,21 +360,9 @@ export function useAdGenerator() {
     setCurrentStep(1)
     setUserSessionId(null)
     setError(null)
-  }, [])
-
-  // Test backend connection
-  const testConnection = useCallback(async () => {
-    try {
-      const isConnected = await api.testConnection()
-      if (!isConnected) {
-        setError('Backend server is not responding. Please check if the server is running.')
-      }
-      return isConnected
-    } catch (err) {
-      setError('Failed to connect to backend server.')
-      return false
-    }
-  }, [])
+    // Reset history when starting new session
+    resetHistory()
+  }, [resetHistory])
 
   return {
     // State
@@ -313,18 +372,30 @@ export function useAdGenerator() {
     error,
     formData,
     
+    // History state
+    historyEvents,
+    historyPage,
+    historyLimit,
+    historyTotal,
+    historyHasMore,
+    isLoadingHistory,
+    
     // Actions
     updateFormData,
     clearError,
     nextStep,
     prevStep,
     selectModel,
-    uploadContent,
     generatePrompt,
     refinePrompt,
     refineAndRegenerate,
     generateImage,
     resetSession,
     testConnection,
+    
+    // History actions
+    fetchHistory,
+    loadMoreHistory,
+    resetHistory,
   }
 }
