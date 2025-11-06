@@ -139,18 +139,8 @@ class AdGeneratorService:
                 model_provider=self.agents.model_provider  
             )
 
-            # SIDE NOTE for the following flow:
-            # self.session.add(db_analysis)
-            # self.session.flush() sends pending operations to DB
-            # -> before committing, so without finalizing the transaction
-            # Database assigns id=123, db_analysis.id available to use
-            # keeping self.session.refresh(db_analysis) -> defensive
-            # -> ensures all database-assigned values available
-            # -> useful if the DB sets defaults/triggers
-            
             self.session.add(db_analysis)
-            self.session.flush()
-            self.session.refresh(db_analysis)
+            self.session.flush()  # Gets the auto-increment ID
 
             # Update upload event with ImageAnalysis.id
             upload_event.related_id = db_analysis.id
@@ -258,13 +248,9 @@ class AdGeneratorService:
             # to the database in one call -> get IDs
             self.session.flush()
 
-            # Loop through results
-            # refresh() each result
-            # create history event for that result
-            # collect each history event in list
+            # Create history events for each analyzed moodboard
             analyzed_events = []
             for idx, result in enumerate(results):
-                self.session.refresh(result)
 
                 # Use idx (index) to get corresponding upload_event from upload_events
                 upload_event = upload_events[idx]
@@ -349,8 +335,7 @@ class AdGeneratorService:
             )
             
             self.session.add(db_analysis)
-            self.session.flush()
-            self.session.refresh(db_analysis)
+            self.session.flush()  # Gets the auto-increment ID
 
             # Update submission event with UserVision.id
             submitted_event.related_id = db_analysis.id
@@ -531,8 +516,7 @@ class AdGeneratorService:
                     model_provider=self.agents.model_provider 
                 )
                 write_session.add(db_prompt)
-                write_session.flush()
-                write_session.refresh(db_prompt)
+                write_session.flush()  # Gets the auto-increment ID
 
                 # History Event: prompt built or prompt refined
                 event_type = "prompt_refined" if is_refinement else "prompt_built"
@@ -551,6 +535,12 @@ class AdGeneratorService:
                     }
                 )
                 write_session.add(prompt_event)
+                
+                # CRITICAL: Make db_prompt independent before closing session
+                # Ensure all attributes are loaded
+                # then expunge to detach from session while keeping all data in memory
+                write_session.expunge(db_prompt)
+                
                 write_session.commit()
             
             logger.info(
@@ -842,9 +832,8 @@ class AdGeneratorService:
                         model_provider=image_model_choice
                     )
                     write_session.add(db_ad_img)     
-                    write_session.flush()
-                    write_session.refresh(db_ad_img)  
-                    _log_sess("write session committed", write_session)
+                    write_session.flush()  # Gets the auto-increment ID
+                    _log_sess("write session flushed", write_session)
 
                     # Update model_choice_event with GeneratedImage.id
                     # Query the event we created earlier in self.session
@@ -894,6 +883,11 @@ class AdGeneratorService:
                     if upload_events:
                         write_session.add_all(upload_events)
                     write_session.add(image_event)
+                    
+                    # CRITICAL: Make db_ad_img independent before closing session
+                    # This loads all data and detaches from session
+                    write_session.expunge(db_ad_img)
+                    
                     write_session.commit()
 
                 except Exception:
@@ -1091,7 +1085,6 @@ class AdGeneratorService:
 
         self.session.add(prompt_example)
         self.session.commit()
-        self.session.refresh(prompt_example)
 
         return prompt_example
 
