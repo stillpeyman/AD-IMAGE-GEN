@@ -58,13 +58,13 @@ class AdGeneratorService:
                     'gemini-2.5-flash' depending on the session's provider)
             session: Database session for persistence
             openai_api_key: OpenAI API key for image generation (optional; required when image_model_choice="openai").
-            gemini_api_key: Google API key for Gemini image generation (optional; required when image_model_choice="google").
+            gemini_api_key: Gemini API key for Gemini image generation (optional; required when image_model_choice="gemini").
         
         Attributes:
             agents: AI agents configured with the session's model provider
             session: Database session for persistence
             openai_api_key: OpenAI API key for image generation
-            gemini_api_key: Google API key for Gemini image generation
+            gemini_api_key: Gemini API key for Gemini image generation
         """
         # Store API keys and configuration
         # Note: Text analysis validation happens in Agents.__init__()
@@ -667,7 +667,7 @@ class AdGeneratorService:
 
         Args:
             prompt_id: Prompt to render.
-            image_model_choice: Image generation model choice ("openai" or "google").
+            image_model_choice: Image generation model choice ("openai" or "gemini").
             user_session_id: User session identifier to link the generated image.
             reference_image_bytes_list: Optional reference images for generation.
 
@@ -755,7 +755,7 @@ class AdGeneratorService:
                     api_key=self.openai_api_key,
                     reference_images_bytes=reference_image_bytes_list,
                 )
-            elif image_model_choice == "google":
+            elif image_model_choice == "gemini":
                 if not self.gemini_api_key:
                     raise ValueError("Gemini API key is required for Gemini image generation. Please set GEMINI_API_KEY environment variable.")
                 # Use Gemini image generator
@@ -767,7 +767,7 @@ class AdGeneratorService:
                     reference_images_bytes=reference_image_bytes_list,
                 )
             else:
-                raise ValueError(f"Unsupported image model choice: {image_model_choice}. Must be 'openai' or 'google'.")
+                raise ValueError(f"Unsupported image model choice: {image_model_choice}. Must be 'openai' or 'gemini'.")
 
             # Persist generated image locally and expose it via /static
             os.makedirs("output_images", exist_ok=True)
@@ -999,7 +999,7 @@ class AdGeneratorService:
             user_vision_text: User's scene/brand intent.
             focus_slider: Balance between product and scene (0–10).
             user_session_id: User session identifier to link all records.
-            image_model_choice: Image generation model choice ("openai" or "google").
+            image_model_choice: Image generation model choice ("openai" or "gemini").
             moodboard_image_bytes_list: Optional moodboard images.
             reference_image_bytes_list: Optional reference images for final generation.
 
@@ -1087,6 +1087,5 @@ class AdGeneratorService:
         self.session.commit()
 
         return prompt_example
-
 
 

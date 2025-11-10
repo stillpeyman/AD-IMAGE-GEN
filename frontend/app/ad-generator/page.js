@@ -2,12 +2,13 @@
 
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Slider } from "@/components/ui/slider"
 import { useAdGenerator } from "@/hooks/useAdGenerator"
 import { History } from "@/components/History"
+import { Button } from "@/components/ui/button"
+import { Switch } from "@/components/ui/switch"
 
 // This is the main wizard component for ad image generation
 export default function AdGeneratorWizard() {
@@ -42,11 +43,20 @@ export default function AdGeneratorWizard() {
 
   // State to toggle history visibility
   const [showHistory, setShowHistory] = useState(false)
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false)
+  const [showProductPreview, setShowProductPreview] = useState(false)
 
   // Test backend connection on component mount
   useEffect(() => {
     testConnection()
   }, [testConnection])
+
+  useEffect(() => {
+    if (currentStep !== 5) {
+      setIsImageModalOpen(false)
+      setShowProductPreview(false)
+    }
+  }, [currentStep])
 
   // File upload handler
   const handleFileUpload = (event) => {
@@ -148,9 +158,11 @@ export default function AdGeneratorWizard() {
 
   return (
     <div className="min-h-screen bg-background p-8">
-      {/* Main container with max width and centered */}
-      <div className="mx-auto max-w-4xl">
-        
+      {/* Main container with responsive two-column layout when history is visible */}
+      <div className="mx-auto max-w-6xl">
+        <div className="md:grid md:grid-cols-[3fr_2fr] md:gap-6">
+          <div>
+            
         {/* Error display */}
         {error && (
           <div className="mb-4 p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
@@ -181,14 +193,18 @@ export default function AdGeneratorWizard() {
             <h1 className="text-3xl font-bold text-foreground">
               Ad Image Generator
             </h1>
-            {/* View History Button - Only show when session exists */}
+            {/* History Toggle - show after session exists */}
             {userSessionId && (
-              <Button
-                variant="outline"
-                onClick={() => setShowHistory(!showHistory)}
-              >
-                {showHistory ? "Hide History" : "View History"}
-              </Button>
+              <div className="flex items-center gap-2">
+                <Label htmlFor="history-toggle" className="text-sm font-medium">
+                  History
+                </Label>
+                <Switch
+                  id="history-toggle"
+                  checked={showHistory}
+                  onCheckedChange={setShowHistory}
+                />
+              </div>
             )}
           </div>
           <div className="flex items-center space-x-4">
@@ -214,8 +230,8 @@ export default function AdGeneratorWizard() {
             ))}
           </div>
         </div>
-
-        {/* Step 1: Session Setup */}
+        
+            {/* Step 1: Session Setup */}
         {currentStep === 1 && (
           <Card>
             <CardHeader>
@@ -617,56 +633,58 @@ export default function AdGeneratorWizard() {
             <CardHeader>
               <CardTitle className="text-2xl">Step 5: Your Ad Image</CardTitle>
               <CardDescription>
-                Compare your original product image with the AI-generated ad!
+                Review the generated ad image, expand it for a closer look, and compare with the product photo when needed.
               </CardDescription>
             </CardHeader>
             <CardContent>
               {/* Result display - side by side comparison */}
               <div className="space-y-6">
-                {formData.generatedImage || formData.productImagePreview ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Product Image */}
-                    <div className="space-y-2">
-                      <h3 className="text-lg font-semibold text-center">Original Product</h3>
-                      {formData.productImagePreview ? (
-                        <div className="border rounded-lg overflow-hidden bg-muted">
-                          <img 
-                            src={formData.productImagePreview} 
-                            alt="Original Product" 
-                            className="w-full h-auto object-contain"
-                          />
-                        </div>
-                      ) : (
-                        <div className="border rounded-lg bg-muted p-8 text-center">
-                          <p className="text-muted-foreground text-sm">Product image not available</p>
-                        </div>
-                      )}
+                {formData.generatedImage ? (
+                  <div className="flex flex-col items-center gap-4">
+                    <div className="w-full">
+                      <button
+                        type="button"
+                        onClick={() => setIsImageModalOpen(true)}
+                        className="w-full overflow-hidden rounded-lg border bg-muted focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                      >
+                        <img
+                          src={formData.generatedImage}
+                          alt="Generated Ad"
+                          className="mx-auto max-h-[420px] w-full object-contain transition-transform hover:scale-[1.01]"
+                        />
+                      </button>
                     </div>
-                    
-                    {/* Generated Ad Image */}
-                    <div className="space-y-2">
-                      <h3 className="text-lg font-semibold text-center">Generated Ad</h3>
-                      {formData.generatedImage ? (
-                        <div className="border rounded-lg overflow-hidden bg-muted">
-                          <img 
-                            src={formData.generatedImage} 
-                            alt="Generated Ad" 
-                            className="w-full h-auto object-contain"
-                          />
-                        </div>
-                      ) : (
-                        <div className="border rounded-lg bg-muted p-8 text-center">
-                          <p className="text-muted-foreground text-sm">Generated image will appear here...</p>
-                        </div>
-                      )}
-                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Click the image to view it in a larger overlay.
+                    </p>
                   </div>
                 ) : (
                   <div className="bg-muted p-8 rounded-lg text-center">
-                    <p className="text-muted-foreground">Images will appear here...</p>
+                    <p className="text-muted-foreground">Generated image will appear here after you run image generation.</p>
                   </div>
                 )}
-                
+
+                {formData.productImagePreview && (
+                  <div className="w-full space-y-3">
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowProductPreview((prev) => !prev)}
+                    >
+                      {showProductPreview ? "Hide Product Image" : "Show Product Image for Comparison"}
+                    </Button>
+                    {showProductPreview && (
+                      <div className="border rounded-lg bg-muted p-4">
+                        <h3 className="text-sm font-semibold text-center mb-2">Original Product</h3>
+                        <img
+                          src={formData.productImagePreview}
+                          alt="Original Product"
+                          className="mx-auto max-h-[220px] w-auto object-contain"
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {formData.generatedImage && (
                   <p className="text-center text-sm text-primary font-medium">
                     Your AI-generated ad image is ready!
@@ -721,21 +739,52 @@ export default function AdGeneratorWizard() {
           </Card>
         )}
 
-        {/* History Component - Show when toggled and session exists */}
-        {showHistory && userSessionId && (
-          <div className="mt-8">
-            <History
-              userSessionId={userSessionId}
-              historyEvents={historyEvents}
-              historyPage={historyPage}
-              historyTotal={historyTotal}
-              historyLimit={historyLimit}
-              historyHasMore={historyHasMore}
-              isLoadingHistory={isLoadingHistory}
-              fetchHistory={fetchHistory}
-              loadMoreHistory={loadMoreHistory}
-              error={error}
-            />
+          </div>
+
+          {/* History Component - Right column when toggled and session exists */}
+          {showHistory && userSessionId && (
+            <aside className="mt-8 md:mt-0">
+              <History
+                userSessionId={userSessionId}
+                historyEvents={historyEvents}
+                historyPage={historyPage}
+                historyTotal={historyTotal}
+                historyLimit={historyLimit}
+                historyHasMore={historyHasMore}
+                isLoadingHistory={isLoadingHistory}
+                fetchHistory={fetchHistory}
+                loadMoreHistory={loadMoreHistory}
+                error={error}
+              />
+            </aside>
+          )}
+        </div>
+        {/* Generated image modal preview */}
+        {isImageModalOpen && formData.generatedImage && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-6"
+            onClick={() => setIsImageModalOpen(false)}
+          >
+            <div
+              className="relative max-h-[90vh] w-full max-w-5xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Button
+                variant="outline"
+                size="sm"
+                className="absolute right-4 top-4 z-10"
+                onClick={() => setIsImageModalOpen(false)}
+              >
+                Close
+              </Button>
+              <div className="overflow-auto rounded-lg bg-background p-4">
+                <img
+                  src={formData.generatedImage}
+                  alt="Generated Ad Full View"
+                  className="mx-auto h-full w-full object-contain"
+                />
+              </div>
+            </div>
           </div>
         )}
       </div>

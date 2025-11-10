@@ -28,7 +28,7 @@ export function useAdGenerator() {
   const [error, setError] = useState(null)
 
   // History state
-  const [historyEvents, setHistoryEvents] = useState([]) // Array of formatted event strings
+  const [historyEvents, setHistoryEvents] = useState([]) // Array of history event objects
   const [historyPage, setHistoryPage] = useState(1) // Current page number
   const [historyLimit, setHistoryLimit] = useState(20) // Events per page
   const [historyTotal, setHistoryTotal] = useState(0) // Total events count

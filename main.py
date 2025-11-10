@@ -627,7 +627,7 @@ async def create_complete_ad(
         focus_slider: Balance between product and scene (0–10).
         product_file: Product image file upload.
         user_session_id: ID returned by /session/create.
-        image_model_choice: Image generation model choice ("openai" or "google").
+        image_model_choice: Image generation model choice ("openai" or "gemini").
         moodboard_files: Optional moodboard images.
         reference_files: Optional reference images for generation.
 
@@ -641,7 +641,7 @@ async def create_complete_ad(
     if not (0 <= focus_slider <= 10):
         raise HTTPException(status_code=400, detail="Focus slider must be between 0 and 10.")
     
-    if image_model_choice not in ["openai", "google"]:
+    if image_model_choice not in ["openai", "gemini"]:
         raise HTTPException(status_code=400, detail="image_model_choice must be 'openai' or 'gemini'")
 
     # File operations
@@ -842,7 +842,11 @@ async def get_session_history(
     # Format events
     formatted = []
     for event in events:
-        formatted.append(format_event_text(event))
+        formatted.append({
+            "id": event.id,
+            "text": format_event_text(event),
+            "created_at": event.created_at.isoformat()
+        })
     
     # Calculate has_more: True if there are more pages after current page
     # Example: total=100, page=1, limit=20 -> has_more=True (pages 2-5 exist)
@@ -922,4 +926,3 @@ if __name__ == "__main__":
         reload=True,  # Only for development
         log_level="info"
     )
-

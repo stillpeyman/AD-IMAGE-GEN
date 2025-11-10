@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button"
  * Displays session history events in a chat-style format with pagination.
  * 
  * @param {string} userSessionId - Session ID (required to fetch history)
- * @param {string[]} historyEvents - Array of formatted event strings
+ * @param {Array<{ id: number | null, text: string, created_at: string | null }>} historyEvents - Array of history event objects
  * @param {number} historyPage - Current page number
  * @param {number} historyTotal - Total number of events
  * @param {number} historyLimit - Events per page
@@ -77,17 +77,30 @@ export function History({
             <div className="space-y-3">
               {/* Events List - Chat Style */}
               <div className="space-y-3 max-h-[600px] overflow-y-auto">
-                {historyEvents.map((event, index) => (
-                  <div
-                    key={index}
-                    className="bg-muted p-4 rounded-lg border"
-                  >
-                    {/* Event Text - Preserve line breaks */}
-                    <p className="text-foreground whitespace-pre-wrap text-sm">
-                      {event}
-                    </p>
-                  </div>
-                ))}
+                {historyEvents.map((event, index) => {
+                  const displayTime = event?.created_at
+                    ? new Date(event.created_at).toLocaleString()
+                    : null
+
+                  return (
+                    <div
+                      key={event?.id ?? index}
+                      className="bg-muted p-4 rounded-lg border"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        {/* Event Text - Preserve line breaks */}
+                        <p className="text-foreground whitespace-pre-wrap text-sm flex-1">
+                          {event?.text ?? ""}
+                        </p>
+                        {displayTime && (
+                          <span className="text-xs text-muted-foreground whitespace-nowrap">
+                            {displayTime}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })}
               </div>
 
               {/* Pagination Info */}
