@@ -417,9 +417,23 @@ export default function AdGeneratorWizard() {
               <Button variant="outline" onClick={prevStep} disabled={isLoading}>
                 Previous
               </Button>
-              <Button onClick={handleGeneratePrompt} disabled={isLoading || !formData.uploadedImage || !formData.visionText}>
-                Generate Prompt
-              </Button>
+              <div className="space-x-3">
+                {/* If prompt already exists, show both "Continue" and "Regenerate Prompt" buttons */}
+                {formData.generatedPrompt ? (
+                  <>
+                    <Button variant="outline" onClick={handleGeneratePrompt} disabled={isLoading || !formData.uploadedImage || !formData.visionText}>
+                      Regenerate Prompt
+                    </Button>
+                    <Button onClick={nextStep} disabled={isLoading}>
+                      Continue
+                    </Button>
+                  </>
+                ) : (
+                  <Button onClick={handleGeneratePrompt} disabled={isLoading || !formData.uploadedImage || !formData.visionText}>
+                    Generate Prompt
+                  </Button>
+                )}
+              </div>
             </CardFooter>
           </Card>
         )}
@@ -617,12 +631,30 @@ export default function AdGeneratorWizard() {
               <Button variant="outline" onClick={prevStep} disabled={isLoading}>
                 Previous
               </Button>
-              <Button 
-                onClick={() => handleImageGeneration(formData.selectedImageModel)}
-                disabled={isLoading || !formData.selectedImageModel}
-              >
-                Generate Image
-              </Button>
+              <div className="space-x-3">
+                {/* If image already exists, show both "Continue" and "Regenerate Image" buttons */}
+                {formData.generatedImage ? (
+                  <>
+                    <Button 
+                      variant="outline"
+                      onClick={() => handleImageGeneration(formData.selectedImageModel)}
+                      disabled={isLoading || !formData.selectedImageModel}
+                    >
+                      Regenerate Image
+                    </Button>
+                    <Button onClick={nextStep} disabled={isLoading}>
+                      Continue
+                    </Button>
+                  </>
+                ) : (
+                  <Button 
+                    onClick={() => handleImageGeneration(formData.selectedImageModel)}
+                    disabled={isLoading || !formData.selectedImageModel}
+                  >
+                    Generate Image
+                  </Button>
+                )}
+              </div>
             </CardFooter>
           </Card>
         )}

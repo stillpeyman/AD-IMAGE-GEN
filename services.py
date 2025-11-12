@@ -324,6 +324,7 @@ class AdGeneratorService:
             analysis = await self.agents.parse_user_vision(user_text)
             
             db_analysis = UserVision(
+                original_text=user_text,  # Store original text for display after refresh
                 focus_subject=analysis.focus_subject,
                 action=analysis.action,
                 setting=analysis.setting,
@@ -806,7 +807,7 @@ class AdGeneratorService:
                 final_local_url = data_url
 
             # Store the exact file paths used for generation
-            # product_image_path is guaranteed to exist (validated at lines 708-709)
+            # product_image_path is guaranteed to exist (validated at lines 707-708)
             used_paths = [product_image_path]
             used_paths.extend(saved_reference_paths)
             

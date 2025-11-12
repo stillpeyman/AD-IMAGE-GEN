@@ -75,6 +75,7 @@ class MoodboardAnalysis(SQLModel, table=True):
 class UserVision(SQLModel, table=True):
     """Stores structured user vision input."""
     id: int | None = Field(default=None, primary_key=True)
+    original_text: str  # Original user vision text input (for display after refresh)
     focus_subject: str
     action: str
     setting: str

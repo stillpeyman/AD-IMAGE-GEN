@@ -155,6 +155,9 @@ app.add_middleware(
 # Serve generated images from local disk under /static
 app.mount("/static", StaticFiles(directory="output_images"), name="static")
 
+# Serve uploaded images from local disk under /uploads
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+
 
 # 4) Dependency and Service functions
 def get_db_session():
@@ -860,6 +863,77 @@ async def get_session_history(
         "limit": limit,      # Page size: used by frontend to calculate total pages
         "has_more": has_more  # Convenience flag: frontend can show "Load More" button
     }
+
+
+@app.get("/sessions/{user_session_id}/status")
+async def get_session_status(
+    user_session_id: str,
+    db_session: Session = Depends(get_db_session)
+):
+    """
+    Get session status with all analyses, prompt, and generated image.
+    
+    Used for restoring session state after page refresh.
+    
+    Args:
+        user_session_id: Session ID from URL path.
+        
+    Returns:
+        {
+            "session_id": str,
+            "model_provider": str,
+            "image_analysis": ImageAnalysis | None,
+            "moodboard_analyses": list[MoodboardAnalysis],
+            "user_vision": UserVision | None,
+            "prompt": Prompt | None,
+            "generated_image": GeneratedImage | None
+        }
+    """
+    try:
+        # Get session
+        session = db_session.get(UserSession, user_session_id)
+        if not session:
+            raise HTTPException(status_code=404, detail="Session not found")
+        
+        # Get image analysis (product image)
+        image_analysis = db_session.exec(
+            select(ImageAnalysis).where(ImageAnalysis.session_id == user_session_id)
+        ).first()
+        
+        # Get moodboard analyses
+        moodboard_analyses = db_session.exec(
+            select(MoodboardAnalysis).where(MoodboardAnalysis.session_id == user_session_id)
+        ).all()
+        
+        # Get user vision
+        user_vision = db_session.exec(
+            select(UserVision).where(UserVision.session_id == user_session_id)
+        ).first()
+        
+        # Get latest prompt
+        prompt = db_session.exec(
+            select(Prompt).where(Prompt.session_id == user_session_id).order_by(Prompt.id.desc())
+        ).first()
+        
+        # Get latest generated image
+        generated_image = db_session.exec(
+            select(GeneratedImage).where(GeneratedImage.session_id == user_session_id).order_by(GeneratedImage.id.desc())
+        ).first()
+        
+        return {
+            "session_id": session.id,
+            "model_provider": session.model_provider,
+            "image_analysis": image_analysis.model_dump() if image_analysis else None,
+            "moodboard_analyses": [mb.model_dump() for mb in moodboard_analyses] if moodboard_analyses else [],
+            "user_vision": user_vision.model_dump() if user_vision else None,
+            "prompt": prompt.model_dump() if prompt else None,
+            "generated_image": generated_image.model_dump() if generated_image else None
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get session status: {str(e)}")
 
 
 @app.post("/examples/save", response_model=PromptExample)

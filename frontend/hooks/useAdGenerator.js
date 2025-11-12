@@ -9,16 +9,20 @@
  * - Error handling
  */
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import * as api from '@/lib/api'
 
-// Helper function to fix image URL if it starts with /static/
+// Helper function to fix image URL if it starts with /static/ or /uploads/
 function fixImageUrl(imageUrl) {
-  if (imageUrl && imageUrl.startsWith('/static/')) {
+  if (!imageUrl) return imageUrl
+  if (imageUrl.startsWith('/static/') || imageUrl.startsWith('/uploads/')) {
     return `http://localhost:5001${imageUrl}`
   }
   return imageUrl
 }
+
+// localStorage key for session ID
+const SESSION_STORAGE_KEY = 'adSessionId'
 
 export function useAdGenerator() {
   // Core state
@@ -106,6 +110,9 @@ export function useAdGenerator() {
       const sessionId = await api.createSession(model)
       setUserSessionId(sessionId)
       
+      // Store session ID in localStorage for page refresh support
+      localStorage.setItem(SESSION_STORAGE_KEY, sessionId)
+      
       // Update form data and advance immediately
       setFormData(prev => ({
         ...prev,
@@ -120,7 +127,7 @@ export function useAdGenerator() {
     } finally {
       setIsLoading(false)
     }
-  }, [])
+  }, [clearError])
 
   // Step 2: Generate and review prompt
   const generatePrompt = useCallback(async () => {
@@ -334,6 +341,88 @@ export function useAdGenerator() {
     }
   }, [userSessionId, historyPage, historyLimit, historyHasMore, isLoadingHistory, clearError])
 
+  // Restore session state from backend (for page refresh support)
+  const restoreSession = useCallback(async (sessionId) => {
+    try {
+      setIsLoading(true)
+      clearError()
+      
+      // Fetch session status from backend
+      const status = await api.getSessionStatus(sessionId)
+      
+      // Restore session ID and model provider
+      setUserSessionId(status.session_id)
+      updateFormData('selectedModel', status.model_provider)
+      
+      // Restore image analysis
+      if (status.image_analysis) {
+        updateFormData('imageAnalysis', status.image_analysis)
+        // Convert image path to server URL for product image preview
+        if (status.image_analysis.image_path) {
+          const productImageUrl = fixImageUrl(status.image_analysis.image_path)
+          updateFormData('productImagePreview', productImageUrl)
+        }
+      }
+      
+      // Restore user vision
+      if (status.user_vision) {
+        updateFormData('userVision', status.user_vision)
+        // Restore original text input for display in Step 2
+        if (status.user_vision.original_text) {
+          updateFormData('visionText', status.user_vision.original_text)
+        }
+      }
+      
+      // Restore prompt
+      if (status.prompt) {
+        updateFormData('generatedPrompt', status.prompt.prompt_text)
+        updateFormData('focusSlider', status.prompt.focus_slider)
+      }
+      
+      // Restore generated image
+      if (status.generated_image) {
+        const imageUrl = fixImageUrl(status.generated_image.image_url)
+        updateFormData('generatedImage', imageUrl)
+        // Also restore selected image model if available
+        if (status.generated_image.model_provider) {
+          updateFormData('selectedImageModel', status.generated_image.model_provider)
+        }
+      }
+      
+      // Determine correct step based on what exists
+      let targetStep = 1
+      if (status.generated_image) {
+        targetStep = 5 // Generated image exists -> Step 5
+      } else if (status.prompt) {
+        targetStep = 4 // Prompt exists but no image -> Step 4
+      } else if (status.image_analysis || status.user_vision) {
+        targetStep = 3 // Analysis exists but no prompt -> Step 3 (shouldn't happen, but handle it)
+      } else if (status.session_id) {
+        targetStep = 2 // Session exists but no analysis -> Step 2
+      }
+      
+      setCurrentStep(targetStep)
+      
+    } catch (err) {
+      // If restoration fails, clear localStorage and start fresh
+      console.error('Failed to restore session:', err)
+      localStorage.removeItem(SESSION_STORAGE_KEY)
+      setError(`Failed to restore session: ${err.message}`)
+    } finally {
+      setIsLoading(false)
+    }
+  }, [clearError, updateFormData])
+
+  // Restore session on mount if sessionId exists in localStorage
+  useEffect(() => {
+    const savedSessionId = localStorage.getItem(SESSION_STORAGE_KEY)
+    if (savedSessionId && !userSessionId) {
+      // Only restore if we don't already have a session (prevents double restoration)
+      restoreSession(savedSessionId)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // Only run on mount - restoreSession is stable and doesn't need to be in deps
+
   // Reset everything for new session
   const resetSession = useCallback(() => {
     // Clean up object URL to prevent memory leaks
@@ -360,6 +449,8 @@ export function useAdGenerator() {
     setCurrentStep(1)
     setUserSessionId(null)
     setError(null)
+    // Clear session ID from localStorage
+    localStorage.removeItem(SESSION_STORAGE_KEY)
     // Reset history when starting new session
     resetHistory()
   }, [resetHistory])
