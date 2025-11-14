@@ -79,7 +79,14 @@ export function History({
               <div className="space-y-3 max-h-[600px] overflow-y-auto">
                 {historyEvents.map((event, index) => {
                   const displayTime = event?.created_at
-                    ? new Date(event.created_at).toLocaleString()
+                    ? new Date(event.created_at).toLocaleString(navigator.language, {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        timeZoneName: 'short'
+                      })
                     : null
 
                   return (

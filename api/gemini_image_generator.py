@@ -13,7 +13,6 @@ from io import BytesIO
 
 # third-party imports  
 from google import genai
-from google.genai import types
 
 
 async def generate_image_data_url(
@@ -54,6 +53,7 @@ async def generate_image_data_url(
     )
     
     # Convert product image to PIL Image object
+    # io.BytesIO creates a file-like object necessary for PIL.Image.open()
     product_image = Image.open(BytesIO(product_image_bytes))
     
     # Create contents list with text prompt first, then images

@@ -159,9 +159,9 @@ export default function AdGeneratorWizard() {
   return (
     <div className="min-h-screen bg-background p-8">
       {/* Main container with responsive two-column layout when history is visible */}
-      <div className="mx-auto max-w-6xl">
-        <div className="md:grid md:grid-cols-[3fr_2fr] md:gap-6">
-          <div>
+      <div className="mx-auto max-w-7xl">
+        <div className={showHistory && userSessionId ? "md:grid md:grid-cols-[3fr_2fr] md:gap-6" : ""}>
+          <div className={showHistory && userSessionId ? "" : "mx-auto max-w-4xl"}>
             
         {/* Error display */}
         {error && (
@@ -275,6 +275,14 @@ export default function AdGeneratorWizard() {
                 </div>
               </div>
             </CardContent>
+            <CardFooter className="flex justify-end">
+              <Button 
+                onClick={nextStep} 
+                disabled={isLoading || !formData.selectedModel}
+              >
+                Continue
+              </Button>
+            </CardFooter>
           </Card>
         )}
 
@@ -809,11 +817,11 @@ export default function AdGeneratorWizard() {
               >
                 Close
               </Button>
-              <div className="overflow-auto rounded-lg bg-background p-4">
+              <div className="overflow-auto rounded-lg bg-background p-4 max-h-[90vh]">
                 <img
                   src={formData.generatedImage}
                   alt="Generated Ad Full View"
-                  className="mx-auto h-full w-full object-contain"
+                  className="mx-auto max-h-full max-w-full object-contain"
                 />
               </div>
             </div>

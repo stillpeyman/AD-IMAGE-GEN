@@ -80,19 +80,81 @@ export function useAdGenerator() {
     setError(null)
   }, [])
 
+  // History management functions - defined early to avoid dependency order issues
+  // Helper function to refresh history (can be called from any function)
+  const refreshHistory = useCallback(async (sessionId) => {
+    if (!sessionId) return
+    
+    try {
+      const historyResponse = await api.getSessionHistory(sessionId, 1, 20)
+      setHistoryEvents(historyResponse.events || [])
+      setHistoryPage(historyResponse.page || 1)
+      setHistoryLimit(historyResponse.limit || 20)
+      setHistoryTotal(historyResponse.total || 0)
+      setHistoryHasMore(historyResponse.has_more || false)
+    } catch (historyErr) {
+      // If history fetch fails, don't block the workflow
+      console.error('Failed to refresh history:', historyErr)
+    }
+  }, [])
+
   // Navigation functions
   const nextStep = useCallback(() => {
-    // Validation based on current step (Step 1 auto-advances)
-    if (currentStep === 2 && !formData.uploadedImage) {
-      setError('Please upload a product image before proceeding.')
-      return
-    }
-    if (currentStep === 4 && !formData.selectedImageModel) {
-      setError('Please select an image generation model before proceeding.')
+    clearError()
+    
+    // Step 1 → Step 2: Must have model selected
+    if (currentStep === 1) {
+      if (!formData.selectedModel) {
+        setError('Please select a model before proceeding.')
+        return
+      }
+      setCurrentStep(2)
       return
     }
     
-    clearError()
+    // Step 2 → Step 3: Allow if prompt exists (already completed), otherwise validate
+    if (currentStep === 2) {
+      if (formData.generatedPrompt) {
+        // Step was already completed, allow navigation
+        setCurrentStep(3)
+        return
+      }
+      // Step not completed, validate before allowing
+      if (!formData.uploadedImage || !formData.visionText) {
+        setError('Please upload a product image and enter your vision before proceeding.')
+        return
+      }
+      setCurrentStep(3)
+      return
+    }
+    
+    // Step 3 → Step 4: Allow if prompt exists (step was completed)
+    if (currentStep === 3) {
+      if (!formData.generatedPrompt) {
+        setError('Please generate a prompt before proceeding.')
+        return
+      }
+      setCurrentStep(4)
+      return
+    }
+    
+    // Step 4 → Step 5: Allow if image exists (already completed), otherwise validate
+    if (currentStep === 4) {
+      if (formData.generatedImage) {
+        // Step was already completed, allow navigation
+        setCurrentStep(5)
+        return
+      }
+      // Step not completed, validate before allowing
+      if (!formData.selectedImageModel) {
+        setError('Please select an image generation model before proceeding.')
+        return
+      }
+      setCurrentStep(5)
+      return
+    }
+    
+    // Default: just advance (shouldn't reach here for Step 5)
     setCurrentStep(prev => prev + 1)
   }, [currentStep, formData, clearError])
 
@@ -156,6 +218,9 @@ export function useAdGenerator() {
       )
       updateFormData('generatedPrompt', promptResult.prompt_text || promptResult.content)
       
+      // Refresh history to show the new "prompt_built" event
+      await refreshHistory(userSessionId)
+      
       // Advance to Step 3 after successful prompt generation
       setCurrentStep(3)
       
@@ -164,7 +229,7 @@ export function useAdGenerator() {
     } finally {
       setIsLoading(false)
     }
-  }, [userSessionId, formData, updateFormData, clearError, setCurrentStep])
+  }, [userSessionId, formData, updateFormData, clearError, refreshHistory])
 
   // Step 3: Refine prompt
   const refinePrompt = useCallback(async (refinementText, focusSlider = null) => {
@@ -184,12 +249,15 @@ export function useAdGenerator() {
         updateFormData('focusSlider', focusSlider)
       }
       
+      // Refresh history to show the new "prompt_refined" event
+      await refreshHistory(userSessionId)
+      
     } catch (err) {
       setError(`Failed to refine prompt: ${err.message}`)
     } finally {
       setIsLoading(false)
     }
-  }, [userSessionId, updateFormData, clearError])
+  }, [userSessionId, updateFormData, clearError, refreshHistory])
 
   // Refine prompt and regenerate image (from Step 5)
   const refineAndRegenerate = useCallback(async (refinementText) => {
@@ -213,12 +281,15 @@ export function useAdGenerator() {
       const imageUrl = fixImageUrl(imageResult.image_url || imageResult.content)
       updateFormData('generatedImage', imageUrl)
       
+      // Refresh history to show the new "prompt_refined" and "image_generated" events
+      await refreshHistory(userSessionId)
+      
     } catch (err) {
       setError(`Failed to refine and regenerate: ${err.message}`)
     } finally {
       setIsLoading(false)
     }
-  }, [userSessionId, formData.selectedImageModel, updateFormData, clearError])
+  }, [userSessionId, formData.selectedImageModel, updateFormData, clearError, refreshHistory])
 
   // Step 4: Generate image
   const generateImage = useCallback(async (imageModel) => {
@@ -240,11 +311,28 @@ export function useAdGenerator() {
       const imageUrl = fixImageUrl(imageResult.image_url || imageResult.content)
       updateFormData('generatedImage', imageUrl)
       
-      // Create preview URL for product image (client-side object URL)
-      if (formData.uploadedImage) {
-        const productImageUrl = URL.createObjectURL(formData.uploadedImage)
-        updateFormData('productImagePreview', productImageUrl)
+      // Set product image preview from backend (persistent source)
+      // First try to get from session status (backend stores image_path)
+      try {
+        const status = await api.getSessionStatus(userSessionId)
+        if (status.image_analysis?.image_path) {
+          const productImageUrl = fixImageUrl(status.image_analysis.image_path)
+          updateFormData('productImagePreview', productImageUrl)
+        } else if (formData.uploadedImage) {
+          // Fallback to client-side object URL if backend doesn't have it yet
+          const productImageUrl = URL.createObjectURL(formData.uploadedImage)
+          updateFormData('productImagePreview', productImageUrl)
+        }
+      } catch (statusErr) {
+        // If session status fetch fails, fallback to client-side object URL
+        if (formData.uploadedImage) {
+          const productImageUrl = URL.createObjectURL(formData.uploadedImage)
+          updateFormData('productImagePreview', productImageUrl)
+        }
       }
+      
+      // Refresh history to show the new "image_generated" event
+      await refreshHistory(userSessionId)
       
       // Auto-advance to next step
       nextStep()
@@ -253,7 +341,7 @@ export function useAdGenerator() {
     } finally {
       setIsLoading(false)
     }
-  }, [userSessionId, formData.referenceFiles, formData.uploadedImage, updateFormData, nextStep, clearError])
+  }, [userSessionId, formData.referenceFiles, formData.uploadedImage, updateFormData, nextStep, clearError, refreshHistory])
 
   // Test backend connection
   const testConnection = useCallback(async () => {
@@ -350,6 +438,14 @@ export function useAdGenerator() {
       // Fetch session status from backend
       const status = await api.getSessionStatus(sessionId)
       
+      // Check if session exists (backend returns 200 with session_exists=false for missing sessions)
+      if (!status.session_exists) {
+        // Session doesn't exist (stale localStorage), clear it silently and start fresh
+        localStorage.removeItem(SESSION_STORAGE_KEY)
+        setCurrentStep(1)
+        return
+      }
+      
       // Restore session ID and model provider
       setUserSessionId(status.session_id)
       updateFormData('selectedModel', status.model_provider)
@@ -404,7 +500,7 @@ export function useAdGenerator() {
       setCurrentStep(targetStep)
       
     } catch (err) {
-      // If restoration fails, clear localStorage and start fresh
+      // If restoration fails due to network/API error, clear localStorage and start fresh
       console.error('Failed to restore session:', err)
       localStorage.removeItem(SESSION_STORAGE_KEY)
       setError(`Failed to restore session: ${err.message}`)

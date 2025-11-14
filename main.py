@@ -211,7 +211,7 @@ def on_startup() -> None:
     FastAPI startup event handler.
     
     Called once when the application starts, before accepting any requests.
-    Creates all database tables if they don't exist yet (idempotent operation).
+    Creates all database tables if they don't exist yet (idempotent operation -> ).
     """
     create_db_and_tables()
 
@@ -880,20 +880,36 @@ async def get_session_status(
         
     Returns:
         {
-            "session_id": str,
-            "model_provider": str,
+            "session_exists": bool,
+            "session_id": str | None,
+            "model_provider": str | None,
             "image_analysis": ImageAnalysis | None,
             "moodboard_analyses": list[MoodboardAnalysis],
             "user_vision": UserVision | None,
             "prompt": Prompt | None,
             "generated_image": GeneratedImage | None
         }
+        
+    Note:
+        Returns 200 OK even if session doesn't exist, with session_exists=False.
+        This prevents 404 errors in logs when frontend tries to restore stale sessions.
     """
     try:
         # Get session
         session = db_session.get(UserSession, user_session_id)
         if not session:
-            raise HTTPException(status_code=404, detail="Session not found")
+            # Return 200 with session_exists=False instead of 404
+            # This is expected behavior when restoring stale sessions from localStorage
+            return {
+                "session_exists": False,
+                "session_id": None,
+                "model_provider": None,
+                "image_analysis": None,
+                "moodboard_analyses": [],
+                "user_vision": None,
+                "prompt": None,
+                "generated_image": None
+            }
         
         # Get image analysis (product image)
         image_analysis = db_session.exec(
@@ -921,6 +937,7 @@ async def get_session_status(
         ).first()
         
         return {
+            "session_exists": True,
             "session_id": session.id,
             "model_provider": session.model_provider,
             "image_analysis": image_analysis.model_dump() if image_analysis else None,
@@ -930,8 +947,6 @@ async def get_session_status(
             "generated_image": generated_image.model_dump() if generated_image else None
         }
         
-    except HTTPException:
-        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to get session status: {str(e)}")
 
