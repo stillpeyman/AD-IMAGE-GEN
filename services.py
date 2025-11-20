@@ -252,7 +252,7 @@ class AdGeneratorService:
                     snapshot_data={
                         "visual_style": result.visual_style,
                         "mood_atmosphere": result.mood_atmosphere,
-                        "model_provider": db_analysis.model_provider
+                        "model_provider": result.model_provider
                     }
                 )
 
@@ -1068,5 +1068,3 @@ class AdGeneratorService:
         self.session.commit()
 
         return prompt_example
-
-

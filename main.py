@@ -763,33 +763,6 @@ async def save_prompt_example(
         raise HTTPException(status_code=400, detail=str(e)) from e
 
 
-@app.post("/test/text-only")
-async def test_text_only(
-    # Required user parameters first
-    text: str,
-    user_session_id: str,
-    # Dependency injection last
-    service: AdGeneratorService = Depends(get_service)
-):
-    """
-    Test-only: parse user vision text without images.
-
-    Args:
-        text: User-provided text.
-        user_session_id: ID returned by /session/create.
-
-    Returns:
-        Persisted UserVision.
-    """
-    try:
-        # Simple test - just parse user vision text (no images)
-        result = await service.parse_user_vision(text, user_session_id)
-        return result
-
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e)) from e
-
-
 if __name__ == "__main__":
     uvicorn.run(
         "main:app",

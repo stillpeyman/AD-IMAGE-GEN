@@ -102,4 +102,3 @@ def format_event_text(event: HistoryEvent) -> str:
     
     else:
         return f"Unknown event: {event.event_type}"
-
