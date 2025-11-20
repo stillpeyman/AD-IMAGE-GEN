@@ -139,16 +139,24 @@ ENABLE_DB_PING=true
 
 **Note**: You need at least one API key depending on which provider(s) you want to use. Both keys are required if you want to support both providers.
 
+Create a `frontend/.env.local` file (Next.js automatically ignores it in git) with the backend URL you plan to use:
+
+```env
+NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
+```
+
+Set this value to the same host/port used to start the FastAPI server (see below). Each developer can keep their own `.env.local` without touching tracked files.
+
 ## Running the Application
 
 ### Start the Backend
 
 ```bash
 # From the root directory
-python main.py
+fastapi dev main.py
 ```
 
-The backend will start on `http://localhost:5001`
+`fastapi dev` defaults to `http://127.0.0.1:8000`, matching the value in `NEXT_PUBLIC_API_BASE_URL`. If you prefer a different host or port, pass the appropriate flags (e.g., `--host 0.0.0.0 --port 5001`) and update `.env.local` to the same URL. You can still run `python main.py` if needed; it uses the hard-coded settings inside the script.
 
 ### Start the Frontend
 

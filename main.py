@@ -1,68 +1,21 @@
-"""
-FastAPI app wiring:
-- Loads env keys for two OpenAI clients
-- Sets up SQLite engine and table creation on startup
-- Provides per-HTTP-request DB Session via Depends
-- Provides AdGeneratorService via Depends for endpoints
-"""
-
-"""
-ARCHITECTURE NOTE TO MYSELF:
-
-Dual Provider, Multi-Model System:
-- MY_OPENAI_API_KEY for OpenAI operations (gpt-4.1 for text, gpt-image-1 for images)
-- GEMINI_API_KEY for Google operations (gemini-2.5-flash for text gemini-2.5-flash-image for images)
-- User chooses model provider at session start (no defaults)
-  
-Text Analysis (via Agents class):
-- OpenAI: gpt-4.1 (fallback maybe to gpt-4.1-mini)
-- Google: gemini-2.5-flash (alternative provider)
-- Jobs: Product analysis, moodboard analysis, user vision parsing, prompt building
-- Validation: API keys checked at Agents.__init__() based on provider
-
-Image Generation (via image_generator modules):  
-- Model: gpt-image-1 or gemini-2.5-flash-image
-- Jobs: Generate final ad images
-- Validation: API key validated at AdGeneratorService.__init__()
-
-Why this design:
-- User choice between providers for text analysis
-- Single image generation provider (OpenAI)
-- Fail-fast validation prevents runtime errors
-"""
-
-"""
-How DB connections and user sessions work:
-    - Each HTTP request is isolated and receives a fresh SQLAlchemy Session from get_db_session; FastAPI auto-closes it after the response.
-    - /session/create persists a UserSession and returns user_session_id to the frontend.
-    - Subsequent workflow endpoints include user_session_id. FastAPI injects get_service, which itself depends on get_db_session.
-    - get_service uses the per-request db_session to load the UserSession by user_session_id and constructs AdGeneratorService (and Agents) with the correct model_provider.
-    - Net effect: new DB connection per request, but every request is bound to the same logical user session created at the start of the workflow.
-"""
-
-"""
-NOTE TO MYSELF for better organizing code in separate files:
-see https://fastapi.tiangolo.com/tutorial/bigger-applications/#import-apirouter
->>> "Multiple Files/APIRouter"
-"""
 # stdlib
 import logging
-import os
 import uuid
 
 # third-party
-from dotenv import load_dotenv
 from fastapi import FastAPI, Depends, File, UploadFile, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
-from sqlmodel import SQLModel, Session, create_engine, select
-from sqlalchemy import event
+from sqlmodel import Session, select
 import uvicorn
 
 # local
 from agents import Agents
+from constants import OUTPUT_IMAGES_DIR, UPLOADS_DIR
+from db_utils import create_db_and_tables, get_db_session
 from models import ImageAnalysis, MoodboardAnalysis, PromptExample, UserVision, Prompt, GeneratedImage, UserSession, HistoryEvent
 from services import AdGeneratorService
+from settings import get_settings
 
 
 # Configure application logging
@@ -73,71 +26,15 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 
-# Test session for MVP
-# TEST_SESSION_ID = "test-session-123"
-
 
 # 1) env
-load_dotenv()
-OPENAI_API_KEY = os.getenv("MY_OPENAI_API_KEY")
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+settings = get_settings()
+OPENAI_API_KEY = settings.openai_api_key
+GEMINI_API_KEY = settings.gemini_api_key
 
 
 # Enable debug endpoint only when ENABLE_DB_PING=true in .env
-ENABLE_DB_PING = os.getenv("ENABLE_DB_PING", "false").lower() == "true"
-
-
-# 2) Database engine configuration
-DATABASE_FILE = "database.db"
-DATABASE_URL = f"sqlite:///{DATABASE_FILE}"
-
-# Create SQLAlchemy engine with SQLite-specific configurations
-# - echo=False: Not logging all SQL statements (logging takes care of it for debugging)
-# - check_same_thread=False: Allow connections to be used across async thread switches
-#   (Required for FastAPI's async nature; see Python sqlite3 docs)
-# - timeout=30: Wait up to 30 seconds for database lock before raising error
-#   (Default is 5 seconds; increased to handle concurrent requests better)
-engine = create_engine(
-    DATABASE_URL, 
-    echo=False,
-    connect_args={"check_same_thread": False, "timeout": 30}
-)
-
-# Understand the flow and when @event.listens_for triggers:
-# 1. App starts
-# 2. create_engine() is called
-# 3. Engine created, but no connections yet
-# (now every time a NEW connection opens, 4.-11. runs)
-# 4. First HTTP request comes in
-# 5. get_db_session() is called
-# 6. Session tries to get a connection from the engine
-# 7. Engine opens a NEW database connection
-# 8. @event.listens_for triggers! ← HERE
-# 9. _sqlite_set_pragmas() is called automatically
-# 10. WAL mode is set
-# 11. Connection is now ready to use
-@event.listens_for(engine, "connect")
-def _sqlite_set_pragmas(dbapi_connection, connection_record):
-    """
-    Set pragmas on connection open:
-    - Enable WAL (write-ahead log) for better concurrency.
-    Note: WAL is persistent on the DB file; this sets it on each connection defensively.
-    """
-    try:
-        cursor = dbapi_connection.cursor()
-        cursor.execute("PRAGMA journal_mode=WAL;")
-        cursor.close()
-    except Exception:
-        # best-effort; we don't want to crash app creation if the pragma fails
-        pass
-
-
-def create_db_and_tables() -> None:
-    """
-    Create all tables defined on SQLModel metadata if they don't exist yet.
-    Idempotent: calling multiple times will not overwrite existing tables.
-    """
-    SQLModel.metadata.create_all(engine)
+ENABLE_DB_PING = settings.enable_db_ping
 
 
 # 3) App creation
@@ -153,23 +50,10 @@ app.add_middleware(
 )
 
 # Serve generated images from local disk under /static
-app.mount("/static", StaticFiles(directory="output_images"), name="static")
+app.mount("/static", StaticFiles(directory=OUTPUT_IMAGES_DIR), name="static")
 
 # Serve uploaded images from local disk under /uploads
-app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
-
-
-# 4) Dependency and Service functions
-def get_db_session():
-    """
-    Provide a database connection for the current request.
-
-    This is a SQLAlchemy connection (not a logical user session). It enables
-    queries/inserts/updates and is auto-closed by FastAPI after the response.
-    """
-    with Session(engine) as db_session:
-        # yield -> FastAPI will close the session after the response
-        yield db_session
+app.mount("/uploads", StaticFiles(directory=UPLOADS_DIR), name="uploads")
 
 
 def get_service(user_session_id: str, db_session: Session = Depends(get_db_session)) -> AdGeneratorService:
@@ -275,7 +159,7 @@ async def create_session(model_provider: str, db_session: Session = Depends(get_
         
     except Exception as e:
         db_session.rollback()
-        raise HTTPException(status_code=500, detail=f"Failed to create session: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to create session: {str(e)}") from e
 
 
 @app.post("/analyze/product-image", response_model=ImageAnalysis)
@@ -303,16 +187,16 @@ async def analyze_product_image(
         image_bytes = await file.read()
     
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"File processing failed {str(e)}.")
+        raise HTTPException(status_code=400, detail=f"File processing failed {str(e)}.") from e
 
     try:
         # Service layer might raise generic ValueError
         result = await service.analyze_product_image(image_bytes, user_session_id)
         return result
 
-    # Endpoint layer catches service's ValueError and converts to HTTP responce
+    # Endpoint layer catches service's ValueError and converts to HTTP response
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e)) from e
 
 
 @app.post("/analyze/moodboard", response_model=list[MoodboardAnalysis])
@@ -343,14 +227,14 @@ async def analyze_moodboard_images(
                 image_bytes_list.append(image_bytes)
     
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"File processing failed {str(e)}.")
+        raise HTTPException(status_code=400, detail=f"File processing failed {str(e)}.") from e
 
     try:
         result = await service.analyze_moodboard_images(user_session_id, image_bytes_list)
         return result
 
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e)) from e
 
 
 @app.post("/vision/parse", response_model=UserVision)
@@ -376,7 +260,7 @@ async def parse_user_vision(
         return result
 
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e)) from e
 
 
 @app.post("/prompt/build", response_model=Prompt)
@@ -408,7 +292,7 @@ async def build_advertising_prompt(
     try:
         # Find records for this session
         image_analysis = service.session.exec(
-            select(ImageAnalysis).where(ImageAnalysis.user_session_id == user_session_id)
+            select(ImageAnalysis).where(ImageAnalysis.session_id == user_session_id)
         ).first()
         if not image_analysis:
             raise HTTPException(status_code=404, detail="No product image analysis found for this session")
@@ -417,11 +301,11 @@ async def build_advertising_prompt(
         # SQLModel/SQLAlchemy automatically returns an empty list when no records match the query,
         # rather than raising an error or returning None. This makes moodboard truly optional.
         moodboard_analyses = service.session.exec(
-            select(MoodboardAnalysis).where(MoodboardAnalysis.user_session_id == user_session_id)
+            select(MoodboardAnalysis).where(MoodboardAnalysis.session_id == user_session_id)
         ).all()
         
         user_vision = service.session.exec(
-            select(UserVision).where(UserVision.user_session_id == user_session_id)
+            select(UserVision).where(UserVision.session_id == user_session_id)
         ).first()
         if not user_vision:
             raise HTTPException(status_code=404, detail="No user vision found for this session.")
@@ -443,7 +327,7 @@ async def build_advertising_prompt(
         return result
 
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e)) from e
 
 
 @app.post("/prompt/complete", response_model=Prompt)
@@ -492,7 +376,7 @@ async def create_final_prompt(
                 moodboard_image_bytes_list.append(image_bytes)
     
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"File processing failed {str(e)}.")
+        raise HTTPException(status_code=400, detail=f"File processing failed {str(e)}.") from e
 
     # Service operations
     try:
@@ -506,7 +390,7 @@ async def create_final_prompt(
         return result
     
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e)) from e
 
 
 @app.post("/prompt/refine", response_model=Prompt)
@@ -552,7 +436,7 @@ async def refine_prompt(
         return result
     
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e)) from e
 
 
 @app.post("/images/generate", response_model=GeneratedImage)
@@ -590,7 +474,7 @@ async def generate_image(
                 reference_image_bytes_list.append(image_bytes)
 
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"File processing failed {str(e)}.")
+        raise HTTPException(status_code=400, detail=f"File processing failed {str(e)}.") from e
 
     # Service operations
     try:
@@ -605,7 +489,7 @@ async def generate_image(
         return result
     
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e)) from e
 
 
 @app.post("/ad/complete", response_model=GeneratedImage)
@@ -669,7 +553,7 @@ async def create_complete_ad(
                 reference_image_bytes_list.append(image_bytes)
     
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"File processing failed {str(e)}.")
+        raise HTTPException(status_code=400, detail=f"File processing failed {str(e)}.") from e
 
     # Service operations
     try:
@@ -685,7 +569,7 @@ async def create_complete_ad(
         return result
 
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e)) from e
 
 
 # Helper function for formatinng history events
@@ -948,7 +832,7 @@ async def get_session_status(
         }
         
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to get session status: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to get session status: {str(e)}") from e
 
 
 @app.post("/examples/save", response_model=PromptExample)
@@ -977,7 +861,7 @@ async def save_prompt_example(
         return await service.save_prompt_example(prompt_id, user_session_id)
 
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e)) from e
 
 
 @app.post("/test/text-only")
@@ -1004,7 +888,7 @@ async def test_text_only(
         return result
 
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e)) from e
 
 
 if __name__ == "__main__":

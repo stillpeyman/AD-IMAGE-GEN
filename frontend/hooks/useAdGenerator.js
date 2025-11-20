@@ -11,12 +11,13 @@
 
 import { useState, useCallback, useEffect } from 'react'
 import * as api from '@/lib/api'
+import { API_BASE_URL } from '@/lib/api'
 
 // Helper function to fix image URL if it starts with /static/ or /uploads/
 function fixImageUrl(imageUrl) {
   if (!imageUrl) return imageUrl
   if (imageUrl.startsWith('/static/') || imageUrl.startsWith('/uploads/')) {
-    return `http://localhost:5001${imageUrl}`
+    return `${API_BASE_URL}${imageUrl}`
   }
   return imageUrl
 }

@@ -10,7 +10,7 @@ from pydantic_ai.models.google import GoogleModel
 from pydantic_ai.providers.google import GoogleProvider
 
 # local imports
-from models import ImageAnalysis, MoodboardAnalysis, UserVision, Prompt, PromptExample
+from models import ImageAnalysis, MoodboardAnalysis, UserVision, Prompt
 
 
 """

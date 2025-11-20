@@ -1,8 +1,6 @@
 # stdlib imports
-import base64
 import logging
 import os
-import uuid
 import threading
 
 # third-party imports
@@ -10,6 +8,15 @@ from sqlmodel import Session, select
 from sqlalchemy import func
 
 # local imports
+from constants import (
+    MIME_EXTENSION_MAP,
+    MOODBOARD_UPLOAD_SUBDIR,
+    OUTPUT_IMAGES_DIR,
+    PRODUCT_UPLOAD_SUBDIR,
+    REFERENCE_UPLOAD_SUBDIR,
+)
+from db_utils import engine
+from utils import decode_data_url, save_uploaded_image
 from agents import Agents
 from api.gpt_image1_generator import generate_image_data_url as gpt_generate_image_data_url
 from api.gemini_image_generator import generate_image_data_url as gemini_generate_image_data_url
@@ -75,20 +82,6 @@ class AdGeneratorService:
         self.gemini_api_key = gemini_api_key
 
 
-    @staticmethod
-    def _save_image(image_bytes: bytes, dir_name: str, filename_prefix: str) -> str:
-        """
-        Persist an uploaded image under uploads/<dir_name>/<filename_prefix>_<uuid>.jpg
-        Returns the relative path saved (string).
-        """
-        os.makedirs(f"uploads/{dir_name}", exist_ok=True)
-        filename = f"{filename_prefix}_{uuid.uuid4().hex}.jpg"
-        path = os.path.join("uploads", dir_name, filename)
-        with open(path, "wb") as f:
-            f.write(image_bytes)
-        return path
-
-
     async def analyze_product_image(self, image_bytes: bytes, user_session_id: str) -> ImageAnalysis:
         """
         Analyze a product image and store results.
@@ -107,7 +100,11 @@ class AdGeneratorService:
             ValueError: If analysis or persistence fails.
         """
         try:
-            image_path = self._save_image(image_bytes, "product", "product")
+            image_path = save_uploaded_image(
+                image_bytes,
+                sub_dir=PRODUCT_UPLOAD_SUBDIR,
+                filename_prefix="product"
+            )
 
             # History Event 1: Product image uploaded
             upload_event = HistoryEvent(
@@ -169,7 +166,7 @@ class AdGeneratorService:
         except Exception as e:
             self.session.rollback()
             logger.error(f"Product image analysis failed: {str(e)}")
-            raise ValueError(f"Product image analysis failed: {str(e)}")
+            raise ValueError(f"Product image analysis failed: {str(e)}") from e
 
 
     async def analyze_moodboard_images(
@@ -202,7 +199,11 @@ class AdGeneratorService:
             # Save all moodboard images
             saved_paths = []
             for idx, image_bytes in enumerate(image_bytes_list):
-                saved_path = self._save_image(image_bytes, "moodboards", f"moodboard_{idx+1}")
+                saved_path = save_uploaded_image(
+                    image_bytes,
+                    sub_dir=MOODBOARD_UPLOAD_SUBDIR,
+                    filename_prefix=f"moodboard_{idx+1}"
+                )
                 saved_paths.append(saved_path)
             
             # History Event 1: Moodboard image uploaded
@@ -284,7 +285,7 @@ class AdGeneratorService:
         except Exception as e:
             self.session.rollback()
             logger.error(f"Moodboard analysis failed: {str(e)}")
-            raise ValueError(f"Moodboard analysis failed: {str(e)}")
+            raise ValueError(f"Moodboard analysis failed: {str(e)}") from e
 
 
     async def parse_user_vision(self, user_text: str, user_session_id: str) -> UserVision:
@@ -363,7 +364,7 @@ class AdGeneratorService:
         except Exception as e:
             self.session.rollback()
             logger.error(f"User vision parsing failed: {str(e)}")
-            raise ValueError(f"User vision parsing failed: {str(e)}")
+            raise ValueError(f"User vision parsing failed: {str(e)}") from e
 
 
     async def build_advertising_prompt(
@@ -558,7 +559,7 @@ class AdGeneratorService:
             except Exception:
                 pass
             logger.error(f"Prompt building failed: {str(e)}")
-            raise ValueError(f"Prompt building failed: {str(e)}")
+            raise ValueError(f"Prompt building failed: {str(e)}") from e
     
 
     async def refine_prompt(
@@ -639,7 +640,7 @@ class AdGeneratorService:
         except Exception as e:
             self.session.rollback()
             logger.error(f"Prompt refinement failed: {str(e)}")
-            raise ValueError(f"Prompt refinement failed: {str(e)}")
+            raise ValueError(f"Prompt refinement failed: {str(e)}") from e
 
 
     async def generate_image(
@@ -740,7 +741,11 @@ class AdGeneratorService:
             saved_reference_paths = []
             if reference_image_bytes_list:
                 for idx, ref_bytes in enumerate(reference_image_bytes_list):
-                    saved_ref = self._save_image(ref_bytes, "references", f"ref_{idx+1}")
+                    saved_ref = save_uploaded_image(
+                        ref_bytes,
+                        sub_dir=REFERENCE_UPLOAD_SUBDIR,
+                        filename_prefix=f"ref_{idx+1}"
+                    )
                     saved_reference_paths.append(saved_ref)        
             
             # Generate image using the user's chosen image model (independent of text analysis provider)
@@ -770,32 +775,21 @@ class AdGeneratorService:
             else:
                 raise ValueError(f"Unsupported image model choice: {image_model_choice}. Must be 'openai' or 'gemini'.")
 
-            # Persist generated image locally and expose it via /static
-            os.makedirs("output_images", exist_ok=True)
-            # Create a unique filename that associates the file with this session
-            filename = f"generated_{user_session_id}_{uuid.uuid4().hex}.png"
-            # Storage: File saved in output_images/ folder
-            output_path = os.path.join("output_images", filename)
-
-            # Since generate_image_data_url always returns a data URL format,
-            # We know it will be: "data:image/png;base64,<base64-bytes>"
-            # Data URL format benefits:
-            # - Universal web compatibility (works in HTML <img src="...">)
-            # - No temporary file management needed
-            # - Consistent format between OpenAI and Google providers
-            # - Can be saved to disk or displayed directly
             try:
-                if not data_url or not data_url.startswith("data:image"):
-                    raise ValueError("Invalid data URL format from image generator")
-                
-                # Extract the base64 data from the data URL
-                # Format: "data:image/png;base64,ABC123..."
-                header, b64data = data_url.split(",", 1)
-                
-                # Decode base64 to raw bytes and save to disk
-                with open(output_path, "wb") as f:
-                    f.write(base64.b64decode(b64data))
-                
+                mime_type, image_bytes = decode_data_url(data_url)
+                extension = MIME_EXTENSION_MAP.get(mime_type, "png")
+
+                path = save_uploaded_image(
+                    image_bytes,
+                    base_dir=OUTPUT_IMAGES_DIR,
+                    filename_prefix=f"generated_{user_session_id}",
+                    extension=extension
+                )
+
+                # <os.path> for path manipulation
+                # <basename()> returns only last component (filename)
+                filename = os.path.basename(path)
+
                 # Serving: FastAPI serves file via /static/ route
                 # Return a stable local URL that won't expire
                 final_local_url = f"/static/{filename}"
@@ -892,8 +886,10 @@ class AdGeneratorService:
                     write_session.commit()
 
                 except Exception:
-                    write_session.rollback()  # Undo changes if error
-                    raise  # Re-raise the error to be caught by outer except
+                    # Only undo changes/clean up if error
+                    write_session.rollback()
+                    # raise with no args = "cleaned up, now show original (unchanged) exception" (910)
+                    raise
             
             logger.info(f"Image generation completed: {db_ad_img.id}")
             return db_ad_img
@@ -918,7 +914,7 @@ class AdGeneratorService:
             
             # Log and re-raise the ORIGINAL error (stored in variable 'e')
             logger.error(f"Image generation failed: {str(e)}")
-            raise ValueError(f"Image generation failed: {str(e)}")
+            raise ValueError(f"Image generation failed: {str(e)}") from e
 
 
     async def create_final_prompt(
@@ -978,7 +974,7 @@ class AdGeneratorService:
 
         except Exception as e:
             logger.error(f"Complete ad prompt generation workflow failed: {str(e)}")
-            raise ValueError(f"Ad prompt generation workflow failed: {str(e)}")
+            raise ValueError(f"Ad prompt generation workflow failed: {str(e)}") from e
 
 
     async def create_complete_ad(
@@ -1040,7 +1036,7 @@ class AdGeneratorService:
             
         except Exception as e:
             logger.error(f"Complete ad generation workflow failed: {str(e)}")
-            raise ValueError(f"Ad generation workflow failed: {str(e)}")
+            raise ValueError(f"Ad generation workflow failed: {str(e)}") from e
 
 
     async def save_prompt_example(self, prompt_id: int, user_session_id: str) -> PromptExample:
