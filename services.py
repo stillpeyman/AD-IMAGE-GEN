@@ -1,7 +1,6 @@
 # stdlib imports
 import logging
 import os
-import threading
 
 # third-party imports
 from sqlmodel import Session, select
@@ -15,7 +14,7 @@ from constants import (
     PRODUCT_UPLOAD_SUBDIR,
     REFERENCE_UPLOAD_SUBDIR,
 )
-from db_utils import engine
+from logging_utils import log_session
 from utils import decode_data_url, save_uploaded_image
 from agents import Agents
 from api.gpt_image1_generator import generate_image_data_url as gpt_generate_image_data_url
@@ -24,22 +23,6 @@ from models import ImageAnalysis, MoodboardAnalysis, UserVision, Prompt, Generat
 
 
 logger = logging.getLogger(__name__)
-
-
-def _log_sess(msg, session_obj):
-    """
-    Debug helper to log thread ID and session object ID.
-    
-    Used to track if requests switch threads during async operations
-    and to verify session object identity remains consistent.
-    
-    Args:
-        msg: Descriptive message about what's happening
-        session_obj: The SQLAlchemy session object to log
-    
-    Logs format: [tid=12345] message session_obj_id=140234567890
-    """
-    logger.info(f"[tid={threading.get_ident()}] {msg} session_obj_id={id(session_obj)}")
 
 
 class AdGeneratorService:
@@ -488,6 +471,7 @@ class AdGeneratorService:
 
             # Commit and close to release database lock before long AI call
             self.session.commit()
+            # Keeps engine ref after closing the current session -> engine lives in Python memory -> re-usable then in line 491
             engine = self.session.get_bind()
             self.session.close()
 
@@ -718,11 +702,11 @@ class AdGeneratorService:
             # - WAL mode + check_same_thread=False help, but we still need to release the lock
             # - Solution: Commit and close before the long operation, create new session after
             
-            _log_sess("before commit (phase1)", self.session)
+            log_session("before commit (phase1)", self.session, logger_name=__name__)
             # Commit model_choice_event before closing session
             # (it has related_id=None for now, will update in write_session)
             self.session.commit()  
-            _log_sess("after commit (phase1)", self.session)
+            log_session("after commit (phase1)", self.session, logger_name=__name__)
             
             # Get engine reference before closing session (needed to create new session later)
             # session.get_bind() returns the Engine object that this session is using
@@ -731,7 +715,7 @@ class AdGeneratorService:
             # Close session to fully release the database connection back to the pool
             # This makes the connection available for other requests during the long Gemini call
             self.session.close()
-            _log_sess("closed request session", self.session)
+            log_session("closed request session", self.session, logger_name=__name__)
             
             # PHASE 2: File operations and API call (no database lock held)
             with open(product_image_path, "rb") as f:
@@ -818,7 +802,7 @@ class AdGeneratorService:
             # Context manager (with-block) ensures session is properly closed after use
             with Session(engine) as write_session:
                 try:
-                    _log_sess("new write session created", write_session)
+                    log_session("new write session created", write_session, logger_name=__name__)
                     db_ad_img = GeneratedImage(
                         prompt_id=prompt_id,
                         image_url=final_local_url,
@@ -828,7 +812,7 @@ class AdGeneratorService:
                     )
                     write_session.add(db_ad_img)     
                     write_session.flush()  # Gets the auto-increment ID
-                    _log_sess("write session flushed", write_session)
+                    log_session("write session flushed", write_session, logger_name=__name__)
 
                     # Update model_choice_event with GeneratedImage.id
                     # Query the event we created earlier in self.session
